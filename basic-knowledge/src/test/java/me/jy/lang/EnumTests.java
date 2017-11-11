@@ -1,11 +1,12 @@
-package me.jy.se.lang;
+package me.jy.lang;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
 
-import static me.jy.se.lang.EnumTests.Gender.*;
+import static me.jy.lang.EnumTests.Gender.*;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -26,15 +27,15 @@ public class EnumTests {
         assertEquals(Gender.MALE, Gender.valueOf("MALE"));
 
         // 返回枚举常量名
-        assertEquals("FEMALE", FEMALE.name());
+        Assert.assertEquals("FEMALE", FEMALE.name());
 
         // 返回该枚举常量的顺序, 从0开始
-        assertEquals(1, FEMALE.ordinal());
+        Assert.assertEquals(1, FEMALE.ordinal());
 
         // compareTo比较枚举常量的顺序
         assertEquals(true, MALE.compareTo(FEMALE) < 0);
 
-        assertEquals(-1, MIDDLE.getValue());
+        Assert.assertEquals(-1, MIDDLE.getValue());
     }
 
     @Test

@@ -1,4 +1,4 @@
-package me.jy.se.lang;
+package me.jy.lang;
 
 import org.junit.Test;
 
