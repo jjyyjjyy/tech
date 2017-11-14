@@ -27,4 +27,16 @@ public class CollectionTests {
         }
         assertEquals(0, list.size());
     }
+
+    @Test
+    public void testMyLinkedList() {
+        MyLinkedList<Integer> list = MyLinkedList.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        assertEquals(Integer.valueOf(1), list.get(0));
+        assertEquals(10, list.size());
+        list.add(11);
+        assertEquals(11, list.size());
+        list.remove(5);
+        assertEquals(10, list.size());
+        assertEquals(Integer.valueOf(11), list.get(9));
+    }
 }

@@ -10,15 +10,15 @@ public interface MyCollection<E> {
 
     boolean remove(int position);
 
-    boolean isEmpty();
+    default boolean isEmpty(){
+        return size() == 0;
+    }
 
     boolean contains(E e);
 
     E get(int index);
 
     int size();
-
-    MyIterator<E> iterator();
 
     void clear();
 }

@@ -53,11 +53,6 @@ public class MyArrayList<E> implements MyCollection<E> {
     }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
-
-    @Override
     public boolean contains(E e) {
         for (Object element : elements) {
             if (element.equals(e)) {
@@ -79,7 +74,6 @@ public class MyArrayList<E> implements MyCollection<E> {
         return this.size;
     }
 
-    @Override
     public MyIterator<E> iterator() {
         return new MyArrayListIterator();
     }
