@@ -12,6 +12,7 @@
     <modules>
         <module>basic-knowledge</module>
         <module>algs</module>
+        <module>design-pattern</module>
     </modules>
 
     <properties>
