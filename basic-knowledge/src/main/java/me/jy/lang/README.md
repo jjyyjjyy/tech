@@ -68,3 +68,5 @@
    - TIMED_WAITING
    - TERMINATED
 2. 线程内异常无法在外层try-catch,只能设置Thread的UncaughtExceptionHandler
+3. 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
+4. wait()释放对象锁,sleep()不释放.
