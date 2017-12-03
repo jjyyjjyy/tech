@@ -3,6 +3,9 @@ package me.jy.list;
 import me.jy.list.base.MyIterator;
 import org.junit.Test;
 
+import java.util.Deque;
+import java.util.LinkedList;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -38,5 +41,27 @@ public class CollectionTests {
         list.remove(5);
         assertEquals(10, list.size());
         assertEquals(Integer.valueOf(11), list.get(9));
+    }
+
+    @Test
+    public void testDeque() {
+//        Deque<Integer> q = new ArrayDeque<>(); //120ms
+        Deque<Integer> q = new LinkedList<>(); // 180ms
+        long begin = System.currentTimeMillis();
+        test(q);
+        long end = System.currentTimeMillis();
+        System.out.println("took " + (end - begin) + "ms");
+    }
+
+    private static void test(Deque<Integer> q) {
+        for (int i = 0; i < 1000; i++) {
+            for (int j = 0; j < 10_000; j++) {
+                q.addLast(j);
+            }
+
+            for (int j = 0; j < 10_000; j++) {
+                q.removeFirst();
+            }
+        }
     }
 }
