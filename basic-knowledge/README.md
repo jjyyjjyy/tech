@@ -58,6 +58,9 @@
 2. 下界通配符get出Object,add时不能add声明的泛型边界的父类
 3. 取不到一个类定义的泛型类型(T),只能取其子类或父类具体的泛型类型(Long,String...)
 
+### 反射
+1.  
+
 ### 线程
 
 1. 线程状态
@@ -70,3 +73,12 @@
 2. 线程内异常无法在外层try-catch,只能设置Thread的UncaughtExceptionHandler
 3. 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
 4. wait()释放对象锁,sleep()不释放.
+5. Executor:
+    - ThreadPoolExecutor
+    - ForkJoinPool
+    - ScheduledThreadPoolExecutor
+6. 
+   1. 如果当前线程池中的线程数目小于corePoolSize，则每来一个任务，就会创建一个线程去执行这个任务；
+   2. 如果当前线程池中的线程数目>=corePoolSize，则每来一个任务，会尝试将其添加到任务缓存队列当中，若添加成功，则该任务会等待空闲线程将其取出去执行；若添加失败（一般来说是任务缓存队列已满），则会尝试创建新的线程去执行这个任务；
+   3. 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
+   4. 如果线程池中的线程数量大于 corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
