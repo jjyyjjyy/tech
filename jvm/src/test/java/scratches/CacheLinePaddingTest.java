@@ -1,4 +1,4 @@
-package scrathes;
+package scratches;
 
 /**
  * @author jy
