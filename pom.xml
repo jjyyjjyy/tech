@@ -13,6 +13,7 @@
         <module>basic-knowledge</module>
         <module>algs</module>
         <module>design-pattern</module>
+        <module>jvm</module>
     </modules>
 
     <properties>
