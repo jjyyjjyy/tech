@@ -37,12 +37,26 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
 
     public V put(K k, V v) {
 
-        List<Entry<K, V>> table = getTable(k);
+        int tableIndex = getTableIndex(k);
+        List<Entry<K, V>> table = this.table[tableIndex];
         if (table == null) {
-            table = new ArrayList<>();
+            table = new LinkedList<>();
+            this.table[tableIndex] = table;
+
         }
-        table.add(new SimpleEntry<>(k, v));
-        elementSize++;
+        boolean isKeyExists = false;
+        for (Entry<K, V> kvEntry : table) {
+            if (Objects.equals(kvEntry.getKey(), k)) {
+                kvEntry.setValue(v);
+                isKeyExists = true;
+                break;
+            }
+        }
+        if (!isKeyExists) {
+            table.add(new SimpleEntry<>(k, v));
+            elementSize++;
+        }
+
         if (elementSize * loadFactor > tableSize) {
             resize();
         }
@@ -56,9 +70,11 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
                 .parallelStream()
                 .forEach(entry -> {
                     int hashCode = entry.getKey().hashCode();
-                    List<Entry<K, V>> entryList = table[newSize % hashCode];
+                    int index = hashCode % newSize;
+                    List<Entry<K, V>> entryList = table[index];
                     if (entryList == null) {
                         entryList = new LinkedList<>();
+                        table[index] = entryList;
                     }
                     entryList.add(entry);
                 });
@@ -67,15 +83,16 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
         this.table = table;
     }
 
-    private List<Entry<K, V>> getTable(Object key) {
+    private int getTableIndex(Object key) {
         if (key == null) {
             throw new IllegalArgumentException("Fuck off!");
         }
-        return this.table[key.hashCode() % tableSize];
+        return key.hashCode() % tableSize;
     }
 
     public V get(Object key) {
-        List<Entry<K, V>> entries = getTable(key);
+        int tableIndex = getTableIndex(key);
+        List<Entry<K, V>> entries = this.table[tableIndex];
         if (entries == null || entries.isEmpty()) {
             return null;
         }
@@ -83,10 +100,7 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
                 .parallelStream()
                 .filter(entry -> Objects.equals(entry.getKey(), key))
                 .findFirst();
-        if (first.isPresent()) {
-            return first.get().getValue();
-        }
-        return null;
+        return first.map(Entry::getValue).orElse(null);
 
     }
 
@@ -107,7 +121,7 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
     public static void main(String[] args) {
         Map<String, Integer> test = new SelfHashTable<>();
         for (int i = 0; i < 100; i++) {
-            test.put("test", i);
+            test.put(String.valueOf((char) ('a' + i)), i);
         }
         System.out.println(test.entrySet());
     }
