@@ -54,3 +54,6 @@
      Mac OS 64位    	       64M        	min(1G,1/4物理内存) 
   WIndows 32位Client	       16M        	      256M      
   Windows 64位Server	       64M        	min(1G,1/4物理内存) 
+
+8. 远程debug参数
+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
