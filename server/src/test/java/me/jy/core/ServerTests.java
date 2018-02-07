@@ -2,7 +2,15 @@ package me.jy.core;
 
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+
+import static me.jy.core.Server.ServerStatus.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jy
@@ -10,13 +18,45 @@ import static org.junit.Assert.assertEquals;
  */
 public class ServerTests {
 
+    volatile CountDownLatch serverLatch = new CountDownLatch(1);
+
+
+    private void startServer(Server server) {
+        new Thread(server::start).start();
+
+    }
+
     @Test
-    public void testStart() {
+    public void testStart() throws Exception {
         ServerConfig serverConfig = new ServerConfig();
         Server server = ServerFactory.getSimpleServer(serverConfig);
         assertEquals(Server.ServerStatus.INIT, server.getStatus());
-        server.start();
-        assertEquals(Server.ServerStatus.STARTING, server.getStatus());
+        startServer(server);
+
+        CountDownLatch selfLatch = new CountDownLatch(1);
+        new Thread(() -> {
+            Socket socket = new Socket();
+            try {
+                if (server.getStatus() == INIT) {
+                    Thread.sleep(500);
+                }
+                while (server.getStatus() != START) {
+                    Thread.sleep(100);
+                }
+                socket.connect(new InetSocketAddress("localhost", serverConfig.getPort()));
+                System.out.println(socket.isConnected());
+                socket.close();
+                selfLatch.countDown();
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+
+        selfLatch.await();
+        server.stop();
+        serverLatch.countDown();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -27,10 +67,12 @@ public class ServerTests {
     }
 
     @Test
-    public void testStop() {
+    public void testStop() throws InterruptedException {
         ServerConfig serverConfig = new ServerConfig();
         Server server = ServerFactory.getSimpleServer(serverConfig);
+        startServer(server);
+        Thread.sleep(500);
         server.stop();
-        assertEquals(Server.ServerStatus.STOPPING, server.getStatus());
+        assertTrue(Arrays.asList(STOPPING, STOP).contains(server.getStatus()));
     }
 }

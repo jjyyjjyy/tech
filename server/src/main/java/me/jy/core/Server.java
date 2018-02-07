@@ -14,6 +14,8 @@ public interface Server {
 
     int getPort();
 
+    int getBackLog();
+
     enum ServerStatus {
 
         INIT,
