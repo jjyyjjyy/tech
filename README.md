@@ -1,1 +1,0 @@
-### Reference: https://github.com/aalansehaiyang/technology-talk

@@ -12,7 +12,7 @@ sudo apt install typora
 
 sudo apt install gconf2
 ```
-3. ```sudo apt install default-jdk maven git net-tools vim```
+3. ```sudo apt install default-jdk maven git net-tools vim curl```
 
 4. http://resources-1252259164.file.myqcloud.com/settings.xml
 
@@ -42,7 +42,9 @@ sudo apt install gconf2
 
    6. ```shell
      mkdir ~/.local/share/themes
+     
      https://www.gnome-look.org/p/1171688/#files-panel	-> extract to above dir
+     
      mkdir ~/.local/share/icons
      https://www.gnome-look.org/p/1102582/#files-panel	-> extract to above dir
 
