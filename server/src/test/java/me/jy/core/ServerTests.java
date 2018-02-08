@@ -1,12 +1,12 @@
 package me.jy.core;
 
+import me.jy.core.server.ServerConfig;
+import me.jy.core.server.ServerFactory;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 import static me.jy.core.Server.ServerStatus.*;
 import static org.junit.Assert.assertEquals;
@@ -18,58 +18,42 @@ import static org.junit.Assert.assertTrue;
  */
 public class ServerTests {
 
-    volatile CountDownLatch serverLatch = new CountDownLatch(1);
-
-
     private void startServer(Server server) {
         new Thread(server::start).start();
-
     }
 
     @Test
     public void testStart() throws Exception {
         ServerConfig serverConfig = new ServerConfig();
+        serverConfig.setPort(8801);
         Server server = ServerFactory.getSimpleServer(serverConfig);
         assertEquals(Server.ServerStatus.INIT, server.getStatus());
         startServer(server);
 
-        CountDownLatch selfLatch = new CountDownLatch(1);
-        new Thread(() -> {
-            Socket socket = new Socket();
-            try {
-                if (server.getStatus() == INIT) {
-                    Thread.sleep(500);
-                }
-                while (server.getStatus() != START) {
-                    Thread.sleep(100);
-                }
-                socket.connect(new InetSocketAddress("localhost", serverConfig.getPort()));
-                System.out.println(socket.isConnected());
-                socket.close();
-                selfLatch.countDown();
 
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
+        while (true) {
+            if (!(server.getStatus() == START)) continue;
+            Thread.sleep(200);
+            Socket socket = new Socket("localhost", serverConfig.getPort());
+            socket.getInputStream();
+            socket.getOutputStream().write("HTTP/1.1 GET".getBytes(Charset.defaultCharset()));
 
-        }).start();
-
-        selfLatch.await();
-        server.stop();
-        serverLatch.countDown();
+            assertTrue(socket.getInputStream().available() > 0);
+            server.stop();
+            break;
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPort() {
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
-        ServerFactory.getSimpleServer(serverConfig);
+        ServerFactory.getSimpleServer(serverConfig).start();
     }
 
     @Test
     public void testStop() throws InterruptedException {
-        ServerConfig serverConfig = new ServerConfig();
-        Server server = ServerFactory.getSimpleServer(serverConfig);
+        Server server = ServerFactory.getSimpleServer();
         startServer(server);
         Thread.sleep(500);
         server.stop();

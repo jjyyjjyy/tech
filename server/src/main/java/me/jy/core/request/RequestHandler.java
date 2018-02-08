@@ -1,10 +1,9 @@
-package me.jy.core;
+package me.jy.core.request;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -28,9 +27,11 @@ public class RequestHandler extends Thread {
             log.info(socket.toString());
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write("HTTP/1.1 200 OK\\n".getBytes(Charset.defaultCharset()));
+            outputStream.flush();
+            Thread.sleep(1000);
             outputStream.close();
             socket.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

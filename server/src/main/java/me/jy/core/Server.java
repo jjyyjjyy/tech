@@ -1,14 +1,12 @@
 package me.jy.core;
 
+import java.net.ServerSocket;
+
 /**
  * @author jy
  * @date 2018/02/06
  */
-public interface Server {
-
-    void start();
-
-    void stop();
+public interface Server extends LifeCycle {
 
     ServerStatus getStatus();
 
@@ -16,16 +14,28 @@ public interface Server {
 
     int getBackLog();
 
+    void handleServerSocket(ServerSocket serverSocket);
+
     enum ServerStatus {
 
-        INIT,
+        INIT(0),
 
-        STARTING,
+        STARTING(1),
 
-        START,
+        START(2),
 
-        STOPPING,
+        STOPPING(3),
 
-        STOP
+        STOP(4);
+
+        private final int order;
+
+        ServerStatus(int order) {
+            this.order = order;
+        }
+
+        public int getOrder() {
+            return order;
+        }
     }
 }

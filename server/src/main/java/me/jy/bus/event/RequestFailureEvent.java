@@ -1,4 +1,4 @@
-package me.jy.request;
+package me.jy.bus.event;
 
 import java.util.EventObject;
 
