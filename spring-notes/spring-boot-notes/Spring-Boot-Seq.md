@@ -115,3 +115,47 @@
    - LoggingApplicationListener: 注册 ```LoggingSystem.```
 
 #### 4. Refresh Context:
+
+1. prepareRefresh: 清空Scanner缓存。
+2. prepareBeanFactory: 
+
+   - 设置ClassLoader/SPEL/ResourceEditorRegistrar属性。
+   - 注册```ApplicationContextAwarePostProcessor/ApplicationListenerDetector```。
+   - 注册EnvironmentBean:
+     - environment
+     - systemEnvironment
+     - systemProperties
+3. postPrcoessBeanFactory: 注册```WebApplicationContextServletContextAwareProcessor```。
+4. invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/noneOrdered顺序调用```BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&&postProcessBeanFactory```, 再按顺序调用```BeanFactoryPostProcessor#postProcessBeanFactory```。
+
+   - ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以org/org.springframework开头。
+   - CachingMetadataReaderFactoryPostProcessor: 
+     - 注册 ```SharedMetadataReaderFactoryBean```。
+     - 设置ConfigurationClassPostProcessor的metadataReaderFactory为```SharedMetadataReaderFactoryBean```。
+   - ConfigurationClassPostProcessor: 
+     - 扫描并注册BeanDefinition。
+     - 注册```ImportAwareBeanPostProcessor```。
+     - 为Configuration类创建CGLIB代理。
+   - PropertySourceOrderingPostProcessor:将defaultProperties优先级调至最低。
+   - ProperttSourcesPlaceHolderConfigurer: 替换${...}。
+   - ConfigurationBeanMetaData: 获取所有的bean method。
+   - PreserverErrorControllerTargetClassPostProcessor: 设置basicErrorController为CGLIB代理。
+5. registerBeanPostProcessors: 设置beanPostProcessors属性。
+6. initMessageSource: 注册messageSource bean为```DelegatingMessageSource```。
+7. initApplicationEventMulticaster: 注册applicationEventMulticaster为 ```SimpleApplicationEventMulticaster```。
+8. onRefresh: 创建webserver,将```servletContext```设置到```servletContextInitParams```中。
+9. registerListeners: 设置```applicationEventMulticaster``` 的applicationListener(Bean)属性。
+10. finishBeanFactoryInitialization: 初始化Singleton的BeanDefinition。
+11. finishRefresh: 
+    - 注册lifeCycleProcessor bean 为 ```DefaultLifeCycleProcessor```。
+    - 调用实现了```SmartLifeCycle```接口的bean的start方法。
+    - 发布**ContextRefreshedEvent**。
+    - start webserver。
+    - 发布**ServletWebServerInitializedEvent**。
+12. reset cache。
+
+#### 5. 后置处理:
+
+1. 发布**ApplicationStartedEvent**。
+2. 调用```ApplicationRunner和CommandLineRunner```。
+3. 发布**ApplicationReadyEvent**。
