@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>spring-core-notes</module>
+        <module>spring-boot-notes</module>
     </modules>
     <artifactId>spring-notes</artifactId>
 
@@ -23,6 +24,9 @@
         <maven-clean-plugin.version>3.0.0</maven-clean-plugin.version>
         <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+
+        <spring.version>5.0.3.RELEASE</spring.version>
+        <spring-boot.version>2.0.0 RC1</spring-boot.version>
     </properties>
 
 </project>

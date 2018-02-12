@@ -50,3 +50,20 @@ sudo apt install gconf2
 
      #use gnome-tweak-tool to change theme and icon
      ```
+   
+7. ```shell
+     #安装Shadowsocks-qt5客户端,设置SOCKS5代理
+     sudo add-apt-repository ppa:hzwhuang/ss-qt5
+     sudo apt-get update
+     sudo apt-get install shadowsocks-qt5
+
+     #生成pac文件
+     sudo apt-get install python-pip python-dev build-essential 
+     sudo pip install --upgrade pip 
+     sudo pip install --upgrade virtualenv
+     sudo pip install genpac
+     mkdir ~/Documents/pacs && cd ~/Documents/pacs
+     genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
+     #设置系统自动代理:
+     file://~/Documents/pacs/autoproxy.pac
+     ```
