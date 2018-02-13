@@ -15,7 +15,6 @@
         <module>design-pattern</module>
         <module>jvm</module>
         <module>spring-notes</module>
-        <module>server</module>
     </modules>
 
     <properties>
