@@ -11,8 +11,8 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>spring-core-notes</module>
         <module>spring-boot-notes</module>
+        <module>spring-mvc-demo</module>
     </modules>
     <artifactId>spring-notes</artifactId>
 
@@ -26,7 +26,7 @@
         <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
 
         <spring.version>5.0.3.RELEASE</spring.version>
-        <spring-boot.version>2.0.0 RC1</spring-boot.version>
+        <spring-boot.version>1.5.10.RELEASE</spring-boot.version>
     </properties>
 
 </project>
