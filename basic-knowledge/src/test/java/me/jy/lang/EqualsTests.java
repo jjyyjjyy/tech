@@ -1,5 +1,6 @@
 package me.jy.lang;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -19,4 +20,22 @@ public class EqualsTests {
         m2.put(null, null);
         assert m1.equals(m2);
     }
+
+    @Test
+    public void testLong() {
+        Long a = 127L;
+        Long b = 127L;
+        Assert.assertTrue(a == b);
+    }
+
+    @Test
+    public void testStringEq() {
+        String s1 = "Programming";
+        String s2 = new String("Programming");
+        String s3 = "Program" + "ming";
+        System.out.println(s1 == s2);
+        System.out.println(s1 == s3);
+        System.out.println(s1 == s1.intern());
+    }
+
 }
