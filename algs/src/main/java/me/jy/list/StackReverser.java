@@ -6,7 +6,7 @@ import java.util.Stack;
  * @author jy
  * @date 2018/02/22
  */
-public class Reverser {
+public class StackReverser {
 
     public static void main(String[] args) {
         Stack<Integer> stack = new Stack<>();

@@ -62,6 +62,7 @@ public class MyLinkedList<E> implements MyCollection<E> {
         return getNode(index).element;
     }
 
+    @SafeVarargs
     public static <T> MyLinkedList<T> of(T... elements) {
         if (Objects.isNull(elements) || elements.length == 0) {
             return new MyLinkedList<>();
