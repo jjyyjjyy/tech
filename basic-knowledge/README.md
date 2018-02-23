@@ -59,7 +59,7 @@
 3. 取不到一个类定义的泛型类型(T),只能取其子类或父类具体的泛型类型(Long,String...)
 
 ### 反射
-1.  
+1.  getMethod获取所有public方法(包括父类),getDeclaredMethod获取所有方法(不包括父类)
 
 ### 线程
 
