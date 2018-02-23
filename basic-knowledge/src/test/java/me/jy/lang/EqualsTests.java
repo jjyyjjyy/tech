@@ -6,6 +6,9 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author jy
  * @date 2017/12/19
@@ -33,9 +36,9 @@ public class EqualsTests {
         String s1 = "Programming";
         String s2 = new String("Programming");
         String s3 = "Program" + "ming";
-        System.out.println(s1 == s2);
-        System.out.println(s1 == s3);
-        System.out.println(s1 == s1.intern());
+        assertFalse(s1 == s2);
+        assertTrue(s1 == s3);
+        assertTrue(s1 == s1.intern());
     }
 
 }

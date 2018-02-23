@@ -3,7 +3,7 @@ package me.jy.table;
 import java.util.*;
 
 /**
- * 链地址法散列表
+ * 分离链接法散列表
  *
  * @author jy
  * @date 2018/02/02
