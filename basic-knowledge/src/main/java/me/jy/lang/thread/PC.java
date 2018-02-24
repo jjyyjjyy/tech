@@ -23,6 +23,7 @@ public class PC {
                     try {
                         wait();
                     } catch (InterruptedException e) {
+                        break;
                     }
                 }
                 capacity--;
@@ -37,6 +38,7 @@ public class PC {
                     try {
                         wait();
                     } catch (InterruptedException e) {
+                        break;
                     }
                 }
                 capacity++;

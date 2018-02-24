@@ -33,7 +33,7 @@ public class ThreadDemo {
 
     public static void main(String[] args) {
         ThreadDemo demo = new ThreadDemo();
-        demo.w();
-        demo.n();
+        new Thread(demo::w).start();
+        new Thread(demo::n).start();
     }
 }

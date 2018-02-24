@@ -2,8 +2,7 @@ package me.jy.lang.juc;
 
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author jy
@@ -11,24 +10,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class CFDemo {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
 
-        AtomicBoolean flag = new AtomicBoolean(Boolean.TRUE);
 
-        CountDownLatch latch = new CountDownLatch(3);
-        for (int i = 0; i < 3; i++) {
-            int id = i;
-            CompletableFuture.runAsync(() -> {
-                boolean check = new ServiceChecker().check((long) id);
-                if (!check) {
-                    flag.compareAndSet(Boolean.TRUE, Boolean.FALSE);
-                }
-                latch.countDown();
-            });
-        }
-
-        latch.await();
-        System.out.println(flag);
+        boolean result = CompletableFuture.supplyAsync(() -> new ServiceChecker().check())
+                .thenCombineAsync(
+                        CompletableFuture.supplyAsync(() -> new ServiceChecker().check()),
+                        (a1, a2) -> a1 && a2)
+                .thenCombineAsync(
+                        CompletableFuture.supplyAsync(() -> new ServiceChecker().check()),
+                        (a1, a2) -> a1 && a2)
+                .get();
+        System.out.println(result);
     }
 
     private static class ServiceChecker implements Checker {
@@ -36,14 +29,14 @@ public class CFDemo {
 
     private interface Checker {
 
-        default boolean check(Long id) {
+        default boolean check() {
             Random random = new Random();
             try {
                 Thread.sleep((long) random.nextInt(5000));
             } catch (InterruptedException e) {
                 return false;
             }
-            System.out.println(id + " check over");
+            System.out.println(Thread.currentThread().getName() + " check over");
             return random.nextInt(10) > 5;
         }
     }
