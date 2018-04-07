@@ -2,10 +2,7 @@ package me.jy.lang.juc;
 
 import org.junit.Test;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 
 /**
  * @author jy
@@ -53,6 +50,37 @@ public class CompletableFutureTests extends TestTaskBase {
         LinkedBlockingDeque<Integer> deque = new LinkedBlockingDeque<>();
         deque.take(); // block here
 
+    }
+
+    @Test
+    public void testFutureException() throws ExecutionException, InterruptedException {
+        Future<Object> future = pool.submit(() -> {
+            Thread.sleep(2200);
+            ex();
+            return 1;
+        });
+        System.out.println(future.get());
+    }
+
+    @Test
+    public void testCFException() throws ExecutionException, InterruptedException {
+        CompletableFuture<Integer> cf = new CompletableFuture<>();
+        new Thread(() -> {
+            try {
+                Thread.sleep(2222);
+                ex();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                cf.completeExceptionally(e);
+            }
+            cf.complete(22);
+        }).start();
+        // wait permanently
+        System.out.println(cf.get());
+    }
+
+    private void ex() {
+        throw new RuntimeException();
     }
 
 }

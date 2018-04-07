@@ -3,16 +3,12 @@
 
 ```shell
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA300B7755AFCFAE
-
 sudo add-apt-repository 'deb http://typora.io linux/'
-
 sudo apt update
-
 sudo apt install typora
-
 sudo apt install gconf2
 ```
-3. ```sudo apt install default-jdk maven git net-tools vim curl```
+3. ```sudo apt install default-jdk git net-tools vim curl```
 
 4. http://resources-1252259164.file.myqcloud.com/settings.xml
 
