@@ -11,7 +11,7 @@ sudo apt install gconf2
 3. ```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool```
 
 4. http://music.163.com/#/download
-   
+  
 5.
 ```shell
      #安装Shadowsocks-qt5客户端,设置SOCKS5代理
@@ -51,3 +51,9 @@ find . -type f|xargs sed -i 's/2a373e/3c3f41/g' && \
 find . -type f|xargs sed -i 's/2A373E/3c3f41/g' && \
 sudo make install
 ```
+7.  生成CSR
+
+```
+openssl req -nodes -newkey rsa:2048 -keyout server.key -out server.csr
+```
+
