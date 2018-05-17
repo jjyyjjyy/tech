@@ -1,12 +1,11 @@
 ### CI/CD环境搭建:
 
-1.  安装软件
+1. 安装软件
 
 ```shell
 sudo apt update && sudo apt upgrade
 # openjdk
 sudo apt install openjdk-8-jdk-headless
-
 # maven
 sudo apt install maven
 
@@ -24,8 +23,8 @@ sudo dpkg -i docker-ce*.deb
 # sudo apt install -f
 
 # docker-compose
-curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 
 # check
 java -version
@@ -54,6 +53,10 @@ docker-compose --version
 
     ![tool](https://hlt-demo.oss-cn-shanghai.aliyuncs.com/tool.png)
 
+    -   配置GitLab访问 (系统管理-> 系统设置 -> Gitlab)
+
+    ![gitlab](https://hlt-demo.oss-cn-shanghai.aliyuncs.com/gitlab.png)
+
     -   生成SSH密钥对
 
     ```shell
@@ -63,7 +66,8 @@ docker-compose --version
 
     -   安装插件:
         -   Git parameter Plugin
-
+        -   GitLab Plugin
+        -   CloudBees Docker Build and Publish
 4.  配置Docker
 
 ```shell
@@ -84,15 +88,9 @@ logout
 ```
 
 
+5.  Portainer(Docker GUI)
 
-### TODO:
-
-
-1.  Docker GUI:
-
-    -   Portainer
-
-    ​       文档地址: https://portainer.readthedocs.io/en/stable/
+    文档地址: https://portainer.readthedocs.io/en/stable/
 
     ```yaml
     version: '3'
@@ -109,7 +107,36 @@ logout
           - ~/volumes/portainer/data:/data
     ```
 
-    -   CI服务
+6. Docker Registry
+
+    ```shell
+    version: '3'
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 15000:5000
+        environment:
+            - REGISTRY_AUTH=htpasswd
+            - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
+            - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+        volumes:
+        # docker run --entrypoint htpasswd registry:2 -Bbn admin admin > ~/volumes/registry/htpasswd
+            - ~/volumes/registry/htpasswd:/auth/htpasswd:ro
+            - ~/volumes/registry/data:/var/lib/registry
+      registry-ui:
+        image: konradkleine/docker-registry-frontend:v2
+        environment:
+          - ENV_DOCKER_REGISTRY_HOST=192.168.0.3
+          - ENV_DOCKER_REGISTRY_PORT=15000
+          #- ENV_DOCKER_REGISTRY_USE_SSL=1
+        ports:
+          - 5080:80
+    ```
+
+    
+
+7.  CI服务
 
     ```shell
     version: '3'
@@ -224,15 +251,8 @@ logout
       ci:
     ```
 
-    -   Docker Registry
 
-    ```shell
-    #下载harbor安装包 https://github.com/vmware/harbor/releases
-    #修改harbor.cfg hostname
-    sudo ./install.sh
-    ```
-
-Jenkins SSL配置:
+8.  Jenkins SSL配置:
 
 ```shell
 # generate jks
@@ -242,55 +262,3 @@ keytool -importkeystore -srckeystore keys.pkcs12 -srcstoretype pkcs12 -destkeyst
 sudo vim /etc/default/jenkins
 JENKINS_ARGS="--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/lib/jenkins/jenkins.jks --httpsKeyStorePassword=password_you_entered"
 ```
-
-
-
-### Kubernetes
-
-1.  安装:
-
-```shell
-apt update && apt install -y apt-transport-https curl
-#tsocks curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |sudo apt-key add -
-cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
-EOF
-apt update && apt install -y kubelet kubeadm kubectl
-```
-
-2.  配置:
-
-```shell
-systemctl disable firewalld
-systemctl stop firewalld
-sudo vim /etc/sysconfig/selinux -> SELINUX=disabled
-# 关闭交换分区
-sudo vim /etc/fstab -> 注释/swapfile行
-```
-
-3.  下载镜像:
-
-```bash
-#!/bin/bash
-images=(kube-proxy-amd64:v1.10.2 kube-scheduler-amd64:v1.10.2 kube-controller-manager-amd64:v1.10.2 kube-apiserver-amd64:v1.10.2 kube-discovery-amd64:1.0 kubernetes-dashboard-amd64:v1.8.3 k8s-dns-sidecar-amd64:1.14.10 k8s-dns-kube-dns-amd64:1.14.10 k8s-dns-dnsmasq-nanny-amd64:1.14.10 dnsmasq-metrics-amd64:1.0.1)
-for imageName in ${images[@]} ; do
-  docker pull  registry.cn-hangzhou.aliyuncs.com/kube_containers/$imageName
-  docker tag  registry.cn-hangzhou.aliyuncs.com/kube_containers/$imageName k8s.gcr.io/$imageName
-  docker rmi  registry.cn-hangzhou.aliyuncs.com/kube_containers/$imageName
-done
-
-gcr_images=(exechealthz-amd64:v1.3.0 etcd-amd64:3.2.18 pause-amd64:3.1)
-for imageName in ${gcr_images[@]} ; do
-  docker pull  registry.cn-hangzhou.aliyuncs.com/google_containers/$imageName
-  docker tag  registry.cn-hangzhou.aliyuncs.com/google_containers/$imageName k8s.gcr.io/$imageName
-  docker rmi  registry.cn-hangzhou.aliyuncs.com/google_containers/$imageName
-done
-```
-
-4.  创建Kubernetes集群
-
-```shell
-# https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/
-kubeadm init
-```
-
