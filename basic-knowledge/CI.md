@@ -65,9 +65,13 @@ docker-compose --version
     ```
 
     -   安装插件:
-        -   Git parameter Plugin
-        -   GitLab Plugin
+        -   Git parameter
+        -   GitLab
+        -   Gitlab Authentication
         -   CloudBees Docker Build and Publish
+        -   Mattermost Notification
+        -   Maven Integration plugin
+        -   NodeJS plugin
 4.  配置Docker
 
 ```shell
@@ -148,6 +152,7 @@ logout
         volumes:
           - ~/volumes/jenkins/:/var/jenkins_home
           - /var/run/docker.sock:/var/run/docker.sock
+          - /usr/bin/docker:/usr/bin/docker
         networks:
           - ci
         ports:

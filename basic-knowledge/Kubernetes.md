@@ -99,6 +99,7 @@ kubectl cluster-info
 kubectl api-versions
 kubectl config view
 kubectl get no
+kubectl get deployments
 
 # ======资源控制======
 kubectl create -f YML
@@ -120,9 +121,25 @@ kubectl rollout undo
 7.  minikube
 
 ```shell
-curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.26.1/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+sudo apt install virtualbox
+curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.27.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 minikube start --registry-mirror=https://registry.docker-cn.com
 minikube dashboard
 ```
 
+8.  scale
+
+```
+DESIRED: 需要的实例数
+CURRENT: 现有的实例数
+```
+
+9.  Worker Node Components:
+    -   container runtime
+    -   kubelet
+    -   kube-proxy
+10.  Master Node Components:
+     -   Scheduler
+     -   Controller manager
+     -   API server

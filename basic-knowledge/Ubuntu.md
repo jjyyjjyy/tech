@@ -1,4 +1,8 @@
-1. ```sudo apt update && sudo apt upgrade```
+1. 
+
+ ```sudo apt update && sudo apt -y upgrade```
+
+
 2. Typora
 
 ```shell
@@ -8,11 +12,13 @@ sudo apt update
 sudo apt install typora
 sudo apt install gconf2
 ```
-3. ```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool language-pack-zh-hans ``` 
+3. 
+
+```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans ``` 
 
 4. http://music.163.com/#/download
 
-5.
+5. 
 ```shell
      #安装Shadowsocks-qt5客户端,设置SOCKS5代理
      sudo add-apt-repository ppa:hzwhuang/ss-qt5
@@ -51,9 +57,43 @@ find . -type f|xargs sed -i 's/2a373e/3c3f41/g' && \
 find . -type f|xargs sed -i 's/2A373E/3c3f41/g' && \
 sudo make install
 ```
-7.  生成CSR
+7. 生成CSR
 
 ```
 openssl req -nodes -newkey rsa:2048 -keyout server.key -out server.csr
+```
+
+8. 安装docker
+
+```shell
+#!/bin/bash
+# clear out-of-date docker packages
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y net-tools vim curl apt-transport-https ca-certificates software-properties-common language-pack-zh-hans
+sudo apt remove -y docker docker-ce docker-engine docker.io
+# install docker via apt
+curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt update
+sudo apt install -y docker-ce
+# docker against sudo
+sudo chmod 777 /var/run/docker.sock
+# clear unused packages
+sudo apt autoremove -y
+sudo apt autoclean
+sudo docker version
+# image mirror
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://3itj1ym2.mirror.aliyuncs.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+# install docker-compose
+sudo wget http://soft-1252259164.file.myqcloud.com/docker-compose-1.21.2 -O /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose version
 ```
 
