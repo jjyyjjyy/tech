@@ -1,0 +1,30 @@
+- What are the cases in which Autowiring may not work in Spring framework?
+- Given a choice between declarative and programmatic Transaction Management, which method will you choose?
+- Is it allowed to inject null or empty String values in Spring?
+- What are the different types of events provided by Spring framework?
+- What are the benefits provided by Spring Framework’s Transaction Management?
+- What is the difference between DispatcherServlet and ContextLoaderListener in Spring?
+- What is a Java-based Configuration in Spring?
+- What is the difference between Full @Configuration and 'lite' @Beans mode?
+- In Spring framework, what is Annotation-based container configuration?
+- How will you switch on Annotation based wiring in Spring?
+- What are the two ways to enable RequiredAnnotationBeanPostProcessor in Spring?
+- What is @Qualifier annotation in Spring?
+- How Spring framework makes JDBC coding easier for developers?
+- What are the benefits of using Spring DAO?
+- What are the different ways to use Spring in Spring?
+- What types of Object Relational Mapping (ORM) are supported by Spring?
+- How will you integrate Spring and Spring by using SpringDaoSupport?
+- In Spring AOP, Weaving is done at compile time or run time?
+- What is XML Schema-based Aspect implementation?
+- What is Annotation-based aspect implementation in Spring AOP?
+- How does Spring MVC framework work?
+- What is DispatcherServlet?
+- Can we have more than one DispatcherServlet in Spring MVC?
+- What is WebApplicationContext in Spring MVC?
+- What is Controller in Spring MVC framework?
+- What is @Controller annotation in Spring MVC?
+- What is @RequestMapping annotation in Spring?
+- What are the main features of Spring MVC?
+- Name some popular Spring framework annotations that you use in your project?
+- How can you upload a file in Spring MVC Application?

@@ -14,7 +14,7 @@ sudo apt install gconf2
 ```
 3. 
 
-```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans ``` 
+```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans graphviz``` 
 
 4. http://music.163.com/#/download
 
@@ -97,3 +97,54 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
 ```
 
+9. 安装zsh
+```shell
+sudo apt install zsh
+sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+chsh -s /bin/zsh
+# 安装插件
+sudo apt-get install powerline
+git clone https://github.com/powerline/fonts.git
+cd fonts
+./install.sh
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+git clone https://github.com/jhipster/jhipster-oh-my-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/jhipster
+
+sudo mkdir /usr/share/fonts/OTF/ -p
+wget https://raw.githubusercontent.com/powerline/powerline/develop/font/10-powerline-symbols.conf
+wget https://raw.githubusercontent.com/powerline/powerline/develop/font/PowerlineSymbols.otf
+sudo cp 10-powerline-symbols.conf /usr/share/fonts/OTF/ 
+sudo mv 10-powerline-symbols.conf /etc/fonts/conf.d/
+sudo mv PowerlineSymbols.otf /usr/share/fonts/OTF/
+
+# 修改~/.zshrc
+ZSH_THEME="agnoster"
+DEFAULT_USER=`whoami`
+export LC_ALL=zh_CN.UTF-8
+export LANG=zh_CN.UTF-8
+plugins=(
+  git
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  docker
+  docker-compose
+  minikube
+  jhipster
+  kubectl
+)
+
+alias f='free -h'
+alias d='df -h'
+alias s='sudo apt update && sudo apt upgrade -y'
+alias c='clear'
+alias w='which'
+alias dh='du -h --max-depth=1'
+alias mp='mvn clean package -DskipTests=true'
+alias mt='mvn clean tomcat7:run'
+alias ms='mvn clean spring-boot:run'
+
+source ~/.zshrc
+# 设置终端字体为 Meslo LG s for Powerline Regular 12
+
+```

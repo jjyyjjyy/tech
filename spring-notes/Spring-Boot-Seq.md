@@ -1,4 +1,4 @@
-###  Spring Boot v2.0.0.RC1 启动流程
+###  Spring Boot v2.0.3.RELEASE 启动流程
 
 #### 1. 初始化SpringApplication:
 
@@ -6,7 +6,25 @@
 2. 构造SpringApplication实例:
    - 确定ApplicationType: None-Web/Servlet/Reactive。
    - 获取META-INF/spring.factories中 ```ApplicationContextInitializer```并设置到成员变量中。
+     - DelegatingApplicationContextInitializer
+     - ContextIdApplicationContextInitializer
+     - ConfigurationWarningsApplicationContextInitializer
+     - ServerPortInfoApplicationContextInitializer
+     - SharedMetadataReaderFactoryContextInitializer
+     - ConditionEvaluationReportLoggingListener
+     
    - 获取META-INF/spring.factories中 ```ApplicationListener```并设置到成员变量中。
+     - ConfigFileApplicationListener
+     - AnsiOutputApplicationListener
+     - LoggingApplicationListener
+     - ClasspathLoggingApplicationListener
+     - BackgroundPreinitializer
+     - DelegatingApplicationListener
+     - ParentContextCloserApplicationListener
+     - ClearCachesApplicationListener
+     - FileEncodingApplicationListener
+     - LiquibaseServiceLocatorApplicationListener
+     
    - 设置启动类class属性。
 3. SpringApplication#run。
 
@@ -57,12 +75,14 @@
    - LoggingApplicationListener: 初始化Log properties/system。
 
    - ClassPathLoggingApplicationListener: 打印classpath日志。
+   
+   - BackgroundPreinitializer
 
    - DelegatingApplicationListener: 调用 ```context.listener.classes``` 中listener。
 
    - FileEncodingApplicationListener。
 
-5. 包装Environment的propertySources为ConfigurationPropertySourcesPropertySource。
+5. bindToSpringApplication: 包装Environment的propertySources为ConfigurationPropertySourcesPropertySource(名为configurationProperties)。
 
 6. 打印banner日志。
 
@@ -150,7 +170,7 @@
     - 注册lifeCycleProcessor bean 为 ```DefaultLifeCycleProcessor```。
     - 调用实现了```SmartLifeCycle```接口的bean的start方法。
     - 发布**ContextRefreshedEvent**。
-    - start webserver。
+    - start webServer。
     - 发布**ServletWebServerInitializedEvent**。
 12. reset cache。
 

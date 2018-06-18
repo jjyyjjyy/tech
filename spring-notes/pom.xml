@@ -11,8 +11,8 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>spring-boot-notes</module>
         <module>spring-mvc-demo</module>
+        <module>spring-codedraft</module>
     </modules>
     <artifactId>spring-notes</artifactId>
 
@@ -21,8 +21,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <spring.version>5.0.4.RELEASE</spring.version>
-        <spring-boot.version>2.0.1.RELEASE</spring-boot.version>
+        <spring.version>5.0.7.RELEASE</spring.version>
+        <spring-boot.version>2.0.3.RELEASE</spring-boot.version>
     </properties>
 
 </project>
