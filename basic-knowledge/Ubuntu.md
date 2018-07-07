@@ -3,20 +3,26 @@
  ```sudo apt update && sudo apt -y upgrade```
 
 
-2. Typora
+2. 执行sudo命令不需要密码:
 
-```shell
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BA300B7755AFCFAE
-sudo add-apt-repository 'deb http://typora.io linux/'
-sudo apt update
-sudo apt install typora
-sudo apt install gconf2
-```
+
+    ```shell
+    sudo visudo
+    # 最后一行添加:
+    `whoami` ALL=(ALL) NOPASSWD: ALL
+    ```
+    
 3. 
 
-```sudo apt install default-jdk openjdk-8-source maven git net-tools vim curl tmux neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans graphviz``` 
+```sudo apt install git net-tools vim curl unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell``` 
 
-4. http://music.163.com/#/download
+4. 安装sdkman
+
+```shell
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+```
 
 5. 
 ```shell
@@ -24,16 +30,26 @@ sudo apt install gconf2
      sudo add-apt-repository ppa:hzwhuang/ss-qt5
      sudo apt-get update
      sudo apt-get install shadowsocks-qt5
-
      #生成pac文件
+     mkdir ~/Documents/pacs && cd ~/Documents/pacs
+     wget https://hlt-demo.oss-cn-shanghai.aliyuncs.com/autoproxy.pac
+     # 或者
      sudo apt-get install python-pip python-dev build-essential 
      sudo pip install --upgrade pip 
      sudo pip install --upgrade virtualenv
      sudo pip install genpac
-     mkdir ~/Documents/pacs && cd ~/Documents/pacs
-     genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
+     # genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
+     
      #设置系统自动代理:
      file://~/Documents/pacs/autoproxy.pac
+     
+     vim ~/.bashrc
+     # 添加
+     export http_proxy="socks5://127.0.0.1:1080"
+     export https_proxy="socks5://127.0.0.1:1080"
+
+     # 安装tsocks
+     sudo apt install tsocks
 ```
 
 6. 安装主题
@@ -65,10 +81,19 @@ find . -type f|xargs sed -i 's/2a373e/3c3f41/g' && \
 find . -type f|xargs sed -i 's/2A373E/3c3f41/g' && \
 sudo make install
 ```
-7. 生成CSR
+7. 美化字体/图标
 
 ```
-openssl req -nodes -newkey rsa:2048 -keyout server.key -out server.csr
+# 下载字体后安装
+wget http://dlc2.pconline.com.cn/filedown_1062782_8946980/UYMnpErZ/pconline1497351879032.zip
+wget http://www.gringod.com/wp-upload/software/Fonts/Monaco_Linux.ttf
+# mac icons
+wget https://codeload.github.com/USBA/macOS-iCons/zip/master
+unzip macOS-iCons-master.zip
+mv macOS-iCons-master/ /usr/share/icons/
+sudo apt install chrome-gnome-shell
+# chrome访问 https://extensions.gnome.org
+# 安装User-Themes
 ```
 
 8. 安装docker
@@ -89,6 +114,7 @@ sudo chmod 777 /var/run/docker.sock
 # clear unused packages
 sudo apt autoremove -y
 sudo apt autoclean
+sudo usermod -aG docker $USER
 sudo docker version
 # image mirror
 sudo mkdir -p /etc/docker
