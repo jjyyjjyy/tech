@@ -37,8 +37,16 @@ sudo apt install gconf2
 ```
 
 6. 安装主题
+
 ```shell
-mkdir ~/adapta-gtk-theme && cd ~/adapta-gtk-theme && \
+
+sudo apt install -y autoconf automake inkscape libgdk-pixbuf2.0-dev libglib2.0-dev libsass0 libxml2-utils pkg-config sassc parallel
+
+git config --global http.proxy 'socks5://127.0.0.1:1080'
+git config --global https.proxy 'socks5://127.0.0.1:1080'
+
+cd ~ && git clone https://github.com/adapta-project/adapta-gtk-theme.git && \
+cd ~/adapta-gtk-theme && \
 git fetch --all && \
 git reset --hard origin/master && \
 ./autogen.sh \

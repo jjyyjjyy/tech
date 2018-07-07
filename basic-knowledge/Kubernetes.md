@@ -3,12 +3,12 @@
 1.  安装:
 
 ```shell
-apt update && apt install -y apt-transport-https curl
+sudo apt update &&sudo apt install -y apt-transport-https curl
 #tsocks curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |sudo apt-key add -
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
 EOF
-apt update && apt install -y kubelet kubeadm kubectl
+sudo apt update && sudo apt install -y kubelet kubeadm kubectl
 ```
 
 2.  配置:
@@ -19,6 +19,7 @@ systemctl stop firewalld
 sudo vim /etc/sysconfig/selinux -> SELINUX=disabled
 # 关闭交换分区
 sudo vim /etc/fstab -> 注释/swapfile行
+sudo swapoff -a
 ```
 
 3.  下载镜像:
@@ -122,10 +123,12 @@ kubectl rollout undo
 
 ```shell
 sudo apt install virtualbox
-curl -Lo minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v0.27.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 minikube start --registry-mirror=https://registry.docker-cn.com
 minikube dashboard
+
+# 删除原有minikube
+minikube delete && rm -rf ~/.minikube
 ```
 
 8.  scale
