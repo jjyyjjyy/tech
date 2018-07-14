@@ -1,61 +1,82 @@
-1. 
+= Ubuntu from zero to hero
+:icons: font
+:sectanchors:
+:page-layout: docs
 
- ```sudo apt update && sudo apt -y upgrade```
+== 设置apt仓库镜像
 
+[source,bash]
+----
+sudo sed -i 's/cn.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+sudo apt update
+sudo apt upgrade -y
+----
 
-2. 执行sudo命令不需要密码:
+== 执行sudo命令不需要密码
 
-
-    ```shell
-    sudo visudo
-    # 最后一行添加:
-    `whoami` ALL=(ALL) NOPASSWD: ALL
-    ```
-    
-3. 
-
-```sudo apt install git net-tools vim curl unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell``` 
-
-4. 安装sdkman
-
-```shell
-curl -s "https://get.sdkman.io" | bash
-source "$HOME/.sdkman/bin/sdkman-init.sh"
-
+[source,bash]
+----
+whoami # 获取用户名
+sudo visudo
+最后一行添加:
+`用户名` ALL=(ALL) NOPASSWD: ALL
 ```
+----
 
-5. 
-```shell
-     #安装Shadowsocks-qt5客户端,设置SOCKS5代理
-     sudo add-apt-repository ppa:hzwhuang/ss-qt5
-     sudo apt-get update
-     sudo apt-get install shadowsocks-qt5
-     #生成pac文件
-     mkdir ~/Documents/pacs && cd ~/Documents/pacs
-     wget https://hlt-demo.oss-cn-shanghai.aliyuncs.com/autoproxy.pac
-     # 或者
-     sudo apt-get install python-pip python-dev build-essential 
-     sudo pip install --upgrade pip 
-     sudo pip install --upgrade virtualenv
-     sudo pip install genpac
-     # genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
-     
-     #设置系统自动代理:
-     file://~/Documents/pacs/autoproxy.pac
-     
-     vim ~/.bashrc
-     # 添加
-     export http_proxy="socks5://127.0.0.1:1080"
-     export https_proxy="socks5://127.0.0.1:1080"
+== 安装必备软件
 
-     # 安装tsocks
-     sudo apt install tsocks
-```
+[source,bash]
+----
+sudo apt install net-tools vim curl unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+----
 
-6. 安装主题
+== 安装SS客户端
+[source,bash]
+----
+#安装Shadowsocks-qt5客户端,设置SOCKS5代理
+sudo add-apt-repository ppa:hzwhuang/ss-qt5
+sudo apt-get update
+sudo apt-get install shadowsocks-qt5
+#生成pac文件
+mkdir ~/Documents/pacs && cd ~/Documents/pacs
+wget https://hlt-demo.oss-cn-shanghai.aliyuncs.com/autoproxy.pac
+# 或者
+sudo apt-get install python-pip python-dev build-essential
+sudo pip install --upgrade pip
+sudo pip install --upgrade virtualenv
+sudo pip install genpac
+# genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
 
-```shell
+#设置系统自动代理:
+file://~/Documents/pacs/autoproxy.pac  # ~用绝对路径代替
 
+vim ~/.bashrc
+# 添加
+export http_proxy="socks5://127.0.0.1:1080"
+export https_proxy="socks5://127.0.0.1:1080"
+
+# 安装tsocks
+sudo apt install tsocks
+----
+
+== 美化字体/图标
+[source,bash]
+----
+# 下载字体后安装
+http://dl.pconline.com.cn/download/1062782-1.html
+wget http://www.gringod.com/wp-upload/software/Fonts/Monaco_Linux.ttf
+# mac icons
+wget https://codeload.github.com/USBA/macOS-iCons/zip/master
+unzip macOS-iCons-master.zip
+mv macOS-iCons-master/ /usr/share/icons/
+sudo apt install chrome-gnome-shell -y
+# chrome访问 https://extensions.gnome.org
+# 安装User-Themes
+----
+
+== 安装主题
+[source,bash]
+----
 sudo apt install -y autoconf automake inkscape libgdk-pixbuf2.0-dev libglib2.0-dev libsass0 libxml2-utils pkg-config sassc parallel
 
 git config --global http.proxy 'socks5://127.0.0.1:1080'
@@ -80,27 +101,11 @@ make && \
 find . -type f|xargs sed -i 's/2a373e/3c3f41/g' && \
 find . -type f|xargs sed -i 's/2A373E/3c3f41/g' && \
 sudo make install
-```
-7. 美化字体/图标
+----
 
-```
-# 下载字体后安装
-wget http://dlc2.pconline.com.cn/filedown_1062782_8946980/UYMnpErZ/pconline1497351879032.zip
-wget http://www.gringod.com/wp-upload/software/Fonts/Monaco_Linux.ttf
-# mac icons
-wget https://codeload.github.com/USBA/macOS-iCons/zip/master
-unzip macOS-iCons-master.zip
-mv macOS-iCons-master/ /usr/share/icons/
-sudo apt install chrome-gnome-shell
-# chrome访问 https://extensions.gnome.org
-# 安装User-Themes
-```
-
-8. 安装docker
-
-```shell
-#!/bin/bash
-# clear out-of-date docker packages
+== 安装docker
+[source,bash]
+----
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y net-tools vim curl apt-transport-https ca-certificates software-properties-common language-pack-zh-hans
 sudo apt remove -y docker docker-ce docker-engine docker.io
@@ -116,6 +121,7 @@ sudo apt autoremove -y
 sudo apt autoclean
 sudo usermod -aG docker $USER
 sudo docker version
+sudo systemctl enable docker
 # image mirror
 sudo mkdir -p /etc/docker
 sudo tee /etc/docker/daemon.json <<-'EOF'
@@ -129,10 +135,11 @@ sudo systemctl restart docker
 sudo wget http://soft-1252259164.file.myqcloud.com/docker-compose-1.21.2 -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
-```
+----
 
-9. 安装zsh
-```shell
+== 安装zsh
+[source,bash]
+-----
 sudo apt install zsh
 sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 chsh -s /bin/zsh
@@ -148,7 +155,7 @@ git clone https://github.com/jhipster/jhipster-oh-my-zsh-plugin.git ${ZSH_CUSTOM
 sudo mkdir /usr/share/fonts/OTF/ -p
 wget https://raw.githubusercontent.com/powerline/powerline/develop/font/10-powerline-symbols.conf
 wget https://raw.githubusercontent.com/powerline/powerline/develop/font/PowerlineSymbols.otf
-sudo cp 10-powerline-symbols.conf /usr/share/fonts/OTF/ 
+sudo cp 10-powerline-symbols.conf /usr/share/fonts/OTF/
 sudo mv 10-powerline-symbols.conf /etc/fonts/conf.d/
 sudo mv PowerlineSymbols.otf /usr/share/fonts/OTF/
 
@@ -175,10 +182,13 @@ alias c='clear'
 alias w='which'
 alias dh='du -h --max-depth=1'
 alias mp='mvn clean package -DskipTests=true'
-alias mt='mvn clean tomcat7:run'
-alias ms='mvn clean spring-boot:run'
 
 source ~/.zshrc
 # 设置终端字体为 Meslo LG s for Powerline Regular 12
+-----
 
-```
+== 安装sdkman
+-----
+curl -s "https://get.sdkman.io" | zsh
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+-----
