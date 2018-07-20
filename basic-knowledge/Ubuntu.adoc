@@ -27,7 +27,7 @@ sudo visudo
 
 [source,bash]
 ----
-sudo apt install net-tools vim curl unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+sudo apt install -y net-tools vim curl unzip unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
 ----
 
 == 安装SS客户端
@@ -106,6 +106,8 @@ sudo make install
 == 安装docker
 [source,bash]
 ----
+#!/bin/bash
+# clear out-of-date docker packages
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y net-tools vim curl apt-transport-https ca-certificates software-properties-common language-pack-zh-hans
 sudo apt remove -y docker docker-ce docker-engine docker.io
@@ -121,7 +123,6 @@ sudo apt autoremove -y
 sudo apt autoclean
 sudo usermod -aG docker $USER
 sudo docker version
-sudo systemctl enable docker
 # image mirror
 sudo mkdir -p /etc/docker
 sudo tee /etc/docker/daemon.json <<-'EOF'
