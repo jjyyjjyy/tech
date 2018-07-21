@@ -8,8 +8,7 @@
 [source,bash]
 ----
 sudo sed -i 's/cn.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-sudo apt update
-sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ----
 
 == 执行sudo命令不需要密码
@@ -20,14 +19,13 @@ whoami # 获取用户名
 sudo visudo
 最后一行添加:
 `用户名` ALL=(ALL) NOPASSWD: ALL
-```
 ----
 
 == 安装必备软件
 
 [source,bash]
 ----
-sudo apt install -y net-tools vim curl unzip unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+sudo apt install -y git net-tools vim curl unzip unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
 ----
 
 == 安装SS客户端
@@ -63,8 +61,9 @@ sudo apt install tsocks
 [source,bash]
 ----
 # 下载字体后安装
-http://dl.pconline.com.cn/download/1062782-1.html
-wget http://www.gringod.com/wp-upload/software/Fonts/Monaco_Linux.ttf
+wget http://soft-1252259164.file.myqcloud.com/Menlo.ttc
+wget http://soft-1252259164.file.myqcloud.com/Monaco.ttf
+wget
 # mac icons
 wget https://codeload.github.com/USBA/macOS-iCons/zip/master
 unzip macOS-iCons-master.zip
@@ -133,7 +132,7 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 # install docker-compose
-sudo wget http://soft-1252259164.file.myqcloud.com/docker-compose-1.21.2 -O /usr/local/bin/docker-compose
+sudo wget http://soft-1252259164.file.myqcloud.com/docker-compose-1.22.0 -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
 ----
@@ -175,14 +174,9 @@ plugins=(
   jhipster
   kubectl
 )
-
 alias f='free -h'
 alias d='df -h'
-alias s='sudo apt update && sudo apt upgrade -y'
-alias c='clear'
-alias w='which'
-alias dh='du -h --max-depth=1'
-alias mp='mvn clean package -DskipTests=true'
+alias s='sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y'
 
 source ~/.zshrc
 # 设置终端字体为 Meslo LG s for Powerline Regular 12
