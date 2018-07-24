@@ -10,7 +10,6 @@
 sudo sed -i 's/cn.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 sudo apt update && sudo apt upgrade -y
 ----
-
 == 执行sudo命令不需要密码
 
 [source,bash]
@@ -129,6 +128,8 @@ sudo tee /etc/docker/daemon.json <<-'EOF'
   "registry-mirrors": ["https://3itj1ym2.mirror.aliyuncs.com"]
 }
 EOF
+sudo chmod 777 /etc/docker/daemon.json
+# sudo vim /lib/systemd/system/docker.service  ->  ExecStart 行后加上 tcp://0.0.0.0:2375
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 # install docker-compose

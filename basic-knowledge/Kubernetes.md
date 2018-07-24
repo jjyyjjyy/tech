@@ -4,11 +4,13 @@
 
 ```shell
 sudo apt update &&sudo apt install -y apt-transport-https curl
-#tsocks curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg |sudo apt-key add -
+curl -s http://packages.faasx.com/google/apt/doc/apt-key.gpg | sudo apt-key add -
+# sudo vim /etc/apt/sources.list.d/kubernetes.list
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
 EOF
-sudo apt update && sudo apt install -y kubelet kubeadm kubectl
+sudo apt update && sudo apt install -y kubectl kubectl kubeadm
+kubeadm version
 ```
 
 2.  配置:
@@ -19,6 +21,7 @@ systemctl stop firewalld
 sudo vim /etc/sysconfig/selinux -> SELINUX=disabled
 # 关闭交换分区
 sudo vim /etc/fstab -> 注释/swapfile行
+sudo mount -a
 sudo swapoff -a
 ```
 
@@ -26,7 +29,7 @@ sudo swapoff -a
 
 ```bash
 #!/bin/bash
-images=(kube-proxy-amd64:v1.10.2 kube-scheduler-amd64:v1.10.2 kube-controller-manager-amd64:v1.10.2 kube-apiserver-amd64:v1.10.2 kube-discovery-amd64:1.0 kubernetes-dashboard-amd64:v1.8.3 dnsmasq-metrics-amd64:1.0.1 kubedns-amd64:1.9)
+images=(kube-proxy-amd64:v1.11.1 kube-scheduler-amd64:v1.11.1 kube-controller-manager-amd64:v1.11.1 kube-apiserver-amd64:v1.11.1 kube-discovery-amd64:1.0 kubernetes-dashboard-amd64:v1.8.3 dnsmasq-metrics-amd64:1.0.1 kubedns-amd64:1.9)
 for imageName in ${images[@]} ; do
   docker pull  registry.cn-hangzhou.aliyuncs.com/kube_containers/$imageName
   docker tag  registry.cn-hangzhou.aliyuncs.com/kube_containers/$imageName k8s.gcr.io/$imageName
@@ -49,7 +52,7 @@ docker rmi registry.cn-hangzhou.aliyuncs.com/kubernetes_containers/etcd-amd64:3.
 
 ```shell
 # https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/
-sudo kubeadm init --kubernetes-version=v1.10.2 --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --kubernetes-version=v1.11.1 --pod-network-cidr=10.244.0.0/16
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
