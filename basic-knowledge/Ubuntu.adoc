@@ -8,7 +8,7 @@
 [source,bash]
 ----
 sudo sed -i 's/cn.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y
 ----
 == 执行sudo命令不需要密码
 
@@ -24,27 +24,30 @@ sudo visudo
 
 [source,bash]
 ----
-sudo apt install -y git net-tools vim curl unzip unar neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+sudo apt install -y git net-tools vim curl unzip unar aptitude neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
 ----
 
 == 安装SS客户端
 [source,bash]
 ----
-#安装Shadowsocks-qt5客户端,设置SOCKS5代理
+# 安装Shadowsocks-qt5客户端,设置SOCKS5代理
 sudo add-apt-repository ppa:hzwhuang/ss-qt5
 sudo apt-get update
 sudo apt-get install shadowsocks-qt5
-#生成pac文件
+# ubuntu 18.04之后的版本需要把apt(/etc/apt/sources.list.d/hzwhuang-ubuntu-ss-qt5-artful.list)里的发行版本改为artful
+
+# 生成pac文件(option 1)
 mkdir ~/Documents/pacs && cd ~/Documents/pacs
 wget https://hlt-demo.oss-cn-shanghai.aliyuncs.com/autoproxy.pac
-# 或者
+
+# 生成pac文件(option 2)
 sudo apt-get install python-pip python-dev build-essential
 sudo pip install --upgrade pip
 sudo pip install --upgrade virtualenv
 sudo pip install genpac
 # genpac --proxy="SOCKS5 127.0.0.1:1080" --gfwlist-proxy="SOCKS5 	127.0.0.1:1080" -o autoproxy.pac --gfwlist-url="https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
 
-#设置系统自动代理:
+# 设置系统自动代理:
 file://~/Documents/pacs/autoproxy.pac  # ~用绝对路径代替
 
 vim ~/.bashrc
@@ -62,7 +65,7 @@ sudo apt install tsocks
 # 下载字体后安装
 wget http://soft-1252259164.file.myqcloud.com/Menlo.ttc
 wget http://soft-1252259164.file.myqcloud.com/Monaco.ttf
-wget
+wget http://soft-1252259164.file.myqcloud.com/PingFang.ttc
 # mac icons
 wget https://codeload.github.com/USBA/macOS-iCons/zip/master
 unzip macOS-iCons-master.zip
@@ -114,6 +117,7 @@ curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key
 sudo add-apt-repository "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
 sudo apt update
 sudo apt install -y docker-ce
+
 # docker against sudo
 sudo chmod 777 /var/run/docker.sock
 # clear unused packages
@@ -151,7 +155,6 @@ cd fonts
 ./install.sh
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone https://github.com/jhipster/jhipster-oh-my-zsh-plugin.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/jhipster
 
 sudo mkdir /usr/share/fonts/OTF/ -p
 wget https://raw.githubusercontent.com/powerline/powerline/develop/font/10-powerline-symbols.conf
@@ -169,17 +172,15 @@ plugins=(
   git
   zsh-autosuggestions
   zsh-syntax-highlighting
-  docker
-  docker-compose
-  minikube
-  jhipster
-  kubectl
 )
 alias f='free -h'
 alias d='df -h'
 alias s='sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y'
+alias kn='kubectl get nodes -o wide'
+alias kp='kubectl get pods --all-namespaces -o wide'
 
 source ~/.zshrc
+
 # 设置终端字体为 Meslo LG s for Powerline Regular 12
 -----
 

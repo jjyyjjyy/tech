@@ -1,0 +1,183 @@
+= Kubernetes
+:icons: font
+:sectanchors:
+:page-layout: docs
+
+== 1. 系统配置:
+
+[source,bash]
+----
+systemctl disable firewalld
+systemctl stop firewalld
+sudo vim /etc/sysconfig/selinux -> SELINUX=disabled
+# 关闭交换分区
+sudo vim /etc/fstab -> 注释/swapfile行
+sudo mount -a
+sudo swapoff -a
+----
+
+== 2. 安装kubeadm/kubectl/kubelet:
+
+[source,bash]
+----
+sudo apt update &&sudo apt install -y apt-transport-https curl
+curl -s http://packages.faasx.com/google/apt/doc/apt-key.gpg | sudo apt-key add -
+# sudo vim /etc/apt/sources.list.d/kubernetes.list
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
+EOF
+sudo apt update && sudo apt install -y kubelet kubectl kubeadm
+kubeadm version
+----
+
+== 3. 使用kubeadm创建Kubernetes集群
+
+[source,bash]
+----
+
+# 未翻墙前需要先从aliyun pull镜像,再tag为k8s.gcr.io
+cat <<EOF > config.yml
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kubernetesVersion: 1.11.1
+EOF
+# 查看需要的镜像:
+kubeadm config images list --config config.yml
+# 拉取k8s基础镜像
+kubeadm config images pull --config config.yml
+# sudo vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# 添加Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"
+# ExecStart=/usr/bin/kubelet 行末添加 $KUBE_PAUSE
+./init-k8s-images.sh
+
+# 初始化master
+sudo systemctl restart kubelet
+sudo kubeadm init --kubernetes-version=1.11.1 --pod-network-cidr=10.244.0.0/16
+
+# 安装成功后,创建kubectl配置文件
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# flannel 网络插件配置(x)
+sudo mkdir -p /etc/cni/net.d/
+cat <<EOF> /etc/cni/net.d/10-flannel.conf
+{
+"name": "cbr0",
+"type": "flannel",
+"delegate": {
+"isDefaultGateway": true
+}
+}
+EOF
+sudo mkdir /usr/share/oci-umount/oci-umount.d -p
+sudo mkdir /run/flannel/ -p
+sudo chmod 777 /run/flannel/ -R
+cat <<EOF> /run/flannel/subnet.env
+FLANNEL_NETWORK=10.244.0.0/16
+FLANNEL_SUBNET=10.244.1.0/24
+FLANNEL_MTU=1450
+FLANNEL_IPMASQ=true
+EOF
+
+# flannel安装
+docker pull quay.io/coreos/flannel:v0.10.0-amd64
+kubectl apply -f http://soft-1252259164.file.myqcloud.com/flannel.yml
+
+# kube单机
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+# check
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+# Trouble shooting:
+# kubectl describe NAME -n kube-system
+
+# 重来:
+sudo kubeadm reset
+sudo systemctl stop kubelet
+sudo systemctl stop docker
+rm -rf ~/.kube/
+sudo rm -rf /usr/share/oci-umount
+sudo rm -rf /run/flannel
+sudo rm -rf /etc/cni
+sudo rm -rf /var/lib/cni/
+sudo rm -rf /var/lib/kubelet/*
+sudo ifconfig cni0 down
+sudo ifconfig flannel.1 down
+sudo ifconfig docker0 down
+sudo ip link delete cni0
+sudo ip link delete flannel.1
+sudo systemctl start docker
+----
+
+== 4. Kubenetes Dashboard
+
+[source,bash]
+----
+kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
+kubectl proxy
+# chrome
+http://ip:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+----
+
+== 5. kubectl 命令
+
+[source,bash]
+----
+kubectl version
+kubectl cluster-info
+kubectl api-versions
+kubectl config view
+kubectl get no
+kubectl get deployments
+
+# ======资源控制======
+kubectl create -f YML
+kubectl run NAME --image=IMAGE
+
+kubectl delete TYPE NAME
+
+# ======部署管理======
+# 实现水平扩展
+kubectl scale
+# 部署状态变更状态检查
+kubectl rollout status
+# 部署历史
+kubectl rollout history
+# 回滚部署
+kubectl rollout undo
+----
+
+== 6. minikube
+
+[source,bash]
+----
+sudo apt install virtualbox
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+minikube start --registry-mirror=https://registry.docker-cn.com
+minikube dashboard
+
+# 删除原有minikube
+minikube delete && rm -rf ~/.minikube
+----
+
+== 7. scale
+
+[source,bash]
+----
+DESIRED: 需要的实例数
+CURRENT: 现有的实例数
+----
+
+== 8. Worker Node Components:
+
+- container runtime
+- kubelet
+- kube-proxy
+
+== 9. Master Node Components:
+
+- Scheduler
+- Controller manager
+- API server
