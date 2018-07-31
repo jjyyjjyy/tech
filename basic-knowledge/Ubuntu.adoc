@@ -144,7 +144,7 @@ docker-compose version
 
 == 安装zsh
 [source,bash]
------
+----
 sudo apt install zsh
 sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 chsh -s /bin/zsh
@@ -175,6 +175,7 @@ plugins=(
 )
 alias f='free -h'
 alias d='df -h'
+alias as='sudo apt search'
 alias s='sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y'
 alias kn='kubectl get nodes -o wide'
 alias kp='kubectl get pods --all-namespaces -o wide'
@@ -182,10 +183,26 @@ alias kp='kubectl get pods --all-namespaces -o wide'
 source ~/.zshrc
 
 # 设置终端字体为 Meslo LG s for Powerline Regular 12
------
+----
+
 
 == 安装sdkman
------
+[source,bash]
+----
 curl -s "https://get.sdkman.io" | zsh
 source "$HOME/.sdkman/bin/sdkman-init.sh"
------
+----
+
+== 屏蔽百度广告
+[source,bash]
+----
+sudo vim /etc/hosts
+# 添加:
+
+# Baidu DSP
+0.0.0.0	       pos.baidu.com
+0.0.0.0	       release.baidu.com
+0.0.0.0	       hm.baidu.com
+0.0.0.0	       eclick.baidu.com
+0.0.0.0	       dup.baidustatic.com
+----
