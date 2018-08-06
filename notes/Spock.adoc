@@ -1,0 +1,69 @@
+= Spock test framework
+:icons: font
+:sectanchors:
+:page-layout: docs
+
+
+== 1. Maven依赖
+
+[source,xml]
+.pom.xml
+----
+<dependencies>
+    <dependency>
+        <groupId>org.spockframework</groupId>
+        <artifactId>spock-core</artifactId>
+        <version>1.1-groovy-2.4</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>2.4.15</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+
+<plugins>
+    <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>1.6.1</version>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>compileTests</goal>
+                </goals>
+            </execution>
+         </executions>
+    </plugin>
+</plugins
+----
+
+== 2. 生命周期
+
+setupSpec -> setup -> testMethods -> cleanup -> cleanupSpec
+
+* setupSpec/cleanupSpec 只会执行一次
+* setup/cleanup 每次方法调用前后都会执行
+
+== 3. 工具
+
+* @Title 描述测试类用途
+* @Subject 描述测试类目标
+* @Narrative 换行文本详细描述
+* @Shared 标记对象只会被初始化一次
+* @Unroll where:从句每个断言都会被编辑器认为是一个单独的测试用例
+
+== 4. 阶段
+
+* given -> when -> then
+* given -> expect -> where
+
+== 5. Mock
+
+=== Stub
+可以预先设置输入的类
+
+=== Mock
+可以检查内部方法调用的类
