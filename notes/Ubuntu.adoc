@@ -105,41 +105,10 @@ sudo make install
 ----
 
 == 安装docker
+
 [source,bash]
 ----
-#!/bin/bash
-# clear out-of-date docker packages
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y net-tools vim curl apt-transport-https ca-certificates software-properties-common language-pack-zh-hans
-sudo apt remove -y docker docker-ce docker-engine docker.io
-# install docker via apt
-curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
-sudo apt update
-sudo apt install -y docker-ce
-
-# docker against sudo
-sudo chmod 777 /var/run/docker.sock
-# clear unused packages
-sudo apt autoremove -y
-sudo apt autoclean
-sudo usermod -aG docker $USER
-sudo docker version
-# image mirror
-sudo mkdir -p /etc/docker
-sudo tee /etc/docker/daemon.json <<-'EOF'
-{
-  "registry-mirrors": ["https://3itj1ym2.mirror.aliyuncs.com"]
-}
-EOF
-sudo chmod 777 /etc/docker/ -R
-# sudo vim /lib/systemd/system/docker.service  ->  ExecStart 行后加上 tcp://0.0.0.0:2375
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-# install docker-compose
-sudo wget http://soft-1252259164.file.myqcloud.com/docker-compose-1.22.0 -O /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose version
+include::docker-install.sh[]
 ----
 
 == 安装zsh

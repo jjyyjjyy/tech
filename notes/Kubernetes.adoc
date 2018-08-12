@@ -22,106 +22,126 @@ sudo swapoff -a
 ----
 sudo apt update &&sudo apt install -y apt-transport-https curl
 curl -s http://packages.faasx.com/google/apt/doc/apt-key.gpg | sudo apt-key add -
-# sudo vim /etc/apt/sources.list.d/kubernetes.list
-cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+sudo cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
 EOF
 sudo apt update && sudo apt install -y kubelet kubectl kubeadm
 kubeadm version
 ----
 
-== 3. 使用kubeadm创建Kubernetes集群
+== 3. 安装
 
+=== 3.1 使用kubeadm创建Kubernetes集群
 [source,bash]
 ----
-
 # 未翻墙前需要先从aliyun pull镜像,再tag为k8s.gcr.io
 cat <<EOF > config.yml
 imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
-kubernetesVersion: 1.11.1
+kubernetesVersion: 1.11.2
 EOF
 # 查看需要的镜像:
 kubeadm config images list --config config.yml
 # 拉取k8s基础镜像
 kubeadm config images pull --config config.yml
-# sudo vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-# 添加Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"
-# ExecStart=/usr/bin/kubelet 行末添加 $KUBE_PAUSE
-./init-k8s-images.sh
+sudo sed -i '4a\Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo sed -i 's/ExecStart=\/usr\/bin\/kubelet.*/& $KUBE_PAUSE/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+# 下载镜像并tag为k8s.gcr.io
+include::k8s-images-pull.sh[]
 
 # 初始化master
+sudo systemctl daemon-reload
 sudo systemctl restart kubelet
-sudo kubeadm init --kubernetes-version=1.11.1 --pod-network-cidr=10.244.0.0/16
 
+#TODO: cidr
+sudo kubeadm init --kubernetes-version=1.11.2 --pod-network-cidr=192.168.0.0/24 --apiserver-advertise-address=192.168.0.11
 # 安装成功后,创建kubectl配置文件
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-# flannel 网络插件配置(x)
-sudo mkdir -p /etc/cni/net.d/
-cat <<EOF> /etc/cni/net.d/10-flannel.conf
-{
-"name": "cbr0",
-"type": "flannel",
-"delegate": {
-"isDefaultGateway": true
-}
-}
-EOF
-sudo mkdir /usr/share/oci-umount/oci-umount.d -p
-sudo mkdir /run/flannel/ -p
-sudo chmod 777 /run/flannel/ -R
-cat <<EOF> /run/flannel/subnet.env
-FLANNEL_NETWORK=10.244.0.0/16
-FLANNEL_SUBNET=10.244.1.0/24
-FLANNEL_MTU=1450
-FLANNEL_IPMASQ=true
-EOF
-
 # flannel安装
-docker pull quay.io/coreos/flannel:v0.10.0-amd64
 kubectl apply -f http://soft-1252259164.file.myqcloud.com/flannel.yml
 
-# kube单机
+# kube单机 (Optional)
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
-# check
+# check finally
 kubectl get nodes
 kubectl get pods --all-namespaces
 
 # Trouble shooting:
-# kubectl describe NAME -n kube-system
+# kubectl -n kube-system describe TYPE NAME
 
-# 重来:
-sudo kubeadm reset
-sudo systemctl stop kubelet
-sudo systemctl stop docker
-rm -rf ~/.kube/
-sudo rm -rf /usr/share/oci-umount
-sudo rm -rf /run/flannel
-sudo rm -rf /etc/cni
-sudo rm -rf /var/lib/cni/
-sudo rm -rf /var/lib/kubelet/*
-sudo ifconfig cni0 down
-sudo ifconfig flannel.1 down
-sudo ifconfig docker0 down
-sudo ip link delete cni0
-sudo ip link delete flannel.1
-sudo systemctl start docker
+# 清除安装:
+include::k8s-reset.sh[]
 ----
 
-== 4. Kubenetes Dashboard
+=== 3.2 minikube (Optional)
+
+[source,bash]
+----
+sudo apt install virtualbox
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+minikube start --registry-mirror=https://registry.docker-cn.com
+minikube dashboard
+
+# 删除原有minikube
+minikube delete && rm -rf ~/.minikube
+----
+
+== 4. Kubernetes Dashboard
 
 [source,bash]
 ----
 kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
-kubectl proxy
-# chrome
+kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'
+# chrome访问
 http://ip:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
 ----
 
-== 5. kubectl 命令
+== 5. kubernetes各个组件功能
+
+=== 5.1 Master
+集群控制节点,运行以下进程:
+
+* kube-apiserver: 提供Kubernetes所有资源操作的REST服务
+* kube-controller-manager: 自动化控制所有资源对象
+* kube-scheduler: pod调度
+* kube-proxy: 实现service通信个负载均衡
+* etcd: 保存资源数据
+
+=== 5.2 Node
+
+集群工作负载节点,运行以下进程:
+
+* kubelet: 负责pod里容器的创建、启动等任务
+* kube-proxy: 实现service通信个负载均衡
+* pause: pod组件
+* docker: 负责本机的容器管理
+
+=== 5.3 Pod
+每个pod包含pause容器和多个用户容器.
+
+* static pod: 设置在node中,并只在该node上运行
+* normal pod: 存储在etcd中,随后会被Master调度到某个node上进行绑定,node上的kubelet进程会实例化一组docker容器运行
+
+=== 5.4 Label Selector
+* kube-controller进程通过RC上定义的labelSelector来筛选需要监控的Pod数量.
+* kube-proxy进程通过service的labelSelector来选择对应的pod, 自动建立起每个service到对应pod的请求路由, 从而实现service的负载均衡.
+* kube-scheduler通过node定义的label和pod定义nodeSelector实现pod的定向调度.
+
+=== 5.5 Replica Set
+声明某pod的副本数量在任意时刻都符合某个预期值, 包含以下部分:
+
+* pod replica number
+* label selector
+* pod template
+
+=== 5.6 Deployment
+扩展了Replica Set
+
+
+== 6. kubectl 命令
 
 [source,bash]
 ----
@@ -148,36 +168,3 @@ kubectl rollout history
 # 回滚部署
 kubectl rollout undo
 ----
-
-== 6. minikube
-
-[source,bash]
-----
-sudo apt install virtualbox
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-minikube start --registry-mirror=https://registry.docker-cn.com
-minikube dashboard
-
-# 删除原有minikube
-minikube delete && rm -rf ~/.minikube
-----
-
-== 7. scale
-
-[source,bash]
-----
-DESIRED: 需要的实例数
-CURRENT: 现有的实例数
-----
-
-== 8. Worker Node Components:
-
-- container runtime
-- kubelet
-- kube-proxy
-
-== 9. Master Node Components:
-
-- Scheduler
-- Controller manager
-- API server
