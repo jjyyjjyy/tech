@@ -3,12 +3,12 @@
 :sectanchors:
 :page-layout: docs
 
-== 安装
+== 1. 安装
 
 [source,bash]
 ----
 # 安装vagrant
-sudo apt install -y vagrant
+sudo apt install -y virtualbox vagrant
 # 安装代理插件(没有代理->下不动)
 vagrant plugin install vagrant-proxyconf
 # 设置代理
@@ -39,5 +39,83 @@ gem uninstall fog-core -v '1.45.0'
 sudo gem uninstall -i /usr/share/rubygems-integration/all fog-core
 gem install fog-core -v '1.43.0'
 vagrant plugin repair
+----
+
+== 2. 命令
+https://www.vagrantup.com/docs/cli/
+
+=== 2.1 basic
+* vagrant version
+* vagrant login `需将SOCKS5代理切换成HTTP代理登录`
+* vagrant global-status
+* vagrant init -f -m [--box-version VERSION] BOX_NAME [URL]
+* vagrant up [NAME|ID]
+* vagrant ssh
+* vagrant suspend
+* vagrant resume
+* vagrant halt
+* vagrant reload
+* vagrant status
+* vagrant package
+* vagrant provision `刷新配置`
+* vagrant destroy -f
+
+=== 2.2 box
+* vagrant box add [boxName|file|url] [--box-version VALUE] [--clean] [--force] [--insecure] [file: --name VALUE]
+* vagrant box list
+* vagrant box outdated [--global]
+* vagrant box prune -f [--name VALUE] [--dry-run]
+* vagrant box remove NAME [--box-version VALUE] [-a] [-f]
+* vagrant box repackage
+* vagrant box update [--box VALUE] (in vagrant dir)
+
+
+== 3. 网络
+
+=== 3.1 端口转发
+[source,ruby]
+.Vagrantfile
+----
+# host 端口必须大于1024
+config.vm.network "forwarded_port", guest: 80, host: 8080 [,protocol: "[tcp|udp]"]
+----
+
+=== 3.2 私有网络
+[source,ruby]
+.Vagrantfile
+----
+# static ip
+config.vm.network "private_network", ip: "192.168.0.11"
+
+# dhcp
+config.vm.network "private_network", type: 'dhcp'
+----
+
+=== 3.3 公有网络
+[source,ruby]
+.Vagrantfile
+----
+# static ip
+config.vm.network "public_network", ip: "192.168.0.11"[, brige: "wlp2s0"]
+
+# dhcp
+config.vm.network "public_network"
+----
+
+== 4. Vagrantfile配置
+[source,ruby]
+.Vagrantfile
+----
+Vagrant.configure("2") do |config|
+    config.vm.box = "ubuntu/bionic64"
+    config.vm.hostname = "HOSTNAME"
+    config.vm.provider "virtualbox" do |vb|
+      vb.name = "VIRTUAL_BOX_HOSTNAME"
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.gui = false
+    end
+    config.vm.network "public_network", ip: "192.168.0.11"
+    config.vm.provision "shell", {inline: "SCRIPTS" | path: "/path/to/sh_file.sh"}
 ----
 
