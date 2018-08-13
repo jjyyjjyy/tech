@@ -53,8 +53,7 @@ include::k8s-images-pull.sh[]
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
 
-#TODO: cidr
-sudo kubeadm init --kubernetes-version=1.11.2 --pod-network-cidr=192.168.0.0/24 --apiserver-advertise-address=192.168.0.11
+sudo kubeadm init --kubernetes-version=1.11.2 --pod-network-cidr=10.244.0.0/16
 # 安装成功后,创建kubectl配置文件
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -94,9 +93,10 @@ minikube delete && rm -rf ~/.minikube
 [source,bash]
 ----
 kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
-kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'
-# chrome访问
-http://ip:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
+# 浏览器访问
+# https://ip:30001
+# token:
+# kubectl -n kube-system describe $(kubectl -n kube-system get secret -n kube-system -o name | grep namespace) | grep token
 ----
 
 == 5. kubernetes各个组件功能
@@ -149,11 +149,17 @@ kubectl version
 kubectl cluster-info
 kubectl api-versions
 kubectl config view
-kubectl get no
-kubectl get deployments
+kubectl get [po|depoy|cm]
 
 # ======资源控制======
 kubectl create -f YML
+
+kubectl create cm CM_NAME --from-file=xxxFile   # xxxFile=CONTENT
+kubectl create cm CM_NAME --from-file=xxxDir   # xxxFile1=CONTENT1, xxxFile2=CONTENT2
+kubectl create cm CM_NAME --from-literal=a1=v1 --from-literal=a2=v2
+
+#TODO: P131
+
 kubectl run NAME --image=IMAGE
 
 kubectl delete TYPE NAME
