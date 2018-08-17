@@ -2,6 +2,8 @@
 :icons: font
 :sectanchors:
 :page-layout: docs
+:toc: left
+:toc-title: 索引
 
 == 1. 系统配置:
 
@@ -73,6 +75,15 @@ kubectl get pods --all-namespaces
 
 # 清除安装:
 include::k8s-reset.sh[]
+
+# sh helper:
+alias kn='kubectl get nodes -o wide'
+alias kp='kubectl get pods --all-namespaces -o wide'
+alias kd='kubectl get deployments --all-namespaces -o wide'
+alias kdp='kubectl describe pod'
+alias kc='kubectl create -f'
+alias kr='kubectl replace -f'
+
 ----
 
 === 3.2 minikube (Optional)
@@ -90,14 +101,61 @@ minikube delete && rm -rf ~/.minikube
 
 == 4. Kubernetes Dashboard
 
+=== 4.1 安装
+
 [source,bash]
 ----
 kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
+----
+=== 4.2 登陆
+[source,bash]
+----
+cat <<EOF > account.yml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: admin-user
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+    name: admin-user
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kube-system
+EOF
+
+kubectl create -f account.yml
+# 获取登陆token
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+
 # 浏览器访问
 # https://ip:30001
-# token:
-# kubectl -n kube-system describe $(kubectl -n kube-system get secret -n kube-system -o name | grep namespace) | grep token
 ----
+
+=== 4.3 安装Heapster插件
+
+[source,bash]
+----
+mkdir -p heapster
+cd heapster
+wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/grafana.yaml
+wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
+wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
+wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/rbac/heapster-rbac.yaml
+sed -i s/"k8s.gcr.io"/"registry.cn-hangzhou.aliyuncs.com\/google_containers"/g *.*
+cd ..
+kubectl create -f heapster/
+----
+
+
+
 
 == 5. kubernetes各个组件功能
 
@@ -154,11 +212,10 @@ kubectl get [po|depoy|cm]
 # ======资源控制======
 kubectl create -f YML
 
+# configMap
 kubectl create cm CM_NAME --from-file=xxxFile   # xxxFile=CONTENT
 kubectl create cm CM_NAME --from-file=xxxDir   # xxxFile1=CONTENT1, xxxFile2=CONTENT2
 kubectl create cm CM_NAME --from-literal=a1=v1 --from-literal=a2=v2
-
-#TODO: P131
 
 kubectl run NAME --image=IMAGE
 
@@ -174,3 +231,93 @@ kubectl rollout history
 # 回滚部署
 kubectl rollout undo
 ----
+
+== 7. Pod
+
+=== 7.1 生命周期:
+
+. Pending `Pod创建成功,但存在容器还未创建`
+. Running `Pod中容器都已成功创建`
+. Succeeded `Pod中所有容器均已创建成功`
+. Failed `Pod中所有容器均已退出,并且至少有一个退出为失败状态`
+. Unknown `无法获取Pod的状态`
+
+=== 7.2 重启策略
+* Always `容器失效时kubelet自动重启容器`
+* OnFailure `容器停止运行且退出码不为0时kubelet自动重启容器`
+* Never `kubelet不会自动重启容器`
+
+ RC和DS必须设置为Always
+ Job必须设置为OnFailure或Never
+
+=== 7.3 健康检查
+* livenessProbe (running)
+
+ 如果探测到容器不健康, 则kubelet将杀掉该容器, 并根据容器的重启策略处理
+
+.实现方式
+* ExecAction
+* TCPSocketAction
+* HTTPGetAction
+[source,yml]
+----
+  livenessProbe:
+    httpGet:
+      port: 8080
+      path: /actuator/health
+    initialDelaySeconds:10 # 首次进行健康检查的延时时长,单位为秒
+    timeoutSeconds:2 # 端点超时时长
+    periodSeconds:10 # 定时任务
+----
+
+* readinessProbe (ready)
+
+ 请求容器, 如果容器不健康, Endpoint Controller 将从Service的Endpoint中删除该Pod的Endpoint
+
+=== 7.4 调度
+
+* Deployment 自动调度
+* NodeSelector 定向调度
+
+ 给node打标签: kubectl label node <node-name> <label-key>=<label-value>
+ yml配置label: spec.template.spec.nodeSelector
+
+* NodeAffinity Node亲和力调度
+** RequiredDuringSchedulingIgnoredDuringExecution
+
+ 必须满足指定的规则才可以调度Pod到Node上
+
+** PreferredDuringSchedulingIgnoredDuringExecution
+
+ 优先满足指定规则即可
+
+ spec.affinity.nodeAffinity 有一个条件满足即可, spec.affinity..nodeSelectorTerms必须满足所有条件
+
+* PodAffinity Pod亲和力调度
+* Taint & toleration
+
+ kubectl taint nodes <node-name> k=v:NoSchedule
+
+* DaemonSet 每个node调度1个Pod
+* Job 批处理调度
+* Cronjob 定时任务
+
+=== 7.5 升级和回滚
+
+==== 升级
+
+ * kubectl set image deployment/<deployment-name> <container-name>=<image-name:tag>
+ * kubectl edit deployment/<deployment-name>
+
+可以通过spec.strategy.type确定升级方式: RollingUpdate/Recreate
+
+==== 回滚
+[%hardbreaks]
+查看升级状态: `kubectl rollout status deployment/<deployment-name>`
+查看升级历史: `kubectl rollout history deployment/<deployment-name> 创建deployment时加上--record参数`
+回滚到指定版本 `kubectl rollout undo deployment/<deployment-name> --to-revision=<revision>`
+暂停/继续更新: `kubectl rollout pause/resume deployment/<deployment-name>`
+
+=== 7.6 扩容和缩容
+
+ kubectl scale deployment <deployment-name> --replicas <number>
