@@ -24,7 +24,7 @@ sudo visudo
 
 [source,bash]
 ----
-sudo apt install -y git net-tools vim curl unzip unar aptitude neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+sudo apt install -y git net-tools vim curl unzip unar aptitude xclip neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
 ----
 
 == 安装SS客户端
@@ -146,8 +146,9 @@ alias f='free -h'
 alias d='df -h'
 alias as='sudo apt search'
 alias s='sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y'
-alias kn='kubectl get nodes -o wide'
-alias kp='kubectl get pods --all-namespaces -o wide'
+
+alias setclip="xclip -selection c"
+alias getclip="xclip -selection c -o"
 
 source ~/.zshrc
 

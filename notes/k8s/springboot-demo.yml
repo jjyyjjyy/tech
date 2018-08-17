@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: springboot-demo
+  labels:
+    app: springboot-demo
+spec:
+  containers:
+  - name: springboot-demo
+    image: registry.cn-qingdao.aliyuncs.com/jy-test/boot:latest
+    env:
+    - name: DEMO
+      value: spring-boot
+    ports:
+    - containerPort: 8080
+    livenessProbe:
+      httpGet:
+        port: 8080
+        path: /actuator/health
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
