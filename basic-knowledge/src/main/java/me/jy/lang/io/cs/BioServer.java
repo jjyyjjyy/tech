@@ -45,7 +45,7 @@ public class BioServer {
 
     public BioServer(ServerFactory serverFactory) {
         try {
-            this.serverSocket = new ServerSocket();
+            this.serverSocket = new ServerSocket(DEFAULT_PORT);
             this.clientHandler = serverFactory.getClientHandler();
             this.threadPool = serverFactory.getPool();
         } catch (IOException e) {

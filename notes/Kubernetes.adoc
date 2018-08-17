@@ -46,6 +46,7 @@ kubeadm config images list --config config.yml
 # 拉取k8s基础镜像
 kubeadm config images pull --config config.yml
 sudo sed -i '4a\Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo sed -i '5a\Environment="KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 sudo sed -i 's/ExecStart=\/usr\/bin\/kubelet.*/& $KUBE_PAUSE/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 # 下载镜像并tag为k8s.gcr.io
@@ -321,3 +322,47 @@ kubectl rollout undo
 === 7.6 扩容和缩容
 
  kubectl scale deployment <deployment-name> --replicas <number>
+
+== 8. Service
+
+=== 8.1 基本用法:
+
+[source,yml]
+.springboot-svc.yml
+----
+apiVersion: v1
+kind: Service
+metadata:
+    name: springboot-demo
+spec:
+    selector:
+        app: springboot-demo
+    ports:
+    - port: 8081 #service暴露的端口
+      targetPort: 8080 #pod端口
+----
+
+ kubectl create -f springboot-svc.yml
+
+=== 8.2 暴露外部端口
+
+* 设置容器级别的hostPort, 将容器应用的端口号映射到物理机上
+
+[source,yml]
+----
+ports:
+- containerPort: 8080
+  hostPort: 8081
+----
+
+* Pod设置hostNetwork=true, 容器中的端口号被映射到物理机上
+* Service设置nodePort映射到物理机,同时设置service的类型为NodePort
+
+[source,yml]
+----
+type: NodePort
+ports:
+- port: 8080
+  targetPort: 8080
+  nodePort: 8081
+----
