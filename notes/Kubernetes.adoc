@@ -358,6 +358,8 @@ ports:
 * Pod设置hostNetwork=true, 容器中的端口号被映射到物理机上
 * Service设置nodePort映射到物理机,同时设置service的类型为NodePort
 
+ service的nodePort默认范围为30000-32767,可以修改/etc/kubernetes/manifests/kube-apiserver.yaml 添加command `- --service-node-port-range=80-32767`
+
 [source,yml]
 ----
 type: NodePort
