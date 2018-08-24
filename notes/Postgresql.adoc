@@ -1,0 +1,127 @@
+= Postgresql
+:icons: font
+:sectanchors:
+:page-layout: docs
+
+== 1. 安装
+
+[source,bash]
+.docker-compose.yml
+----
+version: '3'
+services:
+    postgresql:
+        image: postgres:10.5-alpine
+        container_name: postgresql
+        volumes:
+            - ~/volumes/postgresql/:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_USER=jy
+            - POSTGRES_PASSWORD=123456
+            - TZ=Asia/Shanghai
+        ports:
+            - 5432:5432
+        networks:
+            - postgresql
+
+networks:
+    postgresql:
+----
+
+== 2. 基本命令
+[source,bash]
+----
+# 创建db
+createdb -U <username> <dbName>
+# 删除b
+dropdb -U <username> <dbName>
+# 重建索引
+reindexdb -d <dbName>
+# 对数据库物理文件垃圾回收
+vacuumdb <dbName>
+# 清除数据库中未引用的大对象
+vacuumlo <dbName>
+
+pgdump
+pgrestore
+pgbench
+# 登录数据库
+psql [-h HOST] [-p PORT] DB [USERNAME]
+# 获取pg配置
+pg_config
+# 获取数据库状态
+pg_ctl -D <data-dir> status
+# 启动数据库
+postgres -D <data-dir> &
+# 关闭数据库
+pg_ctl -D <data-dir> -m [fast|smart|immediate]  -t <timeout> stop
+----
+
+== 3. 配置
+
+=== 3.1 pg_hba.conf
+
+[source,bash]
+----
+TYPE  DATABASE  USER  ADDRESS  METHOD
+----
+
+* TYPE: 允许连接的方式
+  ** local: Unix domain socket
+  ** host:  TCP/IP, localhost default
+  ** hostssl: OpenSSL restrict
+  ** hostnossl: SSL not permitted
+* METHOD: 认证方法
+  ** trust
+  ** password: 明文密码
+  ** md5
+  ** reject: 拒绝访问
+  ** scram-sha-256
+
+=== 3.2 postgresql.conf
+
+ postgresql 启动时postgresql.auto.conf会覆盖postgresql.conf内容
+ 更改配置生效: pg_ctl -D <data-dir> reload
+
+== 4. psql命令
+
+* psql -c "SQL" [-d DB_NAME] [-U USERNAME] [-W PASSWORD] [-f SQL_FILE]
+* \db: 查看表空间
+* \l: 查看数据库
+* \d <DB_NAME>: 查看表定义
+* \dt+ <DB_NAME>: 查看表空间大小
+* \di+ <IDX_NAME>: 查看索引空间大小
+* \x: 切换查询显示模式
+* COPY <DB> FROM|TO "FILE_PATH" : (大表)导入导出数据(必须有superuser权限)
+* \copy <DB> FROM|TO "FILE_PATH" : (小表)导入导出数据
+* \set VAR_NAME VALUE: 设置变量, :VAR_NAME 使用
+* \timing: 开启sql计时
+
+== 5. Monitor sqls
+
+[source,sql]
+----
+-- 查看活动会话
+select pid, usename, datname, query, client_addr
+from pg_stat_activity
+where pid <> pg_backend_pid()
+  and state = 'active'
+order by query;
+
+-- 查看会话等待事件
+select pid, usename, datname, query, client_addr, wait_event_type, wait_event
+from pg_stat_activity
+where pid <> pg_backend_pid()
+  and wait_event is not null
+order by wait_event_type;
+
+-- 查看数据库等待数
+select datname, usename, client_addr, count(*)
+from pg_stat_activity
+where pid <> pg_backend_pid()
+group by 1, 2, 3
+order by 1, 2, 4 desc;
+
+----
+
+
