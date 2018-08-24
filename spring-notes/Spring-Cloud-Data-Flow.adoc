@@ -1,0 +1,20 @@
+= Spring Cloud Data Flow
+:icons: font
+:sectanchors:
+:page-layout: docs
+
+== 1. Getting start
+[source,bash]
+----
+mkdir scdf && cd scdf
+wget http://soft-1252259164.file.myqcloud.com/spring/docker-compose.yml
+docker-compose up -d
+
+// APP从 https://repo.spring.io/libs-snapshot下载容易超时,需要在docker-compose.yml中设置代理
+dataflow-server:
+  environment:
+    - proxySet=true
+    - socksProxyHost=192.168.0.123
+    - socksProxyPort=1080
+
+----
