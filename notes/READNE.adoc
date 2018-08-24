@@ -99,6 +99,10 @@
    ... 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
    ... 如果线程池中的线程数量大于 corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
 
+== ClassLoader
+
+* loadClass 实现双亲委托模型
+* findClass 实现类文件读取
 
 == Articles
 

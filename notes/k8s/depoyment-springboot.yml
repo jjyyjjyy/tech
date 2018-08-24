@@ -5,7 +5,8 @@ metadata:
     labels:
         app: springboot-demo
 spec:
-    replicas: 1
+    replicas: 2
+    minReadySeconds: 20
     template:
         metadata:
             name: springboot-demo
@@ -14,7 +15,7 @@ spec:
         spec:
             containers:
             - name: springboot-demo
-              image: registry.cn-qingdao.aliyuncs.com/jy-test/boot
+              image: registry.cn-qingdao.aliyuncs.com/jy-test/boot:latest
               imagePullPolicy: Always
               ports:
               - containerPort: 8080
