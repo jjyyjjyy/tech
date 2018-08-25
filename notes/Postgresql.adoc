@@ -2,9 +2,12 @@
 :icons: font
 :sectanchors:
 :page-layout: docs
+:toc: left
+:toc-title: 索引
 
 == 1. 安装
 
+=== 1.1 docker
 [source,bash]
 .docker-compose.yml
 ----
@@ -27,6 +30,22 @@ services:
 networks:
     postgresql:
 ----
+=== 1.2 安装包安装
+
+[source,bash]
+----
+groupadd postgres
+useradd postgres -g postgres
+passwd postgres
+mkdir -p /database/pg10/pg_root
+chown -R postgres:postgres /database/pg10
+
+sudo apt install postgresql-all
+initdb -D /database/pg10/pg_root -E UTF8 --locale=C -U postgres -W
+----
+
+
+
 
 == 2. 基本命令
 [source,bash]
@@ -97,7 +116,7 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 * \set VAR_NAME VALUE: 设置变量, :VAR_NAME 使用
 * \timing: 开启sql计时
 
-== 5. Monitor sqls
+== 5. Monitor
 
 [source,sql]
 ----
@@ -124,4 +143,186 @@ order by 1, 2, 4 desc;
 
 ----
 
+== 6. 数据类型
+
+=== 6.1 数字类型
+* int2 int4 int8
+* decimal/numeric[(precision,scale)]
+* real 6位十进制精度浮点数
+* double precision 15位十进制精度浮点数
+* smallserial/serial/bigserial 2/4/8字节自增序列
+
+=== 6.2 字符串类型
+* varchar/character varying 变长
+* character/char 定长
+* text 变长,无长度限制
+
+=== 6.3 日期类型
+* timestamp[without time zone]
+* timestamp[with time zone] / timestamptz
+* date
+* time[with[out] time zone]
+* interval
+
+=== 6.4 range类型
+* int4range
+* int8range
+* numrange
+* tsrange
+* tstzrange
+* daterange
+
+=== 6.5 其他
+* boolean
+* cidr/inet/macaddr/macaddr8
+* 数组
+* json/jsonb
+
+== 7. 高级特性
+* with从句
+* 批量插入: insert into select from / insert into values (),() / COPY
+* upsert:
+  insert into ... on conflict do {NOTHING | update set <colName> = EXCLUDED.colName}
+* insert/update/delete .. returning *
+* select from <table> TABLESAMPLE {SYSTEM | BERNOULLI}
+* string_agg() / array_agg()
+* 窗口函数
+  ** row_number() : `select row_number() OVER partition by <colName>`,eg: 1,2,3, 1
+  ** rank() : 分组重复则序号相同, 但下一个分组内不同行的序号保持增长,eg: 1,1,3
+  ** dense_rank() : 分组重复则序号相同, 下一个分组内不同行的序号继续增长,eg: 1,1,2
+  ** lag(field,offset,defaultValue): 获取行偏移offset那行某个字段的数据(offset为正向上偏移,为负则相反)
+  ** first_value(field): 取分组第一行数据
+  ** last_value(field): 取分组最后一行数据
+  ** nth_value(field,line): 取分组指定行数据
+  ** 别名: select ...[rank() over NAME] from <table> WINDOW <NAME> AS ()
+
+== 8. 体系结构
+
+=== 8.1 逻辑结构
+
+ 创建一个Database时会为这个Database创建一个名为public的默认schema.
+ 相同数据库不同schema可以拥有相同名称的table/index/view/sequence/function等
+
+=== 8.2 物理结构
+==== 8.2.1 OID
+ OID,对象标识符,无符号4字节整数.所有的数据库对象由各自的OID管理
+
+* 数据库对象OID保存在pg_database系统表里.
+* 表/索引/序列等对象OID保存在pg_class系统表里.
+
+==== 8.2.2 表空间
+ 初始化数据库目录时会自动创建两个表空间: pg_global和pg_default
+
+* pg_global保存在global目录中, 用来保存系统表
+* pg_default保存在base目录中, 默认数据库表空间
+
+ 每个数据库的oid都是base目录下的子目录, 表文件在所属数据库目录下以表OID命名.
+ 杜宇超过1GB大小的表文件则会自动切分为多个文件存储,以OID.<seq> 命名
+
+=== 8.3 进程结构
+* postmaster
+* postgres
+* syslogger
+* checkpointer
+* bgwriter
+* walwriter
+
+=== 8.4 内存结构
+
+* 本地内存
+** work_mem: ORDER BY/DISTINCT会用到
+** maintenance_work_mem: VACUUM/REINDEX/CREATE INDEX会用到
+** temp_buffers: 临时表操作会用到
+
+* 共享内存
+** shared buffer pool: 将表/索引文件载入内存
+** WAL buffer: WAL文件持久化缓冲区
+** CommitLog buffer: commit log中保存事务的状态,保存在缓冲区
+
+== 9. 事务
+
+|===
+| 隔离级别 | 脏读 | 不可重复读 | 幻读 | 序列化异常
+
+| Read Uncommitted
+| x
+|
+|
+|
+
+| Read Committed
+| x
+|
+|
+|
+
+| Repeatable Read
+| x
+| x
+| x
+|
+
+| Serializable
+| x
+| x
+| x
+| x
+
+|===
+
+=== 9.1 查看全局事务默认隔离级别
+ select name,setting from pg_settings where name='default_transaction_isolation';
+
+=== 9.2 修改全局事务默认隔离级别
+* 修改postgresql.conf的default_transaction_isolation参数
+* `ALTER SYSTEM SET default_transaction_isolation TO 'REPEATABLE READ';`
+
+=== 9.3 查看当前会话事务默认隔离级别
+* `SHOW transaction_isolation;`
+* `select current_setting('transaction_isolation');`
+
+=== 9.4 设置当前会话事务默认隔离级别
+* `set session characteristics as transaction isolation level REPEATABLE READ`
+* `START|BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ... END`
+
+== 10. 分区
+
+WARNING: 10以上版本才支持
+
+=== 10.1 创建主表
+
+[source,sql]
+----
+create table <table_name> [PARTITION BY {RANGE | LIST}] column|expr
+
+eg:
+create tabele log_parent (id serial,user_id int4, created_at timestamp)
+parition by range(created_at);
+
+----
+
+=== 10.2 创建分区表
+
+[source,sql]
+----
+create table <table_name> PARTITION OF <parent_table>
+  [()]
+  FOR VALUES <partition_bound_spec>]
+
+eg:
+create table log_sub_201808
+partition of log_parent for values from ('2018-08-01') TO ('2018-09-01');
+create table log_sub_201809
+partition of log_parent for values from ('2018-09-01') TO ('2018-10-01');
+----
+
+=== 10.3 在分区表上建立索引
+
+[source,sql]
+----
+create index log_sub_201808_created_at ON log_sub_201808 (created_at);
+create index log_sub_201809_created_at ON log_sub_201809 (created_at);
+----
+
+IMPORTANT: update语句违反了当前分区键的约束会报错
 

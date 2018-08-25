@@ -1902,6 +1902,7 @@ var rules = [
             "redis.io",
             "docker.io",
             "docker.com",
+            "converterapi.com",
             "gandi.net",
             "fastly.net",
             "elastic.co",
