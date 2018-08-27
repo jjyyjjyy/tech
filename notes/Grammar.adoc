@@ -1,0 +1,38 @@
+= English grammar
+:icons: font
+:sectanchors:
+:page-layout: docs
+:toc: left
+:toc-title: 索引
+
+== 1. 名词 Nouns
+=== 1.1 分类
+* 可数名词
+** 专属名词 `Individual nouns`
+** 集体名词 `Collective nouns`
+* 不可数名词
+** 物质名词 `Material nouns`
+** 抽象名词 `Abstract nouns`
+
+=== 1.2 复数
+.一般情况
+* 加s
+** 清辅音后读 `/s/`
+** 浊辅音或元音后读 `/z/`
+** 以ce/se/ze/ge等结尾的词读 `/iz/`
+* 以s/sh/ch/x等结尾的词加es, 读 `/iz/`
+* 以辅音字母+y结尾的词去y为i加es, 读 `/z/`
+* 以元音字母+y结尾或者以y结尾的专属名词, 直接加s. eg: `holidays`
+* 以o结尾的名词, 看情况, 加s或es或者两者都可
+* 以f/fe结尾的名词, 看情况, 加s或去f/fe加 `ves` 或者两者都可
+
+.特殊情况
+* 特殊变化, eg: `children`, `feet`, `teeth`
+* 单复数同形, eg: `sheep`
+* 集体名词, 本身就是复数, eg: `people`, `police`, `cattle`
+* 以s结尾, 但仍为单数的名词, eg: `news`, `physics`, `politics`
+* 物质名词和抽象名词在特定场景下也可以变成可数的, eg: `four freedoms`
+* 名词做定语, 一般用单数, 但也有例外:
+** man/woman/gentleman与修饰的名词单复数保持一致
+** 有些以s结尾的名词作定语时复数保留
+** 数词+名词作定语时, 名词一般保留单数形式
