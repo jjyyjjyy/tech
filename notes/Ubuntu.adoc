@@ -25,6 +25,10 @@ sudo visudo
 [source,bash]
 ----
 sudo apt install -y git net-tools vim curl unzip unar aptitude xclip neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+
+# 媒体解码
+sudo apt install libdvdnav4 libdvdread4 gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libdvd-pkg
+sudo apt install ubuntu-restricted-extras
 ----
 
 == 安装SS客户端

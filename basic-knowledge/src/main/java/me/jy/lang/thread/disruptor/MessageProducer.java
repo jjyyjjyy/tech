@@ -26,6 +26,6 @@ public class MessageProducer {
     }
 
     public void batchSendData(Collection<String> dataCollection) {
-        dataCollection.parallelStream().forEach(this::sendData);
+        dataCollection.forEach(this::sendData);
     }
 }
