@@ -2,38 +2,56 @@
 :icons: font
 :sectanchors:
 :page-layout: docs
+:toc: left
+:toc-title: 索引
 
-== 1. 数据类型：
-   * 原始类型：
-     ** 数值类型
-     ** boolean
-     ** returnAddress(x)
+== 1. JVM存在的理由
+1. 跨平台(将字节码翻译成机器码)
+* 解释执行: 将字节码逐条翻译成机器码
+* 即时编译: 反复执行的热点方法,会将整个方法翻译成机器码再执行
+2. 优化代码
+3. 回收内存
 
 == 2. 运行时数据区
-   * 每条java虚拟机线程都有自己的PC寄存器。方法为native?undefined:字节码指令地址.
-   * 每条java虚拟机线程都有自己的虚拟机栈,存储栈帧(local variable table,operand stack...)
-   * 堆，可供各个线程共享的运行时内存区域.
-   * 方法区:存储类结构信息,如 runtime constant pool , field segment, method,constructor...
-   * 本地方法区
+.线程私有
+* PC寄存器: 存放下一条字节码指令的地址, native方法为undefined.
+* Java方法栈,存储栈帧(local variable table,operand stack...)
+* 本地方法栈
 
-== 3. 方法调用指令
+.线程共享
+* 堆: 运行时内存区域.
+* 方法区: 存储编译后的class结构信息,如 runtime constant pool , field segment, method,constructor...
+
+== 3. JVM加载类步骤
+
+TIP: `-XX:+TraceClassLoading` 可以看到加载类的过程
+
+. 加载
+
+ 由ClassLoader载入字节码文件到内存中
+
+. 链接
+.. 验证
+.. 准备
+
+ 为类的静态字段分配内存
+ 在加载的类引用其他类的方法时生成符号引用
+ ...
+
+.. 解析
+
+ 将准备阶段生成的符号引用解析成实际应用
+
+. 初始化
+ 为static final字段赋值
+ 执行<clinit>代码块(static字段和static代码块)
+
+== 4. 方法调用指令
    * invokevirtual:调用对象的实例方法
    * invokeinterface:调用接口方法
    * invokespecial:调用实例初始化方法、私有方法、父类方法
    * invokestatic:调用static方法
    * invokedynamic://TODO
-
-== 4. 下载openjdk源码
-   * sudo apt install mercurial
-   * vim ~/.hgrc
-
-      [http_proxy]
-      host=127.0.0.1:1080
-
-   * hg clone http://hg.openjdk.java.net/jdk8u/jdk8u/
-   * cd jdk8u/ && chmod +x get_source.sh
-   * LANG=C
-   * ./get_source.sh
 
 == 5. 垃圾收集器:
    * Serial(单线程)
