@@ -180,6 +180,7 @@ kubectl create -f heapster/
 
 === 5.3 Pod
 每个pod包含pause容器和多个用户容器.
+同一个pod内的容器拥有相同的Network/IPC/UTS[和PID] namespace, 所以它们拥有相同的hostname和network interfaces,但文件系统不同
 
 * static pod: 设置在node中,并只在该node上运行
 * normal pod: 存储在etcd中,随后会被Master调度到某个node上进行绑定,node上的kubelet进程会实例化一组docker容器运行
@@ -209,6 +210,15 @@ kubectl cluster-info
 kubectl api-versions
 kubectl config view
 kubectl get [po|depoy|cm]
+
+# namespace
+kubectl create namespace xxNameSpace
+# label
+kubectl label po xxPod xxx=xxx [--override]
+# annotation
+kubectl annotate po xxPod xxx=xxx
+# label selector
+kubectl [get|delete] po -l xxx=xxx
 
 # ======资源控制======
 kubectl create -f YML
