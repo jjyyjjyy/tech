@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
     name: springboot-demo
+    namespace: springboot
     labels:
         app: springboot-demo
 spec:
@@ -12,8 +13,18 @@ spec:
             labels:
                 app: springboot-demo
         spec:
+            restartPolicy: Always
             containers:
             - name: springboot-demo
               image: registry.cn-qingdao.aliyuncs.com/jy-test/boot
               ports:
               - containerPort: 8080
+              livenessProbe:
+                  httpGet:
+                      port: 8080
+                      path: /actuator/health
+                  periodSeconds: 10
+                  initialDelaySeconds: 5
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+                  successThreshold: 5
