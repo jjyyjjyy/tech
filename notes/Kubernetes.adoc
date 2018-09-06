@@ -22,13 +22,7 @@ sudo swapoff -a
 
 [source,bash]
 ----
-sudo apt update &&sudo apt install -y apt-transport-https curl
-curl -s http://packages.faasx.com/google/apt/doc/apt-key.gpg | sudo apt-key add -
-sudo cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main
-EOF
-sudo apt update && sudo apt install -y kubelet kubectl kubeadm
-kubeadm version
+include::sh/k8s-install.sh[]
 ----
 
 == 3. 安装
@@ -36,33 +30,13 @@ kubeadm version
 === 3.1 使用kubeadm创建Kubernetes集群
 [source,bash]
 ----
-# 未翻墙前需要先从aliyun pull镜像,再tag为k8s.gcr.io
-cat <<EOF > config.yml
-imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
-kubernetesVersion: 1.11.2
-EOF
-# 查看需要的镜像:
-kubeadm config images list --config config.yml
-# 拉取k8s基础镜像
-kubeadm config images pull --config config.yml
-sudo sed -i '4a\Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo sed -i '5a\Environment="KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo sed -i 's/ExecStart=\/usr\/bin\/kubelet.*/& $KUBE_PAUSE/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-
-# 下载镜像并tag为k8s.gcr.io
-include::k8s-images-pull.sh[]
-
-# 初始化master
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
-
 sudo kubeadm init --kubernetes-version=1.11.2 --pod-network-cidr=10.244.0.0/16
 # 安装成功后,创建kubectl配置文件
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
-# flannel安装
-kubectl apply -f http://soft-1252259164.file.myqcloud.com/flannel.yml
+# network插件
+kubectl apply -f https://cloud.weave.works/k8s/v1.8/net.yaml
 
 # kube单机 (Optional)
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -75,14 +49,14 @@ kubectl get pods --all-namespaces
 # kubectl -n kube-system describe TYPE NAME
 
 # 清除安装:
-include::k8s-reset.sh[]
+include::sh/k8s-reset.sh[]
 
 # sh helper:
 alias kn='kubectl get nodes -o wide'
 alias kp='kubectl get pods --all-namespaces -o wide'
 alias kd='kubectl get deployments --all-namespaces -o wide'
-alias kdp='kubectl describe pod'
 alias kc='kubectl create -f'
+alias kc='kubectl apply -f'
 alias kr='kubectl replace -f'
 
 ----
@@ -155,9 +129,6 @@ cd ..
 kubectl create -f heapster/
 ----
 
-
-
-
 == 5. kubernetes各个组件功能
 
 === 5.1 Master
@@ -190,14 +161,22 @@ kubectl create -f heapster/
 * kube-proxy进程通过service的labelSelector来选择对应的pod, 自动建立起每个service到对应pod的请求路由, 从而实现service的负载均衡.
 * kube-scheduler通过node定义的label和pod定义nodeSelector实现pod的定向调度.
 
-=== 5.5 Replica Set
-声明某pod的副本数量在任意时刻都符合某个预期值, 包含以下部分:
+=== 5.5 ReplicationController
 
-* pod replica number
-* label selector
-* pod template
+ 定期监控labelSelector匹配的pod副本的数量,确保其等于期望值.
 
-=== 5.6 Deployment
+WARNING: 如果修改了一个pod的label, 则RC会自动新起一个pod.如果修改了RC的labelSelector, 则RC会自动创建所有pod副本.
+
+
+=== 5.6 Replica Set
+
+ 包含ReplicationController所有的功能, 同时增强了labelSelector的功能.
+
+=== 5.7 DaemonSet
+
+
+
+=== 5.8 Deployment
 扩展了Replica Set
 
 
@@ -234,7 +213,7 @@ kubectl delete TYPE NAME
 
 # ======部署管理======
 # 实现水平扩展
-kubectl scale
+kubectl scale rc <rc_name> [-n <namespace>] --replicas=2
 # 部署状态变更状态检查
 kubectl rollout status
 # 部署历史

@@ -109,7 +109,7 @@ sudo make install
 
 [source,bash]
 ----
-include::docker-install.sh[]
+include::sh/docker-install.sh[]
 ----
 
 == 安装zsh

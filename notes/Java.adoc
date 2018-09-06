@@ -1,0 +1,109 @@
+= Java
+:icons: font
+:sectanchors:
+:page-layout: docs
+
+== 注解
+. 重复注解使用
+
+   @Repeatable(xxx.class) & getAnnotationsByType(xxx.class);
+
+. Retention
+
+|===
+|   | 源码 | 字节码文件 | 运行时获取
+
+| Source
+| √
+|
+|
+| Class
+| √
+| √
+|
+
+| Runtime
+| √
+| √
+| √
+|===
+
+. Target
+
+   * Type: 类、接口、注解、枚举
+   * Field: 字段
+   * Method: 方法
+   * Parameter: 方法参数
+   * Constructor: 构造函数
+   * Local_Variable: 局部变量
+   * Annotation_Type: 只能用在注解上
+   * Package: 包声明上
+   * Type_Parameter: 类参数, 尚未参透
+   * Type_Use: 用在任何声明&定义的类型处
+
+== 枚举
+
+. API
+   .. values() 返回所有枚举常量
+   .. valueOf(String) 返回名字对应的枚举常量
+   .. name() 返回枚举常量名字
+   .. oridinal() 返回枚举常量的序号
+   .. compareTo() 比较枚举常量的序号
+. EnumMap, EnumSet
+   .. EnumSet.allOf(Enum.class) 返回包含所有枚举常量的集合
+   .. EnumSet.rangOf(EnumA,EnumB) 返回A与B之间所有的枚举常量, 包括边界
+   .. EnumMap#entrySet 为空,forearch用不了, 只能手动put   ==to fix==
+
+== 序列化
+
+. 序列化时会调用readObject方法,反序列化时会调用writeObject方法
+. serialVersionUID标识类的序列化的版本号,如果反序列化时当前类的版本号与序列化的二进制流对象的版本号不一致则会抛出异常
+. 序列化再反序列化后静态成员变量值为最新的
+
+
+== 接口
+
+. default方法继承判定
+   * Class优先
+   * 子接口优先
+   * 无法确定需用 类名.super 显示调用
+. Class#getDeclaredMethods不计算继承的方法
+
+== 泛型
+
+. 上界通配符只能get
+. 下界通配符get出Object,add时不能add声明的泛型边界的父类
+. 取不到一个类定义的泛型类型(T),只能取其子类或父类具体的泛型类型(Long,String...)
+
+== 反射
+.  getMethod获取所有public方法(包括父类),getDeclaredMethod获取所有方法(不包括父类)
+
+== 线程
+
+. 线程状态
+   * NEW
+   * RUNNABLE
+   * BLOCKED
+   * WAITING
+   * TIMED_WAITING
+   * TERMINATED
+. 线程内异常无法在外层try-catch,只能设置Thread的UncaughtExceptionHandler
+. 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
+. wait()释放对象锁,sleep()不释放.
+. Executor:
+   * ThreadPoolExecutor
+   * ForkJoinPool
+   * ScheduledThreadPoolExecutor
+   ... 如果当前线程池中的线程数目小于corePoolSize，则每来一个任务，就会创建一个线程去执行这个任务；
+   ... 如果当前线程池中的线程数目>=corePoolSize，则每来一个任务，会尝试将其添加到任务缓存队列当中，若添加成功，则该任务会等待空闲线程将其取出去执行；若添加失败（一般来说是任务缓存队列已满），则会尝试创建新的线程去执行这个任务；
+   ... 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
+   ... 如果线程池中的线程数量大于 corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
+
+== ClassLoader
+
+* loadClass 实现双亲委托模型
+* findClass 实现类文件读取
+
+== Articles
+
+* https://dzone.com/services/widget/article-listV2/list?page=1973&sort=newest
