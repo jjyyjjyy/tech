@@ -6,7 +6,7 @@ metadata:
 spec:
     containers:
     - name: springboot-demo
-      image: registry-vpc.cn-qingdao.aliyuncs.com/jy-test/boot:latest
+      image: registry.cn-qingdao.aliyuncs.com/jy-test/boot:latest
       imagePullPolicy: Always
       ports:
       - containerPort: 8080

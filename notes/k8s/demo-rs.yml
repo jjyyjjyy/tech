@@ -17,7 +17,7 @@ spec:
         spec:
             containers:
             - name: springboot-demo
-              image: registry-vpc.cn-qingdao.aliyuncs.com/jy-test/boot
+              image: registry.cn-qingdao.aliyuncs.com/jy-test/boot
               imagePullPolicy: Always
               ports:
               - containerPort: 8080
