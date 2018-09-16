@@ -167,18 +167,25 @@ kubectl create -f heapster/
 
 WARNING: 如果修改了一个pod的label, 则RC会自动新起一个pod.如果修改了RC的labelSelector, 则RC会自动创建所有pod副本.
 
-
 === 5.6 Replica Set
 
  包含ReplicationController所有的功能, 同时增强了labelSelector的功能.
 
 === 5.7 DaemonSet
 
+ 通过nodeSelector在每个节点上运行一个实例
 
+=== 5.8 Job
 
-=== 5.8 Deployment
-扩展了Replica Set
+ 启动批处理Job, 可以设置任务数/并行数/重试次数等
 
+=== 5.9 CronJob
+
+ 定时任务: 分/时/日/月/星期
+
+=== 5.10 Deployment
+
+ 扩展了Replica Set自动scale的功能.
 
 == 6. kubectl 命令
 
@@ -357,3 +364,10 @@ ports:
   targetPort: 8080
   nodePort: 8081
 ----
+
+* 设置service的spec.type为LoadBalancer, 不需要设置NodePort
+* Ingress
+
+=== 9. 技能图谱
+
+image::https://static001.geekbang.org/resource/image/90/77/90af293d7ff8caa58f5ac458a3b03577.jpg[]
