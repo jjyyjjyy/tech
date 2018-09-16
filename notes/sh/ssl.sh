@@ -16,3 +16,8 @@ echo "    listen 443 ssl;"
 echo "    ssl_certificate     /etc/nginx/ssl/$DOMAIN.crt;"
 echo "    ssl_certificate_key /etc/nginx/ssl/$DOMAIN.key;"
 echo "}"
+
+
+# jks
+# openssl pkcs12 -export -in $DOMAIN.crt -inkey $DOMAIN.key -out mycert.p12 -name tomcat -CAfile  $DOMAIN.crt -caname root -chain
+# keytool -importkeystore -v -srckeystore mycert.p12 -srcstoretype pkcs12 -srcstorepass 123456 -destkeystore tomcat.keystore -deststoretype jks -deststorepass 123456
