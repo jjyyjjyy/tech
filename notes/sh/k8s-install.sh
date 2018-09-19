@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 sudo apt update && sudo apt install -y apt-transport-https curl
-curl -s http://packages.faasx.com/google/apt/doc/apt-key.gpg | sudo apt-key add -
+curl -s http://soft-1252259164.file.myqcloud.com/apt-key.gpg | sudo apt-key add -
 echo "deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt update && sudo apt install -y kubelet kubectl kubeadm
 kubeadm version
@@ -13,7 +13,7 @@ sudo systemctl restart kubelet
 
 echo "====== pull images now ======"
 
-KUBE_VER="v1.11.2"
+KUBE_VER="v1.11.3"
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
 images=(
 kube-proxy-amd64:$KUBE_VER
@@ -31,3 +31,5 @@ for imageName in ${images[@]} ; do
 done
 
 echo "Done."
+
+# sudo kubeadm init --kubernetes-version=1.11.3 --pod-network-cidr=10.244.0.0/16
