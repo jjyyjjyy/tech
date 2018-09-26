@@ -54,9 +54,8 @@ include::sh/k8s-reset.sh[]
 # sh helper:
 alias kn='kubectl get nodes -o wide'
 alias kp='kubectl get pods --all-namespaces -o wide'
-alias kd='kubectl get deployments --all-namespaces -o wide'
 alias kc='kubectl create -f'
-alias kc='kubectl apply -f'
+alias ka='kubectl apply -f'
 alias kr='kubectl replace -f'
 
 ----
@@ -74,18 +73,17 @@ minikube dashboard
 minikube delete && rm -rf ~/.minikube
 ----
 
-== 4. Kubernetes Dashboard
-
-=== 4.1 安装
+== 4. 插件安装
+=== 4.1 安装Dashboard
 
 [source,bash]
 ----
 kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
 ----
-=== 4.2 登陆
+=== 4.2 创建登陆ServiceAccount
 [source,bash]
 ----
-cat <<EOF > account.yml
+cat <<EOF > sa-dashboard.yml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -106,7 +104,7 @@ subjects:
   namespace: kube-system
 EOF
 
-kubectl create -f account.yml
+kubectl create -f sa-dashboard.yml
 # 获取登陆token
 kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 
@@ -136,8 +134,25 @@ kubectl create -f heapster/
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
 chmod 700 get_helm.sh
 ./get_helm.sh
-helm init --tiller-image registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.10.0
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+helm init --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.11.0 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+
 ----
+
+=== 4.5 启用api-server的swagger ui
+
+[source,bash]
+----
+sudo vim /etc/kubernetes/manifests/kube-apiserver.yaml
+# command 加上
+- --enable-swagger-ui=true
+- --insecure-bind-address=0.0.0.0
+- --insecure-port=8080
+----
+
+TIP: api-server属于static pod, 改完配置文件后会自动生效.
 
 == 5. kubernetes各个组件功能
 
@@ -378,6 +393,54 @@ ports:
 * 设置service的spec.type为LoadBalancer, 不需要设置NodePort
 * Ingress
 
-=== 9. 技能图谱
+== 9. Helm
+
+ Kubernetes 包管理工具
+
+=== 9.1 基本概念
+
+* Chart: chart用于描述一个安装包
+* Repository: 存放chart的database
+* Release: 包安装后的一个实例
+
+=== 9.2 https://docs.helm.sh/developing_charts/#charts[常用命令]
+
+ helm search <chart>
+ helm inspect [values] <chart>
+ helm ls
+ helm install {CHART|TAR|URL} [--name <name>]
+ helm delete <chart>
+ helm repo list
+ helm repo add dev https://example.com/dev-charts
+ helm create <new_chart>
+ helm package <chart>
+
+== 10. Istio
+
+=== 10.1 核心功能
+
+ ServiceMesh解决方案
+
+* Envoy: 调节服务流量
+* Mixer: 执行访问控制和使用策略, 并从Envoy代理和其他服务收集数据
+* Pilot: 为Envoy提供服务发现功能
+* Citadel: 身份认证
+
+image::https://istio.io/docs/concepts/what-is-istio/arch.svg[]
+
+=== 10.2 安装
+
+[source,bash]
+----
+curl -L https://git.io/getLatestIstio | sh -
+mv istio-* istio/
+# bash修改PATH环境变量: export PATH=$HOME/istio/bin:$PATH
+cd istio/
+kubectl create namespace istio-system
+helm template install/kubernetes/helm/istio --name istio --namespace istio-system > $HOME/istio.yaml
+kubectl create -f $HOME/istio.yaml
+----
+
+== 技能图谱
 
 image::https://static001.geekbang.org/resource/image/90/77/90af293d7ff8caa58f5ac458a3b03577.jpg[]

@@ -24,7 +24,7 @@ sudo visudo
 
 [source,bash]
 ----
-sudo apt install -y git net-tools vim curl unzip unar aptitude xclip neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
+sudo apt install -y git net-tools vim curl unzip unar aptitude xclip tree neofetch gnome-tweak-tool apt-transport-https ca-certificates software-properties-common language-pack-zh-hans chrome-gnome-shell
 
 # 媒体解码
 sudo apt install -y libdvdnav4 libdvdread4 gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly libdvd-pkg ubuntu-restricted-extras
