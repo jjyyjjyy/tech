@@ -13,16 +13,16 @@ sudo systemctl restart kubelet
 
 echo "====== pull images now ======"
 
-KUBE_VER="v1.11.3"
+KUBE_VER="v1.12.0"
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
 images=(
 kube-proxy-amd64:$KUBE_VER
 kube-scheduler-amd64:$KUBE_VER
 kube-controller-manager-amd64:$KUBE_VER
 kube-apiserver-amd64:$KUBE_VER
-etcd-amd64:3.2.18
+etcd-amd64:3.2.24
 pause:3.1
-coredns:1.1.3
+coredns:1.2.2
 )
 for imageName in ${images[@]} ; do
   docker pull ${IMAGE_MIRROR}/${imageName}
@@ -32,4 +32,4 @@ done
 
 echo "Done."
 
-# sudo kubeadm init --kubernetes-version=1.11.3 --pod-network-cidr=10.244.0.0/16
+# sudo kubeadm init --kubernetes-version=1.12.0 --pod-network-cidr=10.244.0.0/16
