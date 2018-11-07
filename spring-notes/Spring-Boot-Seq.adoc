@@ -1,7 +1,9 @@
-= Spring Boot v2.0.3.RELEASE 启动流程
-jy
-v1.0
+= Spring Boot v2.1.0.RELEASE 启动流程
 :icons: font
+:sectanchors:
+:page-layout: docs
+:toc: left
+:toc-title: 索引
 
 == 文档:
 https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-reference.pdf
@@ -11,10 +13,10 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 .. 确定ApplicationType: None-Web/Servlet/Reactive
 .. 获取META-INF/spring.factories中 `ApplicationContextInitializer` 并设置到成员变量中
 * DelegatingApplicationContextInitializer
+* SharedMetadataReaderFactoryContextInitializer
 * ContextIdApplicationContextInitializer
 * ConfigurationWarningsApplicationContextInitializer
 * ServerPortInfoApplicationContextInitializer
-* SharedMetadataReaderFactoryContextInitializer
 * ConditionEvaluationReportLoggingListener
 .. 获取``META-INF/spring.factories``中 ``ApplicationListener`` 并设置到成员变量中
 * ConfigFileApplicationListener
