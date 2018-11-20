@@ -104,6 +104,48 @@
 * loadClass 实现双亲委托模型
 * findClass 实现类文件读取
 
+== Stream
+
+ 一个完整的操作是<数据来源，操作，回调函数>构成的三元组。Stream中使用Stage的概念来描述一个完整的操作，并用某种实例化后的PipelineHelper来代表Stage，将具有先后顺序的各个Stage连到一起，就构成了整个流水线
+
+.中间操作:
+. 无状态:
+.. unordered
+.. filter
+.. map
+.. mapToInt
+.. mapToLong
+.. mapToDouble
+.. flatMap
+.. flatMapToInt
+.. flatMapToLong
+.. flatMapToDouble
+.. peek
+. 有状态
+.. distinct
+.. sorted
+.. limit
+.. skip
+
+.结束操作
+. 非短路操作
+.. forEach
+.. forEachOrdered
+.. toArray
+.. reduce
+.. collect
+.. max
+.. min
+.. count
+. 短路操作
+.. anyMatch
+.. allMatch
+.. noneMatch
+.. findFirst
+.. findAny
+
+
+
 == Articles
 
 * https://dzone.com/services/widget/article-listV2/list?page=1973&sort=newest

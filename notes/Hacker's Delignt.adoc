@@ -1,0 +1,18 @@
+= Hacker's Delight notes
+:icons: font
+:sectanchors:
+:stem: asciimath
+:source-highlighter: rouge
+:page-layout: docs
+:toc: left
+:toc-title: 索引
+
+== 1. Basic
+
+=== 1.1 操作最右位
+
+* stem:[x&(x-1)]
+ 将最后一位1置为0
+ 结果等于0时,x为0或者x为2的幂
+* stem:[x|(x+1)]
+ 将最后一位0置为1, 可以将最后一个0改为1
