@@ -14,7 +14,7 @@ sudo systemctl restart kubelet
 #!/usr/bin/env bash
 echo "====== pull images now ======"
 
-KUBE_VER="v1.12.1"
+KUBE_VER="v1.12.2"
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
 
 imageName="kube-proxy-amd64:$KUBE_VER"
@@ -47,5 +47,3 @@ docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
 docker rmi ${IMAGE_MIRROR}/${imageName}
 
 echo "Done."
-
-# sudo kubeadm init --kubernetes-version=1.12.1 --pod-network-cidr=10.244.0.0/16
