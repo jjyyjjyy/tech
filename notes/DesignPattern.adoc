@@ -68,3 +68,66 @@ a|
 * 行为型:
 ** 类: 使用继承描述算法和控制流
 ** 对象: 描述一组对象协作来完成单个对象无法完成的任务
+
+== 4. 面向对象设计原则
+
+* Single Responsibility Principle: 单一职责原则
+
+ 一个类只负责一个功能领域的相应职责.如常用的代码分层: xxRepository负责db/xxService负责逻辑处理
+
+* Open-Closed Principle: 开闭原则
+
+ 一个实体类应该尽量在不修改原有代码的基础上扩展.
+
+.OCP(新增Chart不会修改AbstractChartDisplay类的代码)
+[plantuml, diagram-classes, svg]
+....
+interface Chart{
++ void display()
+}
+class AbstractChartDisplay{
+- chart: Chart
++ void setChart(Chart chart)
+}
+class FooChart{
+}
+class BarChart{
+}
+
+Chart <|.. FooChart
+Chart <|.. BarChart
+Chart <|.. AbstractChartDisplay
+....
+
+* Liskov Substitution Principle: 里氏替换原则
+
+ 在程序定义时尽量使用父类类型, 在运行时再去确定子类类型.
+ 在类设计时, 尽量把子类的方法抽到父类里面.
+
+* Dependency Inversion Principle: 依赖倒转原则
+
+ 针对接口编程, 而不是实现类.
+
+* Interface Segregation Principle: 接口隔离原则
+
+ 使用多个专门的接口, 而不是单一的接口.
+
+* Composite Reuse Principle: 合成复用原则
+
+ 尽量使用对象组合, 而不是继承来达到复用的目的.
+ Has-a 使用组合, Is-a 使用继承
+
+* LeastKnowledge Principle: 最小知识原则
+
+ 尽量减少对象之间的交互.
+
+
+== 5. 创建型模式
+
+=== 简单工厂(静态工厂)
+
+ 定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
+
+=== 工厂方法
+
+
