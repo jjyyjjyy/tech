@@ -3,7 +3,13 @@ package me.jy._8_bridge;
 /**
  * @author jy
  */
-public interface ReportPrinter {
+public abstract class ReportPrinter {
 
-    void print();
+    protected DataReader dataReader;
+
+    public void setDataReader(DataReader dataReader) {
+        this.dataReader = dataReader;
+    }
+
+    public abstract void print();
 }

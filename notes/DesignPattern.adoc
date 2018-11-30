@@ -358,7 +358,7 @@ Adaptee <.. Adapter
 
 === 6.2 Bridge模式
 
- 将复杂系统拆成多个维度
+ 将复杂系统拆成多个维度(把继承转化为组合)
 
 ==== 6.2.1 使用场景
 
@@ -397,15 +397,72 @@ Abstraction -> Implementor
 
 === 6.3 Composite模式
 
- 组成多个对象形成树型结构.
+ 定义一个抽象结构类, 包含所有的组件方法, 组合所有子组件和容器组件.
 
 ==== 6.3.1 使用场景
 
-
+ 希望忽略整体和部分的差异, 让客户端一致地对待他们
 
 ==== 6.3.2 结构
 
+.composite模式UML
+[plantuml, composite, svg]
+....
+class Component{
++ void operate()
+}
+
+class Leaf extends Component{
++ void operate()
+}
+
+class Composite extends Component{
++ void add(Component)
++ void remove(Component)
++ void operate()
+}
+
+....
+
 ==== 6.3.3 优点
 
-==== 6.3.4 缺点
+* 可以清楚地定义分层次的复杂对象.
+* 方便增加组件
+* 客户端可以无需关心子组件的层次结构, 统一处理.
 
+=== 6.4 Decorator模式
+
+ 在不改变原有类的基础上, 通过继承扩展现有的功能
+
+==== 6.4.1 使用场景
+
+ 给单个对象扩展功能
+
+==== 6.4.2 结构
+
+.Decorator模式UML
+[plantuml, decorator, svg]
+....
+class Component{
++ void operate()
+}
+class ConcreteComponent extends Component{
++ void operate()
+}
+class Decorator extends Component{
++ void operate()
+}
+class ConcreteDecoratorA extends Decorator{
++ void operate()
+}
+class ConcreteDecoratorB extends Decorator{
++ void operate()
+}
+
+Decorator -> ConcreteComponent
+....
+
+==== 6.4.3 优点
+
+* 减少了子类的个数, 扩展性提高
+* 可以通过不同的装饰创造出不同行为的组合.
