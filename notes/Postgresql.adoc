@@ -287,42 +287,64 @@ order by 1, 2, 4 desc;
 
 == 10. 分区
 
-WARNING: 10以上版本才支持
+> 将一个表根据不同的规则分成多个块的行为, 称为分区, 每一个分区称为分区表.
 
-=== 10.1 创建主表
+* 应用了分区规则的列会自动添加not null的约束.
+* 如果插入的值根据规则找不到匹配的分区, 则会报错.
+* PostgreSQL 10之后才内置分区功能, 支持Range和List分区, 11之后支持Hash分区.
+
+=== 10.1 优势
+
+* 每个分区表的索引相对于单表的索引大小会减小, 查询和更新的性能会提高
+* 删除特定范围的数据可以通过直接删除某个分区表实现
+
+TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受益.
+
+=== 10.2 分区方式
+
+* Range分区
+
+ 根据某一列值的范围插入相应的分区表, 比如根据日期范围分区, 仅支持单个列.
+
+* List分区
+
+ 根据每个分区表的某一列值的集合分区. 支持多列/多表达式
+
+* Hash分区
+
+ 根据某一列值的hash值分区
+
+
+=== 10.3 SQL
 
 [source,sql]
 ----
-create table <table_name> [PARTITION BY {RANGE | LIST}] column|expr
+# 创建主表
+CREATE TABLE [ IF NOT EXISTS ] parent_table ( [
+  { column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
+ ] ) PARTITION BY { RANGE | LIST | HASH } ( { column_name | ( expression ) }
+# 创建range型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES FROM (start) TO (end);
+# 创建list型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES IN (val1, val2) ;
+# 创建hash型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES WITH (MODULUS 4, REMAINDER 3);
 
-eg:
-create tabele log_parent (id serial,user_id int4, created_at timestamp)
-parition by range(created_at);
-
-----
-
-=== 10.2 创建分区表
-
-[source,sql]
-----
-create table <table_name> PARTITION OF <parent_table>
-  [()]
-  FOR VALUES <partition_bound_spec>]
-
-eg:
-create table log_sub_201808
-partition of log_parent for values from ('2018-08-01') TO ('2018-09-01');
-create table log_sub_201809
-partition of log_parent for values from ('2018-09-01') TO ('2018-10-01');
-----
-
-=== 10.3 在分区表上建立索引
-
-[source,sql]
-----
-create index log_sub_201808_created_at ON log_sub_201808 (created_at);
-create index log_sub_201809_created_at ON log_sub_201809 (created_at);
+# 删除分区关系
+ALTER TABLE parent_table ATTACH PARTITION partition_table_name
 ----
 
 IMPORTANT: update语句违反了当前分区键的约束会报错
 
+== 11. 清除WAL日志
+
+文档: https://www.postgresql.org/docs/current/pgarchivecleanup.html
+[source,bash]
+----
+pg_archivecleanup -d <archive_location> <oldest_kept_walfile>
+----
+
+如: `pg_archivecleanup -d /var/lib/postgresql/data/pg_wal 000000010000000000000036`
+会将 000000010000000000000001~000000010000000000000035所有文件删除
+
+TIP: `pg_archivecleanup -d . `ls -r | head -2 | tail -1``
