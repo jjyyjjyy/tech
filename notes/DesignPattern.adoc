@@ -466,3 +466,79 @@ Decorator -> ConcreteComponent
 
 * 减少了子类的个数, 扩展性提高
 * 可以通过不同的装饰创造出不同行为的组合.
+
+==== 6.4.4 缺点
+
+* 产生较多的对象
+
+=== 6.5 Facade模式
+
+ 为子系统提供统一的入口
+
+==== 6.5.1 使用场景
+
+ 客户端程序与子系统有很大的关联性.
+
+==== 6.5.2 结构
+
+.Facade模式UML
+[plantuml, facade, svg]
+....
+class SystemA{
++ void actionA()
+}
+class SystemB{
++ void actionB()
+}
+class SystemC{
++ void actionC()
+}
+class Facade{
++ void operate()
+}
+
+SystemA <- Facade
+SystemB <- Facade
+SystemC <- Facade
+....
+
+==== 6.5.3 优点
+
+* 降低客户端与子系统的耦合度.
+* 一个子系统的修改与其他系统没有影响
+
+=== 6.6 FlyWeight模式
+
+ 实现多个细粒度对象的复用. 使用工厂获取对象.
+
+==== 6.6.1 使用场景
+
+ 对象数量较多但对象内部状态统一.
+
+==== 6.6.2 结构
+
+.FlyWeight模式UML
+[plantuml, flyWeight, svg]
+....
+class Flyweight{
++ void operate(ExternalState)
+}
+class ConcreteFlyweight{
++ void operate(ExternalState)
+}
+class FlyweightFactory{
+- Map flyWeights
++ Flyweight get(InternalState)
+}
+
+Flyweight <|-- ConcreteFlyweight
+....
+
+==== 6.6.3 优点
+
+* 可以极大减少内存中对象的数量.
+* 内外部状态独立.
+
+==== 6.6.4 缺点
+
+* 分离内外部状态, 使系统更复杂.
