@@ -542,3 +542,37 @@ Flyweight <|-- ConcreteFlyweight
 ==== 6.6.4 缺点
 
 * 分离内外部状态, 使系统更复杂.
+
+=== 6.7. Proxy模式
+
+ 给某一个对象提供一个代理对象, 由他控制对原对象的访问.
+
+==== 6.7.1 使用场景
+
+ 无法直接访问某个对象, 或者访问困难.
+
+==== 6.7.2 结构
+
+.Proxy模式UML
+[plantuml, proxy, svg]
+....
+interface Subject{
++ void request()
+}
+class ConcreteSubject{
++ void request()
+}
+class ProxyObject{
++ void customRequest()
+}
+Subject <|.. ConcreteSubject
+Subject <|.. ProxyObject
+ConcreteSubject <- ProxyObject
+....
+
+==== 6.7.3 优点
+
+* 协调调用者和被调用者, 降低系统耦合度.
+
+== 7. 行为型模式
+
