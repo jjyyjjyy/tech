@@ -576,3 +576,80 @@ ConcreteSubject <- ProxyObject
 
 == 7. 行为型模式
 
+=== 7.1 Responsibility Of Chain模式
+
+==== 7.1.1 使用场景
+
+ 系统中有多个对象处理请求, 所有对象构成链式结构.
+
+==== 7.1.2 结构
+
+.Responsibility Of Chain模式UML
+[plantuml, chain-of-responsibility, svg]
+....
+class Handler{
+- Handler successor;
++ void request()
+}
+class ConcreteHandlerA{
++ void request()
+}
+class ConcreteHandlerB{
++ void request()
+}
+Handler <|-- ConcreteHandlerA
+Handler <|-- ConcreteHandlerB
+Handler <--|> Handler
+....
+
+==== 7.1.3 优点
+
+* 职责链中的对象无需关心链的结构
+* 新增或者删除handler的时候只需要修改客户端类.
+
+==== 7.1.4 缺点
+
+* 客户端任重而道远.
+
+=== 7.2 Command模式
+
+==== 7.2.1 使用场景
+
+ 向对象发送请求, 但不知道谁接收并处理请求.
+
+==== 7.2.2 结构
+
+.Command模式UML
+[plantuml, command, svg]
+....
+
+class ReceiverA {
++ void action()
+}
+class ReceiverB {
++ void action()
+}
+
+abstract class Command {
++ void execute()
+}
+
+class ConcreteCommandA {
+}
+
+class ConcreteCommandB {
+}
+
+Command <|-- ConcreteCommandA
+Command <|-- ConcreteCommandB
+ReceiverA <- ConcreteCommandA
+ConcreteCommandB -> ReceiverB
+....
+
+==== 7.2.3 优点
+
+* 调用者和接收者解耦.
+
+==== 7.2.4 缺点
+
+* 系统需要大量的命令类.

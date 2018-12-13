@@ -1,121 +1,121 @@
 = JVM
+:doctype: book
 :icons: font
-:sectanchors:
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
 :toc: left
-:toc-title: 索引
+:toc-title: 目录
 
-== 1. JVM存在的理由
-1. 跨平台(将字节码翻译成机器码)
-* 解释执行: 将字节码逐条翻译成机器码
-* 即时编译: 反复执行的热点方法,会将整个方法翻译成机器码再执行
-2. 优化代码
-3. 回收内存
+== JDK常用工具
 
-== 2. 运行时数据区
-.线程私有
-* PC寄存器: 存放下一条字节码指令的地址, native方法为undefined.
-* Java方法栈,存储栈帧(local variable table,operand stack...)
-* 本地方法栈
+* jps
 
-.线程共享
-* 堆: 运行时内存区域.
-* 方法区: 存储编译后的class结构信息,如 runtime constant pool , field segment, method,constructor...
+ 查看系统运行的所有Java进程的pid
 
-== 3. JVM加载类步骤
+* jinfo [option] <pid>
 
-TIP: `-XX:+TraceClassLoading` 可以看到加载类的过程
+ 查看指定Java进程信息. 如: jinfo -flags 1 查看pid为1的进程的所有启动参数. jinfo -flag <FLAG_NAME> 1 查看1进程指定flag的值
 
-. 加载
+* jstack <pid>
 
- 由ClassLoader载入字节码文件到内存中
+ 查看指定Java进程中每个线程栈信息
 
-. 链接
-.. 验证
-.. 准备
+* jstat [option] <pid> [interval]
 
- 为类的静态字段分配内存
- 在加载的类引用其他类的方法时生成符号引用
- ...
+ 查看指定进程的内存概况. 如: jstat -gcutil 1 1000 每隔1秒输出1进程的概况
 
-.. 解析
+== JVM参数概述
 
- 将准备阶段生成的符号引用解析成实际应用
+JVM主要接受两类标志: boolean类和赋值类参数.
 
-. 初始化
- 为static final字段赋值
- 执行<clinit>代码块(static字段和static代码块)
+* boolean类:
+ `-XX:+FLAG_NAME`. 如: `-XX:+UseCompressedOops` 开启64位JVM中的对象引用压缩,`-XX:-UseCompressedOops` 关闭压缩.
 
-== 4. 方法调用指令
-   * invokevirtual:调用对象的实例方法
-   * invokeinterface:调用接口方法
-   * invokespecial:调用实例初始化方法、私有方法、父类方法
-   * invokestatic:调用static方法
-   * invokedynamic://TODO
+* 赋值类: `-XX:+FLAG_NAME=VALUE`. 如 `-XX:AutoBoxCacheMax=20000`.
 
-== 5. 垃圾收集器:
-   * Serial(单线程)
+查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
 
-    使用单线程清理堆的内容，无论是Minor GC或者是Full GC都会STW.进行Full GC时会对老年代进行压缩整理．
+== 常用启动参数
 
-   * Throughput(Parallel)(64位JVM默认)
+-XX:+PrintGCDetails
 
-   多线程版本的Serial
+ 开启gc日志
 
-   * CMS(Concurrent)    -XX:+UserConcMarkSweepGC  -XX:+UseParNewGC
+-Xloggc:FILENAME
 
-   CMS在回收新生代时会STW,但使用新的算法多线程回收。但是Full GC时不会STW,而是使用若干个后台线程对老年代扫描并回收(不进行压缩整理).付出高CPU使用率! 如果堆变得过度碎片化,就会发生STW,使用单线程回收整理老年代
+ gc日志写入指定文件
 
-   * G1
+-XX:+UseGCLogfileRotation
 
-   G1收集算法将堆划分成若干个区域。多线程回收新生代,老年代由后台线程完成.老年代回收时将对象从一个区域复制到另外一个区域实现堆的压缩整理.
+ 启用gc日志文件切割
 
-   并行GC线程数: 8+(N-8) * 5/8
-   打印GC日志: -XX:+PrintGCDetails
-   cmd查看GC: jstat -gcutil PROCESS_ID  INTERVAL
+-XX:NumberOfGCLogfiles=N
 
-== 6. GC:
+-XX:GCLogfileSize=N
 
-* Minor GC: 新生代填满时，垃圾收集器会暂停所有的线程，回收新生代。
-  优势:
-  ** 新生代仅仅是堆的一部分，回收新生代比回收整个堆停顿的时间更短。
-  ** 对象首先分配在新生代的Eden区，在GC时对象要么被移走，要么被回收。所有存活的对象回收到另外一个Survivor区或者老年代相当于GC时自动进行了一次压缩整理。
-* Full GC: 回收老年代中不再使用的对象。
+== 垃圾收集器(Garbage Collector)
 
-== 7. 默认堆大小
+[.lead]
+垃圾收集分两步: 查找不再使用的对象, 然后释放这些对象所在的内存.
 
-|===
-| OS | 初始堆大小(-Xms) | 最大堆大小(-Xmx)
+[%hardbreaks]
+[.lead]
+由于对象的生存时间不同, 所有的垃圾收集器都采用分代收集的方式.
+堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation),新生代又被分为一个Eden区和两个Survivor区.
+对象首先在新生代Eden区分配, Eden区填满时, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代. 这一过程称为 *Minor GC*. 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
+对象不断移动到老年代, 等到老年代空间占满, JVM会回收老年代内存. 这一过程称为 *FULL GC*.
+所有的垃圾收集器在Minor GC时都会产生STW. 但FULL GC时不一定会产生STW,
 
-| Linux 32位Client
-| 16M
-| 256M
+* Serial垃圾收集器
 
-| Linux 32位Server
-| 64M
-| min(1G,1/4物理内存)
+[.lead]
+Serial垃圾收集器使用单线程回收内存, 垃圾回收时会暂停所有的应用线程.
+使用 `-XX:+UseSerialGC` 启用Serial垃圾收集器.
 
-| Linux 64位Server
-| min(512M,1/64物理内存)
-| min(32G,1/4物理内存)
+* Parallel垃圾收集器
 
-| Mac OS 64位
-| 64M
-| min(1G,1/4物理内存)
+TIP: JDK8默认收集器
 
-| Windows 32位Client
-| 16M
-| 256M
+[.lead]
+Parallel垃圾收集器使用多线程回收内存, 垃圾回收时会暂停所有的应用线程.
+使用 `-XX:+UseParallelGC` 启用Parallel垃圾收集器.
 
-| Windows 64位Server
-| 64M
-| min(1G,1/4物理内存)
+* CMS收集器
 
-|===
+[.lead]
+CMS回收新生代时会暂停所有应用线程, 使用多线程回收. 在FULL GC时不再暂停应用线程, 而是使用若干个后台线程定期扫描老年代, 及时回收不再使用的对象.
+但是当堆变得碎片化, CMS会退化成Serial收集器使用单线程回收内存并整理老年代, 之后再恢复成多线程收集.
+使用 `-XX:+UseConcMarkSweepGC -XX:+UseParNewGC` 启用CMS收集器.
 
-== 8. 远程debug参数
-[source,bash]
-----
--agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
-----
+* G1收集器
+
+TIP: JDK9默认收集器
+
+使用 `-XX:+UseG1GC` 启动G1收集器
+
+* ZGC收集器
+
+WARNING: JDK11新增收集器
+
+使用 `-XX:+UseZGC` 启动ZGC收集器
+
+== GC调优
+
+* 永远不要把堆内存的大小设置的比机器物理内存大.
+
+ FULL GC时JVM会访问整个堆的内容, 内存交换会拖慢GC的速度. 使用-Xms和-Xmx分别设置堆内存的最小值和最大值.
+ 默认64位JVM堆内存初始值为取512MB和物理内存大小1/64二者中的最小值, 最大值取32G和物理内存大小1/4二者中的最小值.
+
+* 调整新生代与老年代的大小
+
+.新生代大小设置参数, 后者优先级更高
+** -XX:NewRatio 设置新生代与老年代的比例, 默认值为2. 默认情况下新生代大小初始值等于 `初始堆大小/(1+NewRatio)`
+** -XX:NewSize 设置新生代大小的初始值
+** -XX:MaxNewSize 设置新生代大小的最大值
+** -Xmn 同时设置新生代的初始值和最大值
+
+推荐设置: `-XX:NewRatio=4`
+
+* 选择恰当的垃圾收集器
 
