@@ -1,4 +1,0 @@
-= Notes
-:icons: font
-:sectanchors:
-:page-layout: docs

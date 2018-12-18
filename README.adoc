@@ -1,9 +1,37 @@
-image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
-
+= Notes
 :icons: font
 :sectanchors:
 :page-layout: docs
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+
+image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 
 
+.Java
+* link:notes/Java.adoc[Java]
+* link:notes/JVM.adoc[JVM]
+* link:notes/CodeBestPractice.adoc[CodeBestPractice]
+* link:notes/DesignPattern.adoc[DesignPattern]
+* link:notes/Spock.adoc[Spock]
+* link:spring-notes/Spring-Boot-Seq.adoc[Spring-Boot]
 
-image::http://assets.processon.com/chart_image/5bf374f2e4b08522106a3cfe.png[]
+.Math
+
+* link:notes/Math.adoc[Math]
+* link:notes/LinearAlgebra.adoc[Linear Algebra]
+
+.Ops
+* link:notes/Ubuntu.adoc[Ubuntu]
+* link:notes/Network.adoc[Network]
+* link:notes/Vagrant.adoc[Vagrant]
+* link:notes/Kubernetes.adoc[Kubernetes]
+
+.DB
+* link:notes/PostgreSQL.adoc[PostgreSQL]
+* link:notes/MySQL.adoc[Mysql]
+
+

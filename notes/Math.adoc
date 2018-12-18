@@ -166,3 +166,19 @@ stem:[lim_(x->oo)(p(x))/(q(x))]
 === 3.8 可导性和连续性
 
 > 如果一个函数f在x上可导, 那么它在x上连续.
+
+=== 3.9 求导
+
+stem:[f'(x)=(f(x+h)-f(x))/h]
+
+=== 3.10 链式求导法则
+
+stem:[若h(x)=f(g(x)), 则h'(x)=f'(g(x))g'(x)]
+
+=== 3.11 三角函数极限
+
+* stem:[lim_(x->0)sin(x)/x = 1]
+* stem:[lim_(x->0)cos(x) = 1]
+* stem:[lim_(x->0)tan(x)/x = 1]
+* stem:[(sin(x))'=cos(x)]
+* stem:[(cos(x))'=-sin(x)]
