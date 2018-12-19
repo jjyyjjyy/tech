@@ -182,3 +182,30 @@ stem:[若h(x)=f(g(x)), 则h'(x)=f'(g(x))g'(x)]
 * stem:[lim_(x->0)tan(x)/x = 1]
 * stem:[(sin(x))'=cos(x)]
 * stem:[(cos(x))'=-sin(x)]
+
+== 4. 指数和对数
+
+=== 4.1 指数法则
+
+* stem:[b^0=1]
+* stem:[b^1=b]
+* stem:[b^xb^y=b^(x+y)]
+* stem:[b^x/b^y=b^(x-y)]
+* stem:[(b^x)^y=b^(x*y)]
+
+=== 4.2 对数法则
+
+* stem:[log_b1=0]
+* stem:[log_b(b)=1]
+* stem:[log_b(x*y)=log_bx+log_by]
+* stem:[log_b(x/y)=log_bx-log_by]
+* stem:[log_b(x^y)=ylog_bx]
+* stem:[log_bx=log_cx/log_cb]
+
+=== 4.3 自然对数
+
+stem:[e=lim_(n->oo)(1+1/n)^n]
+
+stem:[(log_ex)'=1/x]
+
+stem:[(e^(ax))'=ae^ax]
