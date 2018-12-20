@@ -30,13 +30,13 @@ include::sh/k8s-install.sh[]
 === 3.1 使用kubeadm创建Kubernetes集群
 [source,bash]
 ----
-sudo kubeadm init --kubernetes-version=1.12.2 --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+sudo kubeadm init --kubernetes-version=1.13.1 --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
 # 安装成功后,创建kubectl配置文件
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # network插件
-kubectl apply -f https://cloud.weave.works/k8s/v1.8/net.yaml
+kubectl apply -f https://cloud.weave.works/k8s/v1.10/net.yaml
 
 # kube单机 (Optional)
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -49,7 +49,8 @@ kubectl get pods --all-namespaces
 # kubectl -n kube-system describe TYPE NAME
 
 # 清除安装:
-include::sh/k8s-reset.sh[]
+sudo kubeadm reset -f
+rm -rf ~/.kube
 
 # sh helper:
 alias kn='kubectl get nodes -o wide'

@@ -11,39 +11,23 @@ sudo sed -i 's/ExecStart=\/usr\/bin\/kubelet.*/& $KUBE_PAUSE/g' /etc/systemd/sys
 sudo systemctl daemon-reload
 sudo systemctl restart kubelet
 
-#!/usr/bin/env bash
 echo "====== pull images now ======"
 
-KUBE_VER="v1.12.2"
+KUBE_VER="v1.13.1"
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
-
-imageName="kube-proxy-amd64:$KUBE_VER"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/kube-proxy:$KUBE_VER
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="kube-scheduler-amd64:$KUBE_VER"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/kube-scheduler:$KUBE_VER
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="kube-controller-manager-amd64:$KUBE_VER"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/kube-controller-manager:$KUBE_VER
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="kube-apiserver-amd64:$KUBE_VER"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/kube-apiserver:$KUBE_VER
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="etcd-amd64:3.2.24"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/etcd:3.2.24
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="pause:3.1"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
-docker rmi ${IMAGE_MIRROR}/${imageName}
-imageName="coredns:1.2.2"
-docker pull ${IMAGE_MIRROR}/${imageName}
-docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
-docker rmi ${IMAGE_MIRROR}/${imageName}
+images=(
+kube-proxy:$KUBE_VER
+kube-scheduler:$KUBE_VER
+kube-controller-manager:$KUBE_VER
+kube-apiserver:$KUBE_VER
+etcd-amd64:3.2.24
+pause:3.1
+coredns:1.2.6
+)
+for imageName in ${images[@]} ; do
+  docker pull ${IMAGE_MIRROR}/${imageName}
+  docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
+  docker rmi ${IMAGE_MIRROR}/${imageName}
+done
 
 echo "Done."
