@@ -1,10 +1,12 @@
 = 数学
+:doctype: book
 :icons: font
-:sectanchors:
-:stem: asciimath
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
 :toc: left
-:toc-title: 索引
+:toclevels: 3
+:toc-title: 目录
 
 == 1. 函数
 === 1.1 函数定义

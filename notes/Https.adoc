@@ -1,8 +1,12 @@
 = https证书
+:doctype: book
 :icons: font
-:sectanchors:
-:source-highlighter: rouge
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
 
 == 1. 注册域名
 

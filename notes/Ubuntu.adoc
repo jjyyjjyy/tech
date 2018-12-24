@@ -1,7 +1,12 @@
 = Ubuntu from zero to hero
+:doctype: book
 :icons: font
-:sectanchors:
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
 
 == 设置apt仓库镜像
 

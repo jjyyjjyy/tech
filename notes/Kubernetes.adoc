@@ -1,9 +1,12 @@
 = Kubernetes
+:doctype: book
 :icons: font
-:sectanchors:
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
 :toc: left
-:toc-title: 索引
+:toclevels: 3
+:toc-title: 目录
 
 == 1. 系统配置:
 

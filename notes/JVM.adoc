@@ -5,6 +5,7 @@
 :highlightjs-theme: idea
 :sectlinks:
 :toc: left
+:toclevels: 3
 :toc-title: 目录
 
 == JDK常用工具

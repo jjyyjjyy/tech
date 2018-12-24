@@ -1,0 +1,33 @@
+= Notes
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+
+image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
+
+.Java
+* link:Java.html[Java SE]
+* link:JVM.html[JVM]
+* link:DesignPattern.html[DesignPattern]
+* link:Spock.html[Spock]
+
+.Spring
+* link:Spring-Boot-Seq.html[Spring-Boot]
+
+.Math
+* link:Math.html[Math]
+* link:LinearAlgebra.html[Linear Algebra]
+
+.Ops
+* link:Ubuntu.html[Ubuntu]
+* link:Network.html[Network]
+* link:Vagrant.html[Vagrant]
+* link:Kubernetes.html[Kubernetes]
+
+.DB
+* link:PostgreSQL.html[PostgreSQL]
+* link:MySQL.html[Mysql]
+
+
