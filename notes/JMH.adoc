@@ -1,0 +1,140 @@
+= JMH
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+
+[[abstract]]
+
+*JMH* is a Java harness for building, running, and analysing nano/micro/milli/macro benchmarks written in Java and other languages targeting the JVM.
+
+== 1. Demo
+
+=== 1.1 Maven添加依赖
+
+[source,xml]
+.pom.xml
+----
+<dependency>
+    <groupId>org.openjdk.jmh</groupId>
+    <artifactId>jmh-generator-annprocess</artifactId>
+    <version>1.21</version>
+    <scope>test</scope>
+</dependency>
+----
+
+=== 1.2 测试类
+
+[source,java]
+.StringBenchmark.java
+----
+import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.results.format.ResultFormatType;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author jy
+ */
+@BenchmarkMode(Mode.Throughput)
+@Warmup(iterations = 3)
+@Measurement(iterations = 5, time = 5)
+@Threads(4)
+@Fork(1)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+public class StringBenchmark {
+
+    private static final int ITERATION = 1000;
+
+    @Benchmark
+    public void testStringAdd() {
+        String start = "Hello";
+        for (int i = 0; i < ITERATION; i++) {
+            start += i;
+        }
+        print(start);
+    }
+
+    @Benchmark
+    public void testStringBufferAdd() {
+        StringBuffer sb = new StringBuffer("Hello");
+        for (int i = 0; i < ITERATION; i++) {
+            sb.append(i);
+        }
+        print(sb.toString());
+    }
+
+    @Benchmark
+    public void testStringBuilderAdd() {
+        StringBuilder sb = new StringBuilder("Hello");
+        for (int i = 0; i < ITERATION; i++) {
+            sb.append(i);
+        }
+        print(sb.toString());
+    }
+
+    private void print(String s) {
+        // NO-OP
+    }
+
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+            .include(StringBenchmark.class.getSimpleName())
+            .resultFormat(ResultFormatType.JSON)
+            .build();
+
+        new Runner(opt).run();
+
+    }
+}
+----
+
+== 2. 注解使用说明
+
+=== 2.1 @BenchmarkMode
+
+`@BenchmarkMode` 声明JMH测量的维度.
+
+[source,bash]
+.Mode.java
+----
+Throughput("thrpt", "Throughput, ops/time"), // <1>
+AverageTime("avgt", "Average time, time/op"), // <5>
+SampleTime("sample", "Sampling time"), // <3>
+SingleShotTime("ss", "Single shot invocation time"), // <4>
+All("all", "All benchmark modes"); // <5>
+----
+
+<1> `Throughput` 代表吞吐量, 表示每秒可以执行多少次调用
+<2> `AverageTime` 代表调用的平均时间, 表示每次操作平均耗时多长时间
+<3> `SampleTime` JMH会随机采样, 最后输出采样结果的分布数据
+<4> `SingleShotTime` 表示只会执行一次测试
+<5> `All` 则会测量以上所有维度
+
+=== 2.2 Iteration
+
+`iteration` 属性是测量单位, 1iteration代表1秒内JMH不断调用测试方法.
+
+=== 2.3 @Warmup
+
+`@Warmup` 注解配置JMH预热的行为
+
+=== 2.4 @OutputTimeUnit
+
+`@OutputTimeUnit` 注解设置JMH报告中使用的时间单位
+
+=== 2.5 @Measurement
+
+`@Measurement` 配置测量JMH测量的行为, 如测量几次, 每次调用多长时间
+
+=== 2.6 @Fork
+
+`@Fork` 代表JMH会fork出几个进程来进行测试

@@ -28,6 +28,7 @@
         <spring-cloud.version>Finchley.SR2</spring-cloud.version>
         <project-reactor.version>Bismuth-RELEASE</project-reactor.version>
 
+        <jmh.version>1.21</jmh.version>
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>6.3</nimbus-jose-jwt.version>
 
