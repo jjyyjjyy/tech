@@ -13,17 +13,9 @@ sudo systemctl restart kubelet
 
 echo "====== pull images now ======"
 
-KUBE_VER="v1.13.1"
+KUBE_VER=`kubeadm version -o short`
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
-images=(
-kube-proxy:$KUBE_VER
-kube-scheduler:$KUBE_VER
-kube-controller-manager:$KUBE_VER
-kube-apiserver:$KUBE_VER
-etcd-amd64:3.2.24
-pause:3.1
-coredns:1.2.6
-)
+images=`kubeadm config images list | tr "\/" "\n" | awk '!(NR%2)'`
 for imageName in ${images[@]} ; do
   docker pull ${IMAGE_MIRROR}/${imageName}
   docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}

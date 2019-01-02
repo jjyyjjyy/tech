@@ -1,5 +1,4 @@
 = MySQL
-:doctype: book
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea

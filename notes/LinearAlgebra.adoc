@@ -1,9 +1,11 @@
 = Linear Algebra
-:doctype: book
+:author: jy
+:email: jiang97799@gmail.com
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录

@@ -1,10 +1,11 @@
-= 单变量微积分
-:doctype: book
+= Single Variable Calculus
+:author: jy
+:email: jiang97799@gmail.com
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
-:stem:
 :sectlinks:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
@@ -175,7 +176,7 @@ stem:[lim_(x->oo)(p(x))/(q(x))]
 
 === 3.9 求导
 
-stem:[f'(x)=(f(x+h)-f(x))/h]
+定义: stem:[f'(x)=(f(x+h)-f(x))/h]
 
 * stem:[(cu)'=c(u)']
 * stem:[(u*v)'=u(v)'+(u)'v]

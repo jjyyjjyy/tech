@@ -1,5 +1,4 @@
 = Ubuntu from zero to hero
-:doctype: book
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea

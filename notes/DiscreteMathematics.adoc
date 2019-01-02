@@ -1,0 +1,75 @@
+= Discrete Mathematics
+:author: jy
+:email: jiang97799@gmail.com
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+
+== 1. 逻辑和证明
+
+=== 1.1 命题逻辑
+
+> 命题是一个陈述事实的语句, 它或真或假, 但不能既为真又为假. 如果一个命题是真命题, 用T表示, 假命题用F表示.
+
+> 令 stem:[p] 为一命题, 则 stem:[p] 的否定记作 stem:[notp]
+
+
+> 令 stem:[p] 和 stem:[q] 为命题, stem:[p]、stem:[q] 的合取记作 stem:[p^^q]. 当p和q都是真命题时, stem:[p^^q] 为真, 否则为假.
+
+> 令 stem:[p] 和 stem:[q] 为命题, stem:[p]、stem:[q] 的析取记作 stem:[pvvq]. 当p和q都是假命题时, stem:[pvvq] 为假, 否则为真.
+
+> 令 stem:[p] 和 stem:[q] 为命题, stem:[p]、stem:[q] 的异或记作 stem:[po+q]. 当p和q中恰好只有1个真命题时为真, 否则为假.
+
+=== 1.2 条件语句
+
+> 令 stem:[p] 和 stem:[q] 为命题, 条件语句 stem:[p->q] 代表命题 "如果p,则q". 当stem:[p]为真且stem:[q]为假时, 条件语句 stem:[p->q] 为假, 否则为真.
+
+* stem:[q->p] 称为 stem:[p->q] 的逆命题.
+* stem:[notp->notq] 称为 stem:[p->q]的反命题.
+* stem:[notq->notp] 称为 stem:[p->q]的逆否命题.
+
+ 逆否命题和原命题有相同的真值.
+ 逆命题和反命题有相同的真值.
+
+> 令p和q为命题, 双条件语句 stem:[pharrq] 代表命题 "p当且仅当q". 当p和q真值相同时, 双条件语句为真, 否则为假.
+
+=== 1.3 复合命题的真值表
+
+[cols="6*^"]
+|===
+| p | q | stem:[notq] | stem:[pvvnotq] | stem:[p^^q] | stem:[(pvvnotq)->(p^^q)]
+
+| T
+| T
+| F
+| T
+| T
+| T
+
+| T
+| F
+| T
+| T
+| F
+| F
+
+| F
+| T
+| F
+| F
+| F
+| T
+
+| F
+| F
+| T
+| T
+| F
+| F
+
+|===
