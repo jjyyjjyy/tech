@@ -1,9 +1,15 @@
 = Spring Boot v2.1.0.RELEASE 启动流程
 :icons: font
-:sectanchors:
-:page-layout: docs
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:sectnums:
+:stem:
 :toc: left
-:toc-title: 索引
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
 == 文档:
 https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-reference.pdf

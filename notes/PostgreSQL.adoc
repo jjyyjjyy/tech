@@ -3,13 +3,17 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 安装
+== 安装
 
-=== 1.1 docker
+=== docker
 [source,bash]
 .docker-compose.yml
 ----
@@ -32,7 +36,7 @@ services:
 networks:
     postgresql:
 ----
-=== 1.2 安装包安装
+=== 安装包安装
 
 [source,bash]
 ----
@@ -49,7 +53,7 @@ initdb -D /database/pg10/pg_root -E UTF8 --locale=C -U postgres -W
 
 
 
-== 2. 基本命令
+== 基本命令
 [source,bash]
 ----
 # 创建db
@@ -78,9 +82,9 @@ postgres -D <data-dir> &
 pg_ctl -D <data-dir> -m [fast|smart|immediate]  -t <timeout> stop
 ----
 
-== 3. 配置
+== 配置
 
-=== 3.1 pg_hba.conf
+=== pg_hba.conf
 
 [source,bash]
 ----
@@ -99,12 +103,12 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
   ** reject: 拒绝访问
   ** scram-sha-256
 
-=== 3.2 postgresql.conf
+=== postgresql.conf
 
  postgresql 启动时postgresql.auto.conf会覆盖postgresql.conf内容
  更改配置生效: pg_ctl -D <data-dir> reload
 
-== 4. psql命令
+== psql命令
 
 * psql -c "SQL" [-d DB_NAME] [-U USERNAME] [-W PASSWORD] [-f SQL_FILE]
 * \db: 查看表空间
@@ -118,7 +122,7 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 * \set VAR_NAME VALUE: 设置变量, :VAR_NAME 使用
 * \timing: 开启sql计时
 
-== 5. Monitor
+== Monitor
 
 [source,sql]
 ----
@@ -145,28 +149,28 @@ order by 1, 2, 4 desc;
 
 ----
 
-== 6. 数据类型
+== 数据类型
 
-=== 6.1 数字类型
+=== 数字类型
 * int2 int4 int8
 * decimal/numeric[(precision,scale)]
 * real 6位十进制精度浮点数
 * double precision 15位十进制精度浮点数
 * smallserial/serial/bigserial 2/4/8字节自增序列
 
-=== 6.2 字符串类型
+=== 字符串类型
 * varchar/character varying 变长
 * character/char 定长
 * text 变长,无长度限制
 
-=== 6.3 日期类型
+=== 日期类型
 * timestamp[without time zone]
 * timestamp[with time zone] / timestamptz
 * date
 * time[with[out] time zone]
 * interval
 
-=== 6.4 range类型
+=== range类型
 * int4range
 * int8range
 * numrange
@@ -174,13 +178,13 @@ order by 1, 2, 4 desc;
 * tstzrange
 * daterange
 
-=== 6.5 其他
+=== 其他
 * boolean
 * cidr/inet/macaddr/macaddr8
 * 数组
 * json/jsonb
 
-== 7. 高级特性
+== 高级特性
 * with从句
 * 批量插入: insert into select from / insert into values (),() / COPY
 * upsert:
@@ -198,21 +202,21 @@ order by 1, 2, 4 desc;
   ** nth_value(field,line): 取分组指定行数据
   ** 别名: select ...[rank() over NAME] from <table> WINDOW <NAME> AS ()
 
-== 8. 体系结构
+== 体系结构
 
-=== 8.1 逻辑结构
+=== 逻辑结构
 
  创建一个Database时会为这个Database创建一个名为public的默认schema.
  相同数据库不同schema可以拥有相同名称的table/index/view/sequence/function等
 
-=== 8.2 物理结构
-==== 8.2.1 OID
+=== 物理结构
+==== OID
  OID,对象标识符,无符号4字节整数.所有的数据库对象由各自的OID管理
 
 * 数据库对象OID保存在pg_database系统表里.
 * 表/索引/序列等对象OID保存在pg_class系统表里.
 
-==== 8.2.2 表空间
+==== 表空间
  初始化数据库目录时会自动创建两个表空间: pg_global和pg_default
 
 * pg_global保存在global目录中, 用来保存系统表
@@ -221,7 +225,7 @@ order by 1, 2, 4 desc;
  每个数据库的oid都是base目录下的子目录, 表文件在所属数据库目录下以表OID命名.
  杜宇超过1GB大小的表文件则会自动切分为多个文件存储,以OID.<seq> 命名
 
-=== 8.3 进程结构
+=== 进程结构
 * postmaster
 * postgres
 * syslogger
@@ -229,7 +233,7 @@ order by 1, 2, 4 desc;
 * bgwriter
 * walwriter
 
-=== 8.4 内存结构
+=== 内存结构
 
 * 本地内存
 ** work_mem: ORDER BY/DISTINCT会用到
@@ -241,7 +245,7 @@ order by 1, 2, 4 desc;
 ** WAL buffer: WAL文件持久化缓冲区
 ** CommitLog buffer: commit log中保存事务的状态,保存在缓冲区
 
-== 9. 事务
+== 事务
 
 |===
 | 隔离级别 | 脏读 | 不可重复读 | 幻读 | 序列化异常
@@ -272,22 +276,22 @@ order by 1, 2, 4 desc;
 
 |===
 
-=== 9.1 查看全局事务默认隔离级别
+=== 查看全局事务默认隔离级别
  select name,setting from pg_settings where name='default_transaction_isolation';
 
-=== 9.2 修改全局事务默认隔离级别
+=== 修改全局事务默认隔离级别
 * 修改postgresql.conf的default_transaction_isolation参数
 * `ALTER SYSTEM SET default_transaction_isolation TO 'REPEATABLE READ';`
 
-=== 9.3 查看当前会话事务默认隔离级别
+=== 查看当前会话事务默认隔离级别
 * `SHOW transaction_isolation;`
 * `select current_setting('transaction_isolation');`
 
-=== 9.4 设置当前会话事务默认隔离级别
+=== 设置当前会话事务默认隔离级别
 * `set session characteristics as transaction isolation level REPEATABLE READ`
 * `START|BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ... END`
 
-== 10. 分区
+== 分区
 
 > 将一个表根据不同的规则分成多个块的行为, 称为分区, 每一个分区称为分区表.
 
@@ -295,14 +299,14 @@ order by 1, 2, 4 desc;
 * 如果插入的值根据规则找不到匹配的分区, 则会报错.
 * PostgreSQL 10之后才内置分区功能, 支持Range和List分区, 11之后支持Hash分区.
 
-=== 10.1 优势
+=== 优势
 
 * 每个分区表的索引相对于单表的索引大小会减小, 查询和更新的性能会提高
 * 删除特定范围的数据可以通过直接删除某个分区表实现
 
 TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受益.
 
-=== 10.2 分区方式
+=== 分区方式
 
 * Range分区
 
@@ -317,7 +321,7 @@ TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受�
  根据某一列值的hash值分区
 
 
-=== 10.3 SQL
+=== SQL
 
 [source,sql]
 ----
@@ -338,7 +342,7 @@ ALTER TABLE parent_table ATTACH PARTITION partition_table_name
 
 IMPORTANT: update语句违反了当前分区键的约束会报错
 
-== 11. 清除WAL日志
+== 清除WAL日志
 
 文档: https://www.postgresql.org/docs/current/pgarchivecleanup.html
 [source,bash]

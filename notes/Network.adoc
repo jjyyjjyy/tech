@@ -3,11 +3,15 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 路由
+== 路由
 
 以太网交换机:
 
@@ -45,16 +49,16 @@
 | message
 |===
 
-== 2. 数据链路层
+== 数据链路层
 
-=== 2.1. CSMA/CD
+=== CSMA/CD
 
 `一个站点首先检测网络上正在发送的信号, 并在网络空闲时发送自己的帧.
 如果其他站点碰巧同时发送, 则为一次碰撞. 每个站点等待一个随即时间, 然后再次尝试发送.
 随后如果再次碰撞, 等待的时间翻倍. 最终, 每个站点会得到机会发送, 或者在尝试一定次数(16)后超时.
 `
 
-=== 2.2 Ethernet 2帧格式
+=== Ethernet 2帧格式
 . 前导字段(8)
 . 目标MAC地(6)
 . 源MAC地址(6)
@@ -69,7 +73,7 @@
 * ARP 0x0806
 * RARP 0x80length > 1500 ? Ethernet2 : 802.3
 
-=== 2.3 ARP帧格式
+=== ARP帧格式
 `ARP提供网络层地址到硬件地址的映射`
 
 . 目标地址(1.1.1.1)
@@ -86,7 +90,7 @@
 . 接收方IP地址
 
 
-==  IP
+== IP
 `IP提供了一种尽力而为,无连接的数据包交付服务.`
 
 . 版本(0x0100/0x0110)

@@ -11,7 +11,7 @@ rm -rf pom.xml && rm -rf *.iml
 if [[ ${#CHECK_NOTHING} != 0 ]];then
     echo "nothing to commit"
 else
-    git add --renormalize .
+    git add .
     git commit -m ":memo: Update"
     git push origin
 fi

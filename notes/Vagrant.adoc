@@ -3,11 +3,15 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 安装
+== 安装
 
 [source,bash]
 ----
@@ -18,10 +22,10 @@ export http_proxy="socks5://127.0.0.1:1080"
 export https_proxy=$http_proxy
 ----
 
-== 2. 命令
+== 命令
 https://www.vagrantup.com/docs/cli/
 
-=== 2.1 basic
+=== basic
 * vagrant version
 * vagrant login `需将SOCKS5代理切换成HTTP代理登录`
 * vagrant global-status
@@ -37,7 +41,7 @@ https://www.vagrantup.com/docs/cli/
 * vagrant provision `刷新配置`
 * vagrant destroy -f
 
-=== 2.2 box
+=== box
 * vagrant box add [boxName|file|url] [--box-version VALUE] [--clean] [--force] [--insecure] [file: --name VALUE]
 * vagrant box list
 * vagrant box outdated [--global]
@@ -47,9 +51,9 @@ https://www.vagrantup.com/docs/cli/
 * vagrant box update [--box VALUE] (in vagrant dir)
 
 
-== 3. 网络
+== 网络
 
-=== 3.1 端口转发
+=== 端口转发
 [source,ruby]
 .Vagrantfile
 ----
@@ -57,7 +61,7 @@ https://www.vagrantup.com/docs/cli/
 config.vm.network "forwarded_port", guest: 80, host: 8080 [,protocol: "[tcp|udp]"]
 ----
 
-=== 3.2 私有网络
+=== 私有网络
 [source,ruby]
 .Vagrantfile
 ----
@@ -68,7 +72,7 @@ config.vm.network "private_network", ip: "192.168.0.11"
 config.vm.network "private_network", type: 'dhcp'
 ----
 
-=== 3.3 公有网络
+=== 公有网络
 [source,ruby]
 .Vagrantfile
 ----
@@ -79,7 +83,7 @@ config.vm.network "public_network", ip: "192.168.0.11"[, brige: "wlp2s0"]
 config.vm.network "public_network"
 ----
 
-== 4. Vagrantfile配置
+== Vagrantfile配置
 [source,ruby]
 .Vagrantfile
 ----

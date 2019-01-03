@@ -3,12 +3,16 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 名词 Nouns
-=== 1.1 分类
+== 名词 Nouns
+=== 分类
 * 可数名词
 ** 专属名词 `Individual nouns`
 ** 集体名词 `Collective nouns`
@@ -16,7 +20,7 @@
 ** 物质名词 `Material nouns`
 ** 抽象名词 `Abstract nouns`
 
-=== 1.2 复数
+=== 复数
 .一般情况
 * 加s
 ** 清辅音后读 `/s/`

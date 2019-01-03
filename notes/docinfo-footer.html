@@ -1,0 +1,89 @@
+<style>
+    #tocbot a.toc-link.node-name--H1 {
+        font-style: italic
+    }
+
+    @media screen {
+        #tocbot > ul.toc-list {
+            margin-bottom: 0.5em;
+            margin-left: 0.125em
+        }
+
+        #tocbot ul.sectlevel0, #tocbot a.toc-link.node-name--H1 + ul {
+            padding-left: 0
+        }
+
+        #tocbot a.toc-link {
+            height: 100%
+        }
+
+        .is-collapsible {
+            max-height: 3000px;
+            overflow: hidden;
+        }
+
+        .is-collapsed {
+            max-height: 0
+        }
+
+        .is-active-link {
+            font-weight: 700
+        }
+    }
+
+    @media print {
+        #tocbot a.toc-link.node-name--H4 {
+            display: none
+        }
+    }
+</style>
+<script src="https://cdn.bootcss.com/tocbot/4.4.2/tocbot.min.js"></script>
+<script>
+    var oldtoc = document.getElementById('toctitle').nextElementSibling;
+    var newtoc = document.createElement('div');
+    newtoc.setAttribute('id', 'tocbot');
+    newtoc.setAttribute('class', 'js-toc');
+    oldtoc.parentNode.replaceChild(newtoc, oldtoc);
+    tocbot.init({
+        contentSelector: '#content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        smoothScroll: false,
+        orderedList: false
+    });
+    var handleTocOnResize = function () {
+        var width = window.innerWidth
+            || document.documentElement.clientWidth
+            || document.body.clientWidth;
+        if (width < 768) {
+            tocbot.refresh({
+                contentSelector: '#content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 6,
+                activeLinkClass: 'ignoreactive',
+                throttleTimeout: 1000,
+                smoothScroll: false,
+                orderedList: false
+            });
+        } else {
+            tocbot.refresh({
+                contentSelector: '#content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                smoothScroll: false,
+                orderedList: false
+            });
+        }
+    };
+    window.addEventListener('resize', handleTocOnResize);
+    handleTocOnResize();
+
+
+    var link = document.createElement("a");
+    link.setAttribute("href", "index.html");
+    link.innerHTML = "<i class=\"fa fa-chevron-left\" aria-hidden=\"true\"></i>&nbsp;&nbsp;Back to index";
+    var p = document.createElement("p");
+    p.appendChild(link);
+    var toc = document.getElementById('toc')
+    var next = document.getElementById('toctitle').nextElementSibling;
+    toc.insertBefore(p, next);
+
+</script>

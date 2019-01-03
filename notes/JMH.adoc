@@ -3,17 +3,21 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
 [[abstract]]
 
 *JMH* is a Java harness for building, running, and analysing nano/micro/milli/macro benchmarks written in Java and other languages targeting the JVM.
 
-== 1. Demo
+== Demo
 
-=== 1.1 Maven添加依赖
+=== Maven添加依赖
 
 [source,xml]
 .pom.xml
@@ -26,7 +30,7 @@
 </dependency>
 ----
 
-=== 1.2 测试类
+=== 测试类
 
 [source,java]
 .StringBenchmark.java
@@ -96,9 +100,9 @@ public class StringBenchmark {
 }
 ----
 
-== 2. 注解使用说明
+== 注解使用说明
 
-=== 2.1 @BenchmarkMode
+=== @BenchmarkMode
 
 `@BenchmarkMode` 声明JMH测量的维度.
 
@@ -118,22 +122,22 @@ All("all", "All benchmark modes"); // <5>
 <4> `SingleShotTime` 表示只会执行一次测试
 <5> `All` 则会测量以上所有维度
 
-=== 2.2 Iteration
+=== Iteration
 
 `iteration` 属性是测量单位, 1iteration代表1秒内JMH不断调用测试方法.
 
-=== 2.3 @Warmup
+=== @Warmup
 
 `@Warmup` 注解配置JMH预热的行为
 
-=== 2.4 @OutputTimeUnit
+=== @OutputTimeUnit
 
 `@OutputTimeUnit` 注解设置JMH报告中使用的时间单位
 
-=== 2.5 @Measurement
+=== @Measurement
 
 `@Measurement` 配置测量JMH测量的行为, 如测量几次, 每次调用多长时间
 
-=== 2.6 @Fork
+=== @Fork
 
 `@Fork` 代表JMH会fork出几个进程来进行测试

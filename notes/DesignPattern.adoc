@@ -3,11 +3,15 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 定义
+== 定义
 
 > 对在特定场景下解决设计问题的类或对象的描述.
 
@@ -17,7 +21,7 @@
 * 模式的组成和设计
 * 效果(优缺点)
 
-== 2. 类别
+== 类别
 
 |===
 | | | 创建型 | 结构型 | 行为型
@@ -58,7 +62,7 @@ a|
 
 |===
 
-== 3. 作用
+== 作用
 
 * 创建型:
 ** 类: 将对象的部分创建工作延迟到子类
@@ -70,7 +74,7 @@ a|
 ** 类: 使用继承描述算法和控制流
 ** 对象: 描述一组对象协作来完成单个对象无法完成的任务
 
-== 4. 面向对象设计原则
+== 面向对象设计原则
 
 * Single Responsibility Principle: 单一职责原则
 
@@ -123,31 +127,31 @@ Chart <|.. AbstractChartDisplay
  尽量减少对象之间的交互.
 
 
-== 5. 创建型模式
+== 创建型模式
 
-=== 5.1 Simple Factory模式(静态工厂)
+=== Simple Factory模式(静态工厂)
 
  定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
 
-==== 5.1.1 使用场景
+==== 使用场景
  客户端知道创建对象需要的参数, 不关系对象的创建过程.
 
-==== 5.1.2 优点
+==== 优点
 * 将对象的创建和对象的使用分离开, 客户端无需知道具体的创建逻辑, 只需知道对象创建需要的参数.
 
-==== 5.1.3 缺点
+==== 缺点
 * 工厂类职责过重, 如果工厂类出现问题, 就会影响整个系统.
 * 系统扩展困难, 一旦添加新的产品就要修改工厂逻辑, 违反了开闭原则.
 
-=== 5.2 Factory Method模式
+=== Factory Method模式
 
  定义一个创建对象的接口, 让子类决定将哪个类实例化.
 
-==== 5.2.1 使用场景
+==== 使用场景
 
  客户端不知道它需要的对象的类型
 
-==== 5.2.2 结构
+==== 结构
 
 .工厂方法模式UML
 [plantuml, factoy-method, svg]
@@ -166,23 +170,23 @@ ProductFactory <|.. ConcreteProductFactory
 ConcreteProduct <- ConcreteProductFactory
 ....
 
-==== 5.2.3 优点
+==== 优点
 
 * 客户端只需要关心创建产品需要的工厂, 无需关心创建细节
 
-==== 5.2.3 缺点
+==== 缺点
 
 * 系统文件个数增加
 
-=== 5.3 Abstract Factory模式
+=== Abstract Factory模式
 
  提供一个创建一系列相关对象的接口
 
-==== 5.3.1 使用场景
+==== 使用场景
 
  生产的多个对象可以规约为多种类型
 
-==== 5.3.2 结构
+==== 结构
 
 .抽象工厂模式UML
 [plantuml, abstract-factoy, svg]
@@ -214,23 +218,23 @@ ConcreteProductA <- ConcreteProductFactory2
 ConcreteProductB <- ConcreteProductFactory2
 ....
 
-==== 5.3.3 优点
+==== 优点
 
 * 增加一个产品族的时候只需要增加一个工厂类就行了.
 
-==== 5.3.4 缺点
+==== 缺点
 
 * 增加一个产品需要修改所有的工厂类.
 
-=== 5.4 Singleton模式
+=== Singleton模式
 
  内部提供一个静态的工厂方法, 获取单个实例
 
-==== 5.4.1 使用场景
+==== 使用场景
 
  系统中不需要多个实例
 
-==== 5.4.2 结构
+==== 结构
 
 .单例模式UML
 [plantuml, singleton, svg]
@@ -241,22 +245,22 @@ class Singleton {
 }
 ....
 
-==== 5.4.3 优点
+==== 优点
 * 节约系统资源
 * 限制了对实例的访问
 
-==== 5.4.4 缺点
+==== 缺点
 * 扩展困难
 
-=== 5.5 原型模式
+=== 原型模式
 
  使用原型实例指定创建对象的种类, 并且通过拷贝这些原型创建新的对象.
 
-==== 5.5.1 使用场景
+==== 使用场景
 
  创建大量内容相同的对象.
 
-==== 5.5.2 结构
+==== 结构
 
 .单例模式UML
 [plantuml, prototype, svg]
@@ -266,23 +270,23 @@ class Prototype{
 }
 ....
 
-==== 5.5.3 优点
+==== 优点
 
 * 简化对象的创建过程, 提高新对象的创建效率
 
-==== 5.5.4 缺点
+==== 缺点
 
 * 为了deep clone, 对象的每一个属性都必须实现deep clone.
 
-=== 5.5 Builder模式
+=== Builder模式
 
  提供Builder类组装对象
 
-==== 5.5.1 使用场景
+==== 使用场景
 
  组装的类属性很多, 创建过程复杂, 可以引入builder简化客户端调用.
 
-==== 5.5.2 组成
+==== 组成
 
 .单例模式UML
 [plantuml, builder, svg]
@@ -298,21 +302,21 @@ class Builder{
 }
 ....
 
-==== 5.5.3 优点
+==== 优点
 
 * 隔离复杂对象的创建和使用, 并使得相同的创建过程可以创建不同的对象.
 
-== 6. 结构型模式
+== 结构型模式
 
-=== 6.1 Adapter模式
+=== Adapter模式
 
  继承Target类, 使用另外的Adaptee类重写Target类方法
 
-==== 6.1.1 使用场景
+==== 使用场景
 
  没有Target类的代码(需要框架使用者去扩展) / 重用Adaptee类代码
 
-==== 6.1.2 结构
+==== 结构
 
 .对象适配器模式UML
 [plantuml, adapter-obj, svg]
@@ -347,25 +351,25 @@ Target <.. Adapter
 Adaptee <.. Adapter
 ....
 
-==== 6.1.3 优点
+==== 优点
 
 * 将目标类和实现解耦
 * adaptee类可以重用
 * 可以集成多个适配类
 
-==== 6.1.4 缺点
+==== 缺点
 
 * 如果Target不是接口, 则最多只能继承一个Target.
 
-=== 6.2 Bridge模式
+=== Bridge模式
 
  将复杂系统拆成多个维度(把继承转化为组合)
 
-==== 6.2.1 使用场景
+==== 使用场景
 
  系统中某个类存在多个维度, 可以将各个模式拆分出来, 使其可以单独扩展.
 
-==== 6.2.2 结构
+==== 结构
 
 .bridge模式UML
 [plantuml, bridge, svg]
@@ -388,23 +392,23 @@ Abstraction <|-- AbstractionA
 Abstraction -> Implementor
 ....
 
-==== 6.2.3 优点
+==== 优点
 
 * 能灵活扩展一个维度而不影响其他维度
 
-==== 6.2.4 缺点
+==== 缺点
 
 * 难以分离维度
 
-=== 6.3 Composite模式
+=== Composite模式
 
  定义一个抽象结构类, 包含所有的组件方法, 组合所有子组件和容器组件.
 
-==== 6.3.1 使用场景
+==== 使用场景
 
  希望忽略整体和部分的差异, 让客户端一致地对待他们
 
-==== 6.3.2 结构
+==== 结构
 
 .composite模式UML
 [plantuml, composite, svg]
@@ -425,21 +429,21 @@ class Composite extends Component{
 
 ....
 
-==== 6.3.3 优点
+==== 优点
 
 * 可以清楚地定义分层次的复杂对象.
 * 方便增加组件
 * 客户端可以无需关心子组件的层次结构, 统一处理.
 
-=== 6.4 Decorator模式
+=== Decorator模式
 
  在不改变原有类的基础上, 通过继承扩展现有的功能
 
-==== 6.4.1 使用场景
+==== 使用场景
 
  给单个对象扩展功能
 
-==== 6.4.2 结构
+==== 结构
 
 .Decorator模式UML
 [plantuml, decorator, svg]
@@ -463,24 +467,24 @@ class ConcreteDecoratorB extends Decorator{
 Decorator -> ConcreteComponent
 ....
 
-==== 6.4.3 优点
+==== 优点
 
 * 减少了子类的个数, 扩展性提高
 * 可以通过不同的装饰创造出不同行为的组合.
 
-==== 6.4.4 缺点
+==== 缺点
 
 * 产生较多的对象
 
-=== 6.5 Facade模式
+=== Facade模式
 
  为子系统提供统一的入口
 
-==== 6.5.1 使用场景
+==== 使用场景
 
  客户端程序与子系统有很大的关联性.
 
-==== 6.5.2 结构
+==== 结构
 
 .Facade模式UML
 [plantuml, facade, svg]
@@ -503,20 +507,20 @@ SystemB <- Facade
 SystemC <- Facade
 ....
 
-==== 6.5.3 优点
+==== 优点
 
 * 降低客户端与子系统的耦合度.
 * 一个子系统的修改与其他系统没有影响
 
-=== 6.6 FlyWeight模式
+=== FlyWeight模式
 
  实现多个细粒度对象的复用. 使用工厂获取对象.
 
-==== 6.6.1 使用场景
+==== 使用场景
 
  对象数量较多但对象内部状态统一.
 
-==== 6.6.2 结构
+==== 结构
 
 .FlyWeight模式UML
 [plantuml, flyWeight, svg]
@@ -535,24 +539,24 @@ class FlyweightFactory{
 Flyweight <|-- ConcreteFlyweight
 ....
 
-==== 6.6.3 优点
+==== 优点
 
 * 可以极大减少内存中对象的数量.
 * 内外部状态独立.
 
-==== 6.6.4 缺点
+==== 缺点
 
 * 分离内外部状态, 使系统更复杂.
 
-=== 6.7. Proxy模式
+=== Proxy模式
 
  给某一个对象提供一个代理对象, 由他控制对原对象的访问.
 
-==== 6.7.1 使用场景
+==== 使用场景
 
  无法直接访问某个对象, 或者访问困难.
 
-==== 6.7.2 结构
+==== 结构
 
 .Proxy模式UML
 [plantuml, proxy, svg]
@@ -571,19 +575,19 @@ Subject <|.. ProxyObject
 ConcreteSubject <- ProxyObject
 ....
 
-==== 6.7.3 优点
+==== 优点
 
 * 协调调用者和被调用者, 降低系统耦合度.
 
-== 7. 行为型模式
+== 行为型模式
 
-=== 7.1 Responsibility Of Chain模式
+=== Responsibility Of Chain模式
 
-==== 7.1.1 使用场景
+==== 使用场景
 
  系统中有多个对象处理请求, 所有对象构成链式结构.
 
-==== 7.1.2 结构
+==== 结构
 
 .Responsibility Of Chain模式UML
 [plantuml, chain-of-responsibility, svg]
@@ -603,22 +607,22 @@ Handler <|-- ConcreteHandlerB
 Handler <--|> Handler
 ....
 
-==== 7.1.3 优点
+==== 优点
 
 * 职责链中的对象无需关心链的结构
 * 新增或者删除handler的时候只需要修改客户端类.
 
-==== 7.1.4 缺点
+==== 缺点
 
 * 客户端任重而道远.
 
-=== 7.2 Command模式
+=== Command模式
 
-==== 7.2.1 使用场景
+==== 使用场景
 
  向对象发送请求, 但不知道谁接收并处理请求.
 
-==== 7.2.2 结构
+==== 结构
 
 .Command模式UML
 [plantuml, command, svg]
@@ -647,10 +651,10 @@ ReceiverA <- ConcreteCommandA
 ConcreteCommandB -> ReceiverB
 ....
 
-==== 7.2.3 优点
+==== 优点
 
 * 调用者和接收者解耦.
 
-==== 7.2.4 缺点
+==== 缺点
 
 * 系统需要大量的命令类.

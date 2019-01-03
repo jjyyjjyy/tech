@@ -3,11 +3,15 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 开启慢查询:
+== 开启慢查询:
 
 [source,sql]
 ----
@@ -17,7 +21,7 @@ show variables like 'long_query_time';(1)
 show variables like 'slow_query_log_file';(PATH.log)
 ----
 
-== 2. explain:
+== explain:
 
    * table: 哪张表
    * type: 连接使用了哪种类型: const/eq_reg/ref/range/index/ALL
@@ -28,7 +32,7 @@ show variables like 'slow_query_log_file';(PATH.log)
    * rows: 返回请求需要扫描表的行数
    * extra: Using filesort/temporary 查询需要优化
 
-== 3. 建立索引:
+== 建立索引:
 
    * where/on/group by/order by从句中字段
    * 索引字段越小越好

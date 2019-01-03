@@ -5,12 +5,6 @@ echo "deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main" | 
 sudo apt update && sudo apt install -y kubelet kubectl kubeadm
 kubeadm version
 
-sudo sed -i '4a\Environment="KUBE_PAUSE=--pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.1"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo sed -i '5a\Environment="KUBELET_CGROUP_ARGS=--cgroup-driver=cgroupfs"' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo sed -i 's/ExecStart=\/usr\/bin\/kubelet.*/& $KUBE_PAUSE/g' /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-sudo systemctl daemon-reload
-sudo systemctl restart kubelet
-
 echo "====== pull images now ======"
 
 KUBE_VER=`kubeadm version -o short`
@@ -22,4 +16,9 @@ for imageName in ${images[@]} ; do
   docker rmi ${IMAGE_MIRROR}/${imageName}
 done
 
-echo "Done."
+echo "Next step:"
+echo "sudo kubeadm init --kubernetes-version=`kubeadm version -o short` --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all"
+echo "mkdir -p $HOME/.kube"
+echo "sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
+echo "sudo chown $(id -u):$(id -g) $HOME/.kube/config"
+echo "kubectl apply -f https://cloud.weave.works/k8s/v1.10/net.yaml"

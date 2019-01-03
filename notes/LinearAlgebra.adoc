@@ -1,6 +1,4 @@
 = Linear Algebra
-:author: jy
-:email: jiang97799@gmail.com
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
@@ -9,8 +7,10 @@
 :toc: left
 :toclevels: 3
 :toc-title: 目录
+:tabsize: 4
+:docinfo: shared
 
-== 1. 线性方程组
+== 线性方程组
 
 === 1.1 线性方程组的解有三种情况:
 
