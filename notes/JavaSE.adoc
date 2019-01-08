@@ -152,8 +152,27 @@
 .. findFirst
 .. findAny
 
+== JDBC
+
+=== Statement
+
+* 同一个connection可以创建多个 `Statement`.
+* 在处理 `ResultSet` 的结果时也可以创建另外一个 `Statement`.
+* `Statement` 不是线程安全的.
+* 用完后需要close.
+* SQL语句中如果需要使用包含 `?` 符号的函数可以使用 `??` 转义.
+
+=== ResultSet
+
+* 在获取结果集前需要调用 `next()` 方法.
+* 使用 `Statement` 获取 `ResultSet` 后, 当前使用中的 `ResultSet` 会直接关闭.
+* 用完后需要close.
 
 
-== Articles
 
-* https://dzone.com/services/widget/article-listV2/list?page=1973&sort=newest
+
+
+
+== 一些问题
+
+* `ClassLoader#loadClass` 和 `Class#forName` 有什么区别?
