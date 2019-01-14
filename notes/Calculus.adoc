@@ -1,4 +1,4 @@
-= Single Variable Calculus
+= Calculus
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
@@ -159,10 +159,13 @@ stem:[a^3-b^3=(a-b)(a^2+ab+b^2)]
 
 stem:[f(x)~~f(x_0) + f'(x_0)(x-x_0) + (f''(x_0))/2(x-x_0)^2]
 
-=== 曲线构图
+=== 牛顿迭代法
 
-.作图步骤
-. 描点.
+stem:[x_1=x_0-f(x_0)/(f'(x_0))]
+
+=== 中值定理
+
+如果函数f在(a,b)间可微且连续, 则有 stem:[(f(b)-f(a))/(b-a)=f'(c). (a<c<b)]
 
 == 极限
 
@@ -264,3 +267,45 @@ stem:[e=lim_(n->oo)(1+1/n)^n]
 . stem:[lim_(n->oo)ln((1+1/n)^n)=1]
 . stem:[e^(lim_(n->oo)ln((1+1/n)^n))=lim_(n->oo)(1+1/n)^n=e]
 
+== 微积分
+
+=== 微分
+
+函数 stem:[y=f(x)], y的微分记作 stem:[dy=f'(x)dx].
+
+.stem:[Deltay]和stem:[dy]的区别:
+* stem:[Deltax=dx]
+
+* stem:[dy=f'(x)dx]
+
+* stem:[Deltay=f(x+Deltax)-f(x)]
+
+=== 不定积分
+
+ 通过导数求原函数
+
+stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
+
+* stem:[intsinxdx=-cosx+C]
+* stem:[intx^adx=x^(a+1)/(a+1)+C, (a!=-1)]
+* stem:[intdx/x=ln|x|+C, (x!=0)]
+* stem:[intsec^2x=tanx+C]
+
+> 如果两个函数的导数相同: stem:[F'(x)=G'(x), 则 F(x)=G(x)+C].
+
+=== 定积分
+
+stem:[S=int_a^bf(x)dx] 求曲线下面积.
+
+.性质
+* stem:[int_a^b(f(x)+g(x))dx=int_a^bf(x)dx+int_a^bg(x)dx].
+* stem:[int_a^bcf(x)dx=cint_a^bf(x)dx].
+* stem:[int_a^cf(x)dx=int_a^bf(x)dx+int_b^cf(x)dx, a<b<c].
+* stem:[int_a^af(x)dx=0].
+* stem:[int_a^bf(x)dx=-int_b^af(x)dx].
+* stem:[若 f(x)<=g(x), 则 int_a^bf(x)dx <= int_a^bg(x)dx].
+* stem:[int_(u_1)^(u_2)f(u)du=int_(x_1)^(x_2)g(u(x))u'(x)dx, du=u'(x)dx, u_1=u(x_1), u_2=u(x_2)]. `当且仅当 u'(x) 没有改变符号的时候才成立.`
+
+=== 微积分定理
+
+* 若 stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
