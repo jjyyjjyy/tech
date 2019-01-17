@@ -56,6 +56,13 @@ JVM主要接受两类标志: boolean类和赋值类参数.
 
 -XX:GCLogfileSize=N
 
+== 查看JVM CPU占用高的原因方法:
+
+. `jps` 查看JVM进程 `PID`.
+. `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.
+. `printf '%x\n' TID` 将线程id转成16进制数.
+. `jstack PID | grep TID -A 10` 查看该线程所在堆栈, 检查堆栈所在代码上的错误.
+
 == 垃圾收集器(Garbage Collector)
 
 [.lead]
