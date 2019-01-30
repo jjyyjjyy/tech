@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
  * @author jy
  */
 @Slf4j
-public class MessageComsumer implements EventHandler<MessageEvent> {
+public class MessageConsumer implements EventHandler<MessageEvent> {
 
     private final String consumerName;
 
-    public MessageComsumer(String consumerName) {
+    public MessageConsumer(String consumerName) {
         this.consumerName = consumerName;
     }
 

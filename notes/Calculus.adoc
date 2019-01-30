@@ -212,6 +212,16 @@ stem:[lim_(x->oo)(p(x))/(q(x))]
 * 如果p的次数大于q的次数, 则极限时 stem:[oo] 或 stem:[-oo]
 * 如果p的次数小于q的次数, 则极限是0.
 
+=== 洛必达法则
+
+stem:[lim_(x->a)f(x)/g(x)=lim_(x->a)(f'(x))/(g'(x))]
+
+.洛必达法则需要满足下列条件之一:
+* stem:[f(a)=g(a)=0]
+* stem:[a=+-oo]
+* stem:[f(a),g(a)=+-oo]
+* 右侧极限不一定存在, 或者可以等于 stem:[+-oo]
+
 === 介值定理
 
 > 如果函数f在[a,b]上连续, 并且f(a)<0且f(b)>0, 那么在区间[a,b]上至少有一点c使得f(c)=0.
@@ -309,3 +319,9 @@ stem:[S=int_a^bf(x)dx] 求曲线下面积.
 === 微积分定理
 
 * 若 stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
+
+=== 求积分方法
+
+* 三角替换
+* 部分分式
+* 分部积分: stem:[int_a^buv'dx=uv|_(b-a) - int_a^bu'vdx]

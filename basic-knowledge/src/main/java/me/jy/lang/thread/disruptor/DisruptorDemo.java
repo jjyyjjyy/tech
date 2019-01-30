@@ -4,7 +4,7 @@ import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.concurrent.Executors;
 
 /**
@@ -13,13 +13,25 @@ import java.util.concurrent.Executors;
 public class DisruptorDemo {
 
     public static void main(String[] args) {
+
+        long end = Instant.now().plusSeconds(10L).getEpochSecond();
+
         Disruptor<MessageEvent> disruptor = new Disruptor<>(MessageEvent::new, 1024, Executors.defaultThreadFactory(), ProducerType.SINGLE, new BlockingWaitStrategy());
 
-        disruptor.handleEventsWith(new MessageComsumer("Miracle"));
+        disruptor.handleEventsWith(new MessageConsumer("Consumer"));
+
+        new Thread(() -> {
+            while ((Instant.now().getEpochSecond()) < end) {
+                disruptor.publishEvent((event, seq) -> event.setValue(Instant.now().toString()));
+            }
+        }).start();
 
         disruptor.start();
-
-        MessageProducer producer = new MessageProducer(disruptor);
-        producer.batchSendData(Arrays.asList("as", "dg", "edg"));
     }
+
+    private static void test() {
+
+    }
+
+
 }
