@@ -1,11 +1,13 @@
 package me.jy.lang;
 
-import org.junit.Assert;
 import org.junit.Test;
+import sun.misc.Unsafe;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jy
@@ -95,8 +97,45 @@ public class LangTests {
 
     int a = 1;
 
+    private byte foo;
+
     public LangTests() {
         a = 2;
+    }
+
+    @Test
+    public void testChar() {
+        int c1 = -1;
+        int c2 = 65535;
+        char cc1 = (char) c1;
+        char cc2 = (char) c2;
+        assertEquals(cc1, cc2);
+    }
+
+    @Test
+    public void testInfinite() {
+        assertEquals(1 / 0.0F, Double.POSITIVE_INFINITY, 0);
+        assertEquals(1 / -0.0F, Double.NEGATIVE_INFINITY, 0);
+    }
+
+    @Test
+    public void testUnsafe() {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            Unsafe unsafe = (Unsafe) field.get(null);
+            LangTests t = new LangTests();
+            unsafe.putByte(t, foo, (byte) 2);
+            assertEquals(2, unsafe.getByte(t, foo));
+            assertTrue(unsafe.getBoolean(t, foo));
+
+            unsafe.putByte(t, foo, (byte) 1);
+            assertEquals(1, unsafe.getByte(t, foo));
+            assertTrue(unsafe.getBoolean(t, foo));
+        } catch (IllegalAccessException | NoSuchFieldException ignore) {
+        }
+
+
     }
 
     @Test
@@ -118,10 +157,10 @@ public class LangTests {
 
     @Test
     public void testTCF() {
-        Assert.assertEquals(3, tryTest1());
-        Assert.assertEquals(2, tryTest2());
-        Assert.assertEquals(1, tryTest3());
-        Assert.assertEquals(2, tryTest4());
+        assertEquals(3, tryTest1());
+        assertEquals(2, tryTest2());
+        assertEquals(1, tryTest3());
+        assertEquals(2, tryTest4());
     }
 
     private int tryTest1() {

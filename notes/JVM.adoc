@@ -3,11 +3,70 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
 :tabsize: 4
 :docinfo: shared
+
+== JVM概述
+
+JVM是一个支持在不同操作系统上执行Java字节码的运行时容器, 拥有内存管理/垃圾回收等功能.
+Java字节码无法直接执行, JVM需要将其翻译成机器码. 在HotSpot里, 该翻译过程有两种形式:
+
+* 解释执行: 逐条将字节码翻译成机器码.
+* 即时编译执行: 将一个方法中所有的字节码翻译成机器码后再执行.
+
+HotSpot内置多种编译器: C1(启动块,编译时间短)/C2(编译时间比较长,但执行效率高)
+
+== JVM数据类型
+
+|===
+| 类型 | 值域 | 默认值 | 标记
+
+| boolean
+| {false,true}
+| false
+| Z
+
+| byte
+| [-128,127]
+| 0
+| B
+
+| short
+| [stem:[-2^15,2^15-1]]
+| 0
+| S
+
+| int
+| [stem:[-2^31,2^31-1]]
+| 0
+| I
+
+| long
+| [stem:[-2^63,2^63-1]]
+| 0
+| J
+
+| char
+| [stem:[0,2^16-1]]
+| '\u0000'
+| C
+
+| float
+| [stem:[-3.4E38,3.4E38]]
+| +0.0F
+| F
+
+| double
+| [stem:[-1.8E308,1.8E308]]
+| +0.0D
+| D
+
+|===
 
 == JDK常用工具
 
@@ -201,3 +260,12 @@ Heap after GC invocations=4 (full 2):
 
 === CMS垃圾收集器
 
+
+=== Interview
+
+* 创建对象方式:
+** new
+** Object.clone()
+** Class#newInstance()
+** 反序列化
+** Unsafe.allocateInstance
