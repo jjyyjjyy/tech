@@ -297,16 +297,18 @@ stem:[x_1=x_0-f(x_0)/(f'(x_0))]
 * stem:[log_b(b)=1]
 * stem:[log_b(x*y)=log_bx+log_by]
 * stem:[log_b(x/y)=log_bx-log_by]
+* stem:[b^(log_by)=y]
+* stem:[log_by=-log_(1/b)y]
 * stem:[log_b(x^y)=ylog_bx]
+** 证明:
+  . stem:[x^y=b^(log_bx^y)]
+  . stem:[x=b^(log_bx) => x^y=(b^(log_bx))^y=b^(ylog_bx)]
+  . stem:[:. log_b(x^y)=ylog_bx]
 * stem:[log_bx=log_cx/log_cb]
 
 === 自然对数
 
-stem:[(log_ex)'=1/x]
-
-stem:[(e^(ax))'=ae^(ax)]
-
-stem:[e=lim_(n->oo)(1+1/n)^n]
+stem:[e=lim_(n->oo)(1+1/n)^n=lim_(h->0)(1+h)^(1/h)]
 
 .证明:
 
@@ -315,6 +317,47 @@ stem:[e=lim_(n->oo)(1+1/n)^n]
 . stem:[lim_(n->oo)nln(1+1/n)=1/Deltaxln(1+Deltax) = d/(dx)lnx|_(x=1) = 1/x|_(x=1) = 1]
 . stem:[lim_(n->oo)ln((1+1/n)^n)=1]
 . stem:[e^(lim_(n->oo)ln((1+1/n)^n))=lim_(n->oo)(1+1/n)^n=e]
+
+=== 对数求导
+
+* stem:[(log_bx)'=1/xlog_be]
+* stem:[(lnx)'=1/x]
+* stem:[(b^x)'=b^xlnb]
+* stem:[(e^(ax))'=ae^(ax)]
+* stem:[(x^(a))'=ax^(a-1)]
+
+=== 对数的极限
+
+* stem:[lim_(h->0)(e^h-1)/h=1]
+* stem:[lim_(h->0)ln(1+h)/h=1]
+* stem:[lim_(x->oo)x^n/e^x=0]
+* stem:[lim_(x->oo)e^x=oo]
+* stem:[lim_(x->oo)lnx/x^a=0]
+
+=== 指数增长方程
+
+stem:[P(t)=P_0e^kt] (P0代表初始值)
+
+=== 指数衰减方程
+
+stem:[P(t)=P_0e^(-kt)] (P0代表初始值)
+
+== 反函数
+
+.证明一个函数f有反函数的方法:
+* stem:[f'(x)>0 或 f'(x)<0].
+* stem:[f'(x)>=0 或 f'(x)<=0], 但有有限个x满足 stem:[f'(x)=0]
+
+=== 反函数的导数即为原函数的导数的倒数
+
+=== 反三角函数
+
+* stem:[sin^-1(x)=arcsin(x), -pi/2<=x<=pi/2]
+** stem:[d/dxsin^-1(x)=1/(sqrt (1-x^2)), -1<x<1]
+* stem:[cos^-1(x)=arccos(x), 0<=x<=pi]
+** stem:[d/dxcos^-1(x)=-1/(sqrt (1-x^2)), -1<x<1]
+* stem:[tan^-1(x)=arctan(x), -pi/2<x<pi/2]
+** stem:[d/dxtan^-1(x)=1/(1+x^2)]
 
 == 微分
 
