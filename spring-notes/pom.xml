@@ -13,6 +13,7 @@
     <modules>
         <module>spring-mvc-demo</module>
         <module>spring-codedraft</module>
+        <module>spring-mq</module>
     </modules>
     <artifactId>spring-notes</artifactId>
 
