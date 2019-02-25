@@ -11,8 +11,9 @@
 :tabsize: 4
 :docinfo: shared
 
-[[abstract]]
-https://study.163.com/course/courseMain.htm?courseId=1003649073
+.Resources
+* https://study.163.com/course/courseMain.htm?courseId=1003649073
+* https://book.douban.com/subject/26899701
 
 == 函数
 === 函数定义
@@ -20,7 +21,7 @@ https://study.163.com/course/courseMain.htm?courseId=1003649073
  起始对象称为输入, 即定义域.
  返回对象称为输出, 所有可能输出的集合为上域, 所有实际输出的集合为值域. 如 f(x)=x^2, 上域为R, 值域为非负数.
 
-形如 f(x)=mx+a的函数称为线性函数.
+形如 stem:[f(x)=mx+a]的函数称为线性函数.
 
 === 区间表示法
  [a,b]表示从a端点到b端点的所有实数, 包括a和b, 称为闭区间.
@@ -42,12 +43,12 @@ https://study.163.com/course/courseMain.htm?courseId=1003649073
 
 === 函数的复合
 
-f(x)=h(g(x)), f是g与h的复合. 记为 stem:[f=h@g]
+stem:[f(x)=h(g(x))], f是g与h的复合. 记为 stem:[f=h@g]
 
 === 奇偶函数
 
-* 奇函数: f(x) = -f(-x)
-* 偶函数: f(x) = f(-x)
+* 奇函数: stem:[f(x) = -f(-x)]
+* 偶函数: stem:[f(x) = f(-x)]
 
  f(x)=0 既是奇函数又是偶函数
 
@@ -198,10 +199,11 @@ ex: 求极限 stem:[lim_(x->oo)sin(x)/x]:
 stem:[lim_(x->a)f(x)/g(x)=lim_(x->a)(f'(x))/(g'(x))]
 
 .洛必达法则需要满足下列条件之一:
-* stem:[f(a)=g(a)=0]
-* stem:[a=+-oo]
-* stem:[f(a),g(a)=+-oo]
-* 右侧极限不一定存在, 或者可以等于 stem:[+-oo]
+* stem:[0/0]
+* stem:[oo/oo]
+* stem:[oo - oo] `通分或同时乘以/除以一个共轭表达式`
+* stem:[0 * oo] `选一个因式取倒数移到分母`
+* stem:[1^(+-oo) | 0^0 | (oo)^0 ]  `先求对数再求指数的极限`
 
 == 连续
 
@@ -276,10 +278,6 @@ stem:[f(x)~~f(x_0) + f'(x_0)(x-x_0) + (f''(x_0))/2(x-x_0)^2]
 === 牛顿迭代法
 
 stem:[x_1=x_0-f(x_0)/(f'(x_0))]
-
-=== 中值定理
-
-如果函数f在(a,b)间可微且连续, 则有 stem:[(f(b)-f(a))/(b-a)=f'(c). (a<c<b)]
 
 == 指数和对数
 
@@ -391,6 +389,19 @@ stem:[P(t)=P_0e^(-kt)] (P0代表初始值)
 . 如果f''(c)<0,那么c点为局部最大值.
 . 如果f''(c)>0,那么c点为局部最小值.
 
+=== 绘制函数图像
+
+. 检查函数奇偶性.
+. 计算y轴截距.
+. 计算x轴截距.
+. 求出函数的定义域.
+. 找到函数的垂直渐近线 (分母为0).
+. 根据函数的零点计算函数的正负.
+. 找到函数的水平渐近线(stem:[lim_(x->oo)f(x)]).
+. 根据一阶导数判断函数的上升下降趋势.
+. 解出f'(x)=0, 找到最值.
+. 根据二阶导数判断函数的凹凸性.
+
 == 微分
 
 函数 stem:[y=f(x)], y的微分记作 stem:[dy=f'(x)dx].
@@ -430,9 +441,10 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 
 > 如果函数f在闭区间[a,b]上连续, 那么在开区间(a,b)内总有一点c满足 stem:[f(c)=1/(b-a)int_a^bf(x)dx].
 
-=== 微积分定理
+=== 微积分基本定理
 
-* 若 stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
+. 若函数f在闭区间[a,b]上连续, stem:[F(x)=int_a^xf(t)dt, x in [a,b]], 则 F(x)在开区间(a,b)是可导函数, 且F'(x)=f(x), 记为 stem:[d/dxint_a^xf(t)dt=f(x)]
+. 若函数f在闭区间[a,b]上连续, stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
 
 === 不定积分
 
@@ -449,6 +461,66 @@ stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
 
 === 求积分方法
 
-* 三角替换
-* 部分分式
+* 换元法: stem:[t=f(x), dt=f'(x)dx]
 * 分部积分: stem:[int_a^buv'dx=uv|_(b-a) - int_a^bu'vdx]
+* 部分分式
+* 三角替换
+
+== 反常积分
+
+> 如果函数f在闭区间[a,b]是无界的(有垂直渐近线),或 a为 stem:[-oo],或b为 stem:[oo], 则积分 stem:[int_a^bf(x)dx]为反常积分.
+
+> 如果反常积分能满足 stem:[int_a^bf(x)dx=lim_(epsilon->0+)int_(a+epsilon)^bf(x)dx], 则该积分是收敛的, 否则是发散的. 非反常积分自然收敛于常数L.
+
+* stem:[int_a^(oo)f(x)dx=lim_(N->oo)int_a^Nf(x)dx]
+** stem:[int_1^oo1/xdx=lim_(N->oo)(lnN-ln1)dx=oo]
+** stem:[int_1^oo1/x^2dx=lim_(N->oo)(-1/x-(-1))dx=1]
+* stem:[int_(-oo)^bf(x)dx=lim_(N->oo)int_-N^af(x)dx]
+
+== 数列和级数
+
+=== 数列
+
+> 一组有序的数称为数列, 无穷项的数列称为无穷数列. 当n趋近于0时, 数列的极限记为 stem:[lim_(n->oo)a_n]. 若存在极限值L, 则称该数列收敛于L, 否则该数列是发散的.
+
+=== 级数
+
+> 级数就是和, 就是将数列前n项相加. stem:[A_n=sum_(n=1)^Na_n], 无穷级数记为 stem:[sum_(n=1)^ooa_n=lim_(n->oo)sum_(n=1)^ooa_n].
+
+=== 几何级数
+
+stem:[1+r+r^2+r^3+...+r^n=sum_0^oor^n=(1-r^(n+1))/(1-r)]
+
+无穷几何级数: 若 stem:[-1<r<1, r_1+r_2+r_3+...=r_1/(1-r)], 否则级数发散.
+
+=== 判断级数发散还是收敛
+
+* 第n项判别法
+
+> 若 stem:[lim_(n->oo)a^n !=0]或极限不存在, 则级数 stem:[sum_(n=0)^ooa^n]发散.
+
+WARNING: `第n项判别法` 不能作为级数收敛的判断.
+
+* 比式判别法
+
+> 若级数中包含阶乘或指数, 可以使用比式判别法: 令 stem:[L=lim_(n->oo)|a_(n+1)/a_n|], 若L>1,则该级数发散, 若L<1, 该级数收敛. 但当L=1或极限不存在时, 比式判别法无效.
+
+* 根式判别法
+
+> 令 stem:[L=lim_(n->oo)|a_n|^(1/n)], 若L<1时该级数收敛, L>1时该级数发散. 若L=1或极限不存在, 根式判别法无效.
+
+* 积分判别法
+
+> 当级数含有stem:[1/n和ln(n)]时, 可以应用积分判别法: 对于连续递减函数 stem:[f(n)=a_n, 则sum_(n=N)^ooa_n与 int_N^oof(x)dx] 同时收敛或同时发散.
+
+* p判别法
+
+> 若 stem:[a>=1], 则级数 stem:[sum_(n=a)^oo1/n^p{(收敛,,p>1),(发散,,p<=1):}]
+
+=== 泰勒定理
+
+stem:[f(x)=sum_(n=0)^Nf^(n)(a)/(n!)(x-a)^n+f^(N+1)(c)/((N+1)!)(x-a)^(N+1)]
+
+=== 幂级数
+
+stem:[sum_(n=0)^oof^(n)(a)/(n!)(x-a)^n], 该级数称为 `泰勒级数`, a=0时称为 `麦克劳林级数`.
