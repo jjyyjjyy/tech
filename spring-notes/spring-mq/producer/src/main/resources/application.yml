@@ -1,7 +1,0 @@
-spring:
-    rabbitmq:
-        username: rabbit
-        password: 123456
-        virtual-host: dev
-        template:
-            exchange: exchange-dev

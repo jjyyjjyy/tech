@@ -1,0 +1,78 @@
+= RabbitMQ
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== AMQP
+
+ AMQP（高级消息队列协议）是一个网络协议。它支持符合要求的客户端应用（application）和消息中间件代理（messaging middleware broker）之间进行通信。
+ 消息代理（message brokers）从发布者（publishers）亦称生产者（producers）那儿接收消息，并根据既定的路由规则把接收到的消息发送给处理消息的消费者（consumers）。
+
+
+image::https://www.rabbitmq.com/img/tutorials/intro/hello-world-example-routing.png[]
+
+=== Exchange
+
+ Exchange是用来发送消息的AMQP实体。 Exchange拿到一个消息之后将它路由给队列。它使用哪种路由算法是由交换机类型和被称作绑定（bindings）的规则所决定的
+
+==== Exchange类型
+
+===== direct
+
+direct exchange根据消息携带的 `routing key`, 将消息投递到相应的队列.
+
+image::https://www.rabbitmq.com/img/tutorials/intro/exchange-direct.png[direct,550,400]
+
+. 创建一个队列, 将这个队列绑定到某个direct exchange, 同时设置一个 `routing key`.
+. Producer发送一条携带 `routing key` 的消息到 exchange, exchange 再路由到相应的队列.
+
+`default exchange` 是一个名字为空字符串的direct exchange, 每个新建的队列都会自动绑定到该交换机, routing key与队列的名称相同.
+
+TIP: 不同的队列可以使用相同的 `routing key` 与 direct exchange 绑定, direct exchange 收到携带该 `routing key` 的消息后, 会发送到所有使用这个 `routing key` 的队列.
+
+===== fanout
+
+fanout exchange 将消息投递到所有与之绑定的队列, 无视绑定时设置的 `routing key`.
+
+image::https://www.rabbitmq.com/img/tutorials/intro/exchange-fanout.png[fanout,550,400]
+
+===== topic
+
+topic exchange 会根据消息携带的 `routing key` 与队列绑定的 `routing key` 匹配, 从而将消息投递到相应的队列.
+
+===== headers
+
+headers exchange 通过判断消息头的值能否与指定的绑定相匹配来确立路由规则.
+
+==== Exchange属性
+
+* Name `Exchange名称`
+* Type `Exchange类型`
+* Durability `Exchange是否持久化`
+* Auto delete `当所有与之绑定的消息队列都完成了对此交换机的使用后，该Exchange会被删除`
+* Internal `声明该exchange只能被其他exchange绑定`
+* Arguments `Exchange设置的额外属性`
+
+=== 队列
+
+ 队列存储着即将被应用消费掉的消息.
+
+==== 队列属性
+
+* Virtual host
+* Name
+* Durability
+* Auto delete
+* Arguments
+
+=== 绑定
+
+声明一个 `routing key` 将队列 *绑定到* 指定的exchange上.
