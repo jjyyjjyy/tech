@@ -3,11 +3,13 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
 :sectlinks:
+:sectnums:
+:stem:
 :toc: left
 :toclevels: 3
 :toc-title: 目录
 :tabsize: 4
-:docinfo:
+:docinfo: shared
 
 == 系统配置:
 
@@ -22,17 +24,14 @@ sudo mount -a
 sudo swapoff -a
 ----
 
-== 安装kubeadm/kubectl/kubelet:
+== 安装
+
+=== 使用kubeadm安装
 
 [source,bash]
 ----
 include::sh/k8s-install.sh[]
-----
 
-== 安装
-
-[source,bash]
-----
 sudo kubeadm init --kubernetes-version=`kubeadm version -o short` --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
 # 安装成功后,创建kubectl配置文件
 mkdir -p $HOME/.kube
@@ -62,6 +61,26 @@ alias kc='kubectl create -f'
 alias ka='kubectl apply -f'
 alias kr='kubectl replace -f'
 
+----
+
+=== 使用Vagrant安装
+
+[source,ruby]
+.Vagrantfile
+----
+include::k8s/vagrant/Vagrantfile[]
+----
+
+[source,bash]
+.init.sh
+----
+include::k8s/vagrant/init.sh[]
+----
+
+[source,bash]
+.kubeadm-init.sh
+----
+include::k8s/vagrant/kubeadm-init.sh[]
 ----
 
 == 插件安装
@@ -155,6 +174,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 * kube-scheduler: pod调度
 * kube-proxy: 实现service通信个负载均衡
 * etcd: 保存资源数据
+* coredns
 
 === 5.2 Node
 
@@ -244,6 +264,14 @@ kubectl rollout history
 # 回滚部署
 kubectl rollout undo
 ----
+
+=== k8s优势
+
+* 简化应用部署
+* 有效利用硬件资源
+* 健康检查和自我修复
+* 自动扩容和滚动升级
+* 扩展性强
 
 == Pod
 
