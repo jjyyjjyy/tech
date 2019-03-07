@@ -6,13 +6,13 @@ Vagrant.configure("2") do |config|
         config.vm.provider "virtualbox" do |vb|
             vb.name = "k8s-master"
             vb.memory = "4096"
-            vb.cpus = 4
+            vb.cpus = 2
             vb.gui = false
         end
-        master.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.110"
+        master.vm.network "public_network", bridge: "eno1", ip: "192.168.0.110"
         master.vm.network "private_network", ip: "192.168.1.110"
         master.vm.provision "shell", path: "./init.sh"
-        master.vm.provision "shell", path: "./kubeadm-init.sh"
+        # master.vm.provision "shell", path: "./kubeadm-init.sh"
     end
 
     (1..3).each {|i|
@@ -21,11 +21,11 @@ Vagrant.configure("2") do |config|
             config.vm.provider "virtualbox" do |vb|
                 vb.name = "k8s-node#{i}"
                 vb.memory = "2048"
-                vb.cpus = 2
+                vb.cpus = 1
                 vb.gui = false
             end
-            box.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.12#{i}"
-            box.vm.network "private_network", ip: "192.168.1.12#{i}"
+            box.vm.network "public_network", bridge: "eno1", ip: "192.168.0.11#{i}"
+            box.vm.network "private_network", ip: "192.168.1.11#{i}"
             box.vm.provision "shell", path: "./init.sh"
         end
     }
