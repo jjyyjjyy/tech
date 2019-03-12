@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author jy
@@ -20,32 +20,30 @@ public class AnnotationTests {
     @Test
     public void testAnnotationReflect() {
 
-        assertEquals("[hello, world]", Arrays.stream(AnnotationTests.class.getAnnotationsByType(Miracle.class))
-                .map(Miracle::value)
-                .collect(Collectors.toList()).toString());
+        assertEquals("hello,world", Arrays.stream(AnnotationTests.class.getAnnotationsByType(Miracle.class))
+            .map(Miracle::value)
+            .collect(Collectors.joining(",")));
 
-        assertEquals("[hello, world]", Arrays.stream(AnnotationTests.class.getAnnotation(MiracleContainer.class).value())
-                .map(Miracle::value)
-                .collect(Collectors.toList()).toString());
+        assertEquals("hello,world", Arrays.stream(AnnotationTests.class.getAnnotation(MiracleContainer.class).value())
+            .map(Miracle::value)
+            .collect(Collectors.joining(",")));
 
     }
 
     @Test
     public void testRetention() {
-        assertEquals(null, SourceAnnotationTester.class.getAnnotation(SourceAnnotation.class));
-        assertEquals(null, ClassAnnotationTester.class.getAnnotation(ClassAnnotation.class));
-        // TODO: RuntimeAnnotation, $Proxy6
-        assertNotEquals(RuntimeAnnotation.class.getSimpleName(),
-                RuntimeAnnotationTester.class.getAnnotations()[0].getClass().getSimpleName());
+        assertNull(SourceAnnotationTester.class.getAnnotation(SourceAnnotation.class));
+        assertNull(ClassAnnotationTester.class.getAnnotation(ClassAnnotation.class));
+        assertEquals(RuntimeAnnotation.class.getSimpleName(), RuntimeAnnotationTester.class.getAnnotations()[0].annotationType().getSimpleName());
     }
 
     @Test
     public void testElementType() {
         assertEquals(Bar.class.getTypeName(),
-                Foo.class.getAnnotatedSuperclass().getType().getTypeName());
+            Foo.class.getAnnotatedSuperclass().getType().getTypeName());
 
         assertEquals("BBB",
-                Foo.class.getAnnotatedSuperclass().getAnnotation(TypeUse.class).value());
+            Foo.class.getAnnotatedSuperclass().getAnnotation(TypeUse.class).value());
     }
 
     // Classes for test @Repeatable
@@ -77,13 +75,6 @@ public class AnnotationTests {
 
     }
 
-    /**
-     * EQ:
-     * private static class SourceAnnotationTester {
-     * private SourceAnnotationTester() {
-     * }
-     * }
-     */
     @SourceAnnotation
     private static class SourceAnnotationTester {
     }
