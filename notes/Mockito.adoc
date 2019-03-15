@@ -1,0 +1,21 @@
+= Mockito
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== 基本用法
+
+[source,java]
+.MockitoScratches.java
+----
+include::../basic-knowledge/src/test/java/me/jy/lang/mockito/MockitoScratches.java[tags=demo]
+----
+
