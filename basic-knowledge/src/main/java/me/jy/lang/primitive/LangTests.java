@@ -1,8 +1,10 @@
 package me.jy.lang.primitive;
 
-import org.junit.Assert;
+
+import org.junit.jupiter.api.Assertions;
 
 import java.nio.charset.Charset;
+
 
 /**
  * @author jy
@@ -15,7 +17,7 @@ public class LangTests {
         long longValue2 = 3211221211L;
 
         int[] arr = {10};
-        Assert.assertEquals(-2, Integer.MAX_VALUE * 2);
+        Assertions.assertEquals(-2, Integer.MAX_VALUE * 2);
 
         double d = 10 / 4d;
 
