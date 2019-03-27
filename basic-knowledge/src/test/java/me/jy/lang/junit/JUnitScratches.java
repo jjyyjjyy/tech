@@ -31,6 +31,13 @@ class JUnitScratches {
         System.setProperty("ci", "true");
     }
 
+    @Test
+    void pre() {
+        Assumptions.assumeTrue(false);
+
+        assertTrue(true, "After assume failed..."); // unreachable code
+    }
+
     static Stream<String> stringProvider() {
         return Stream.of("foo", "bar");
     }
