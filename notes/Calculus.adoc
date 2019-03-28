@@ -14,6 +14,7 @@
 .Resources
 * https://study.163.com/course/courseMain.htm?courseId=1003649073[window="_blank"]
 * https://book.douban.com/subject/26899701[window="_blank"]
+* https://book.douban.com/subject/1231399[window="_blank"]
 
 == 函数
 === 函数定义
@@ -34,12 +35,16 @@
 .反函数的性质
 * 只有唯一的x值能满足f(x)=y
 * f^-1^ 的定义域和f的值域相同
-* f^-1^的值域和f的定义域相同
-* f^-1^(y) 满足 y=f(x)
+* f^-1^的值和f的定义域相同
+* stem:[f^-1(y)] 满足 y=f(x)
+* stem:[(f@(f^-1))(x)=x]
+* 反函数的反函数在一定定义域内就是原函数
+* 水平线校验: 如果每条水平线和函数图像相交最多一次, 则这个函数就有一个反函数.
+* 几何定义: 原函数和反函数关于y=x对称.
 
- 水平线校验: 如果每条水平线和函数图像相交最多一次, 则这个函数就有一个反函数.
-
- 反函数的反函数在一定定义域内就是原函数
+.求反函数的方法
+. 将等式变换为x=f(y)
+. 交换x/y的位置, 使得y=f(x)
 
 === 函数的复合
 
@@ -52,44 +57,60 @@ stem:[f(x)=h(g(x))], f是g与h的复合. 记为 stem:[f=h@g]
 
  f(x)=0 既是奇函数又是偶函数
 
-=== 多项式
+=== 指数函数
 
-stem:[p(x)=a_nx^n + a_(n-1)x^(n-1) +...+ a_2x^2 + a_1x + a_0]
+==== 指数函数性质
 
-.多项式图像走势
-image::https://resources-1252259164.cos.ap-shanghai.myqcloud.com/images/cal.jpg[]
+* stem:[a^x*a^y=a^(x+y)]
+* stem:[a^x/a^y=a^(x-y)]
+* stem:[(a^x)^y=a^(x*y)]
+* stem:[a^x*b^x=(a*b)^x]
+* stem:[a^x/b^x=(a/b)^x]
 
-=== 判别式
+==== 指数增长/衰减
 
-stem:[Delta=(-b+-sqrt(b^2-4ac))/(2a)]
+stem:[y=P*e^(kx)] (k>0时指数增长, k<0时指数衰减)
 
- Delta大于0时有两个不同的解.
- 等于0时有一个解.
- 小于0时在实数范围内无解.
+=== 对数函数
 
-=== 换底公式
+==== 对数函数性质
 
-stem:[log_ab=log_cb/log_ca]
+* stem:[a^(log_ax)=x]
+* stem:[log_a(x*y)=log_ax+log_ay]
+* stem:[log_a(x/y)=log_ax-log_ay]
+* stem:[log_ax^y=ylog_ax]
+* stem:[a^x=e^(lna^x)=e^(x*lna)] 如: stem:[2^x=e^(ln2x)]
+* stem:[lnx=lna^(log_ax)=log_ax*lna => log_ax=lnx/lna] `换底公式`
 
-== 三角学
+==== 求解指数方程
+
+等式两边取对数
+
+.ex1: stem:[e^(2x)=10]
+. stem:[lne^(2x)=ln10]
+. stem:[x=ln10/2]
+
+==== 求解对数方程
+
+等式两边取指数
+
+.ex1: stem:[lnx=3t+5]
+. stem:[e^lnx=e^(3t+5)]
+. stem:[x=e^(3t+5)]
 
 === 三角函数
 
-* stem:[sin(theta)=(对边)/(斜边)]
+==== 定义
 
-* stem:[cos(theta)=(邻边)/(斜边)]
+* stem:[正弦sin(theta)=(对边)/(斜边), 余割csc(x)=1/sin(x) ['kəu'si:kənt]]
 
-* stem:[tan(theta)=(对边)/(邻边)]
+* stem:[余弦cos(theta)=(邻边)/(斜边), 正割sec(x)=1/cos(x) ['si:kənt]]
 
-* stem:[csc(x)=1/sin(x)]
-
-* stem:[sec(x)=1/cos(x)]
-
-* stem:[cot(x)=1/tan(x)]
+* stem:[正切tan(theta)=(对边)/(邻边), 余切cot(x)=1/tan(x)]
 
  对称性: sin/csc/tan/cot为奇函数, cos/sec为偶函数
 
-=== 常见三角函数值
+==== 常见三角函数值
 
 |===
 | |  0 | stem:[pi/6] | stem:[pi/4] | stem:[pi/3] | stem:[pi/2]
@@ -116,7 +137,15 @@ stem:[log_ab=log_cb/log_ca]
 | -
 |===
 
-=== 毕达哥拉斯定理
+==== 周期函数
+
+> 对于函数f, 如果存在某个正整数p使得stem:[f(x+p)=f(x)], 最小的这样的p值称为函数f的周期.
+
+.三角函数的周期:
+* tan,cot周期为stem:[pi]
+* sin,cos,csc,sec周期为stem:[2pi]
+
+==== 毕达哥拉斯定理
 
 stem:[cos^2(x)+sin^2(x)=1]
 
@@ -124,7 +153,7 @@ stem:[cos^2(x)+sin^2(x)=1]
 
 等式两边除以sin^2^(x)得: stem:[1+cot^2(x)=csc^2(x)]
 
-=== co(互余)
+==== co(互余)
 
 * stem:[sin(x)=cos(pi/2-x)]
 * stem:[tan(x)=cot(pi/2-x)]
@@ -132,14 +161,43 @@ stem:[cos^2(x)+sin^2(x)=1]
 
  反之也成立
 
-=== 倍角公式
+==== 倍角公式
 
 *  stem:[sin(A+B)=sin(A)cos(B)+cos(A)sin(B)]
 *  stem:[cos(A+B)=cos(A)cos(B)-sin(A)sin(B)]
 *  stem:[sin(2x)=2sin(x)cos(x)]
 *  stem:[cos(2x)=2cos^2(x)-1=1-2sin^2(x)]
 
-=== 余弦定理
+==== 余弦定理
+
+stem:[c^2=a^2+b^2-2abcostheta]
+
+推导:
+stem:[c^2=(asintheta)^2+(b-scostheta)^2=a^2*(sin^2theta+cos^2sintheta)-2abcostheta+b^2=a^2+b^2-2abcostheta]
+
+==== 三角函数的反函数
+
+* stem:[cos^-1(-x)+cos^(-1)x=pi]
+* stem:[sin^-1x+cos^-1x=pi/2]
+
+==== 椭圆方程
+
+stem:[x^2/a^2+y^2/b^2=1]
+
+=== 多项式
+
+stem:[p(x)=a_nx^n + a_(n-1)x^(n-1) +...+ a_2x^2 + a_1x + a_0]
+
+.多项式图像走势
+image::https://resources-1252259164.cos.ap-shanghai.myqcloud.com/images/cal.jpg[]
+
+=== 判别式
+
+stem:[Delta=(-b+-sqrt(b^2-4ac))/(2a)]
+
+ Delta大于0时有两个不同的解.
+ 等于0时有一个解.
+ 小于0时在实数范围内无解.
 
 stem:[c^2=a^2+b^2-2ab*cos(theta)]
 
@@ -147,38 +205,61 @@ stem:[c^2=a^2+b^2-2ab*cos(theta)]
 
 stem:[a^3-b^3=(a-b)(a^2+ab+b^2)]
 
-== 极限
+=== 数学建模
+
+[plantuml, MathModel, svg]
+....
+现实问题 --> 模型: 简化
+模型 --> 数学结论: 分析
+数学结论 --> 预测: 翻译
+预测 --> 现实问题: 校验
+....
+
+=== 回归方程
+
+* stem:[y=mx+b]
+* stem:[y=ax^2+bx+c]
+* stem:[y=a*x^b]
+* stem:[y=a*e^bx]
+* stem:[y=alnx]
+* stem:[y=asin(bx+p)+c]
+
+== 极限和连续
 
 === 极限定义
 
-当x趋于a时,f趋于极限L, 记作 stem:[lim_(x->a)f(x)=L]
+* 非正式定义: 当x趋于a时,f趋于极限L, 记作 stem:[lim_(x->a)f(x)=L]
 
-如果对任何数 stem:[epsilon>0],存在相应的数 stem:[delta>0]使得对所有满足 stem:[0<|x-x_0|<delta]的 stem:[x],有 stem:[|f(x)-L|<epsilon]
+* 正式定义: 如果对任何数 stem:[epsilon>0],存在相应的数 stem:[delta>0]使得对所有满足 stem:[0<|x-x_0|<delta]的 stem:[x],有 stem:[|f(x)-L|<epsilon]
 
 === 极限不存在的情况
 
-* 跳跃间断: 左极限不等于右极限.
-* 可去间断: 左极限等于右极限, 但是不等于函数值. 如 stem:[f(x)=sin(x)/x].
+* 跳跃间断: 左极限不等于右极限.. 如 stem:[f(x)={(1, x<=0),(0, x>0):}]
 * 无穷间断: 极限无穷大或无穷小. 如 stem:[f(x)=1/x].
 * 震荡间断: 函数不停振荡,没有极限. 如 stem:[f(x)=sin(1/x)].
 
-=== 三明治定理
+WARNING: 当且仅当左右极限存在并相等时极限才存在.
 
-> 对于所有在 stem:[a] 附近的 stem:[x] 都有 stem:[g(x)<=f(x)<=h(x)],且
-stem:[lim_(x->a)g(x)=lim_(x->a)h(x)=L], 则 stem:[lim_(x->a)f(x)=L].
+=== 极限法则
 
-ex: 求极限 stem:[lim_(x->oo)sin(x)/x]:
-
-. stem:[-1<=sin(x)<=1]
-. stem:[-1/x<=sin(x)/x<=1/x]
-. stem:[:' lim_(x->oo)(-1)/x=lim_(x->oo)1/x=0]
-. stem:[:. lim_(x->oo)sin(x)/x=0]
+.假设stem:[lim_(x->c)f(x)=L,lim_(x->c)g(x)=M]:
+* stem:[lim_(x->c)(f(x)+g(x))=L+M]
+* stem:[lim_(x->c)(f(x)-g(x))=L-M]
+* stem:[lim_(x->c)(f(x)*g(x))=L*M]
+* stem:[lim_(x->c)f(x)/g(x)=L/M]
+* stem:[lim_(x->c)(k*f(x))=k*L]
+* stem:[lim_(x-c)f(x)^(r/s)=L^(r/s)]
 
 === 求极限
+
+==== 多项式
+
+多项式直接代入算出极限.
 
 ==== stem:[lim_(x->a)(p(x))/(q(x))]
 * 将a代入函数, 如果分母不为0, 则代入后计算出的值即为极限值.
 * 因式分解, 尝试消除分母.
+* 乘以共轭不等式,消除公因子.
 * 如果分母为0, 分子不为0时, 在x=a时会有一条垂直渐近线, 根据a左右的符号来计算函数的极限 (stem:[-oo | oo | DNE]).
 
 ==== stem:[lim_(x->oo)(p(x))/(q(x))]
@@ -186,13 +267,23 @@ ex: 求极限 stem:[lim_(x->oo)sin(x)/x]:
 * 如果p的次数大于q的次数, 则极限是 stem:[oo] 或 stem:[-oo]
 * 如果p的次数小于q的次数, 则极限是0.
 
-=== 三角函数的极限
+=== 三明治定理
 
-* stem:[lim_(x->0)sin(x)/x = 1]
-* stem:[lim_(x->0)cos(x) = 1]
-* stem:[lim_(x->0)tan(x)/x = 1]
-* stem:[lim_(x->0)cos(x)/x = DNE]
-* stem:[lim_(x->oo)sin(**)/x^alpha=0]
+> 对于所有在 stem:[a] 附近的 stem:[x] 都有 stem:[g(x)<=f(x)<=h(x)],且
+stem:[lim_(x->a)g(x)=lim_(x->a)h(x)=L], 则 stem:[lim_(x->a)f(x)=L].
+
+==== 求极限 stem:[lim_(x->oo)sin(x)/x]:
+. stem:[-1<=sin(x)<=1]
+. stem:[-1/x<=sin(x)/x<=1/x]
+. stem:[:' lim_(x->oo)(-1/x)=lim_(x->oo)1/x=0]
+. stem:[:. lim_(x->oo)sin(x)/x=0]
+
+==== 求极限 stem:[lim_(x->0)sin(x)/x]
+. stem:[sin(x)<x<tan(x)]
+. 除以sin(x)得: stem:[1<x/sin(x)<1/cos(x)]
+. 取倒数得: stem:[cos(x)<sin(x)/x<1]
+. stem:[:' lim_(x->0)cos(x)=1]
+. stem:[:. lim_(x->0)sin(x)/x=1]
 
 === 洛必达法则
 
@@ -205,7 +296,13 @@ stem:[lim_(x->a)f(x)/g(x)=lim_(x->a)(f'(x))/(g'(x))]
 * stem:[0 * oo] `选一个因式取倒数移到分母`
 * stem:[1^(+-oo) | 0^0 | (oo)^0 ]  `先求对数再求指数的极限`
 
-== 连续
+=== 三角函数的极限
+
+* stem:[lim_(x->0)sin(x)/x = 1]
+* stem:[lim_(x->0)cos(x) = 1]
+* stem:[lim_(x->0)tan(x)/x = 1]
+* stem:[lim_(x->0)cos(x)/x = DNE]
+* stem:[lim_(x->oo)sin(**)/x^alpha=0]
 
 === 连续的定义
 
