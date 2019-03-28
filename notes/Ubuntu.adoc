@@ -122,11 +122,11 @@ include::sh/docker-install.sh[]
 == 安装zsh
 [source,bash]
 ----
-sudo apt install zsh
+sudo apt install zsh -y
 sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 chsh -s /bin/zsh
 # 安装插件
-sudo apt-get install powerline
+sudo apt-get install powerline -y
 git clone https://github.com/powerline/fonts.git
 cd fonts
 ./install.sh

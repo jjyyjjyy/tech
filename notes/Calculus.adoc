@@ -304,6 +304,16 @@ stem:[lim_(x->a)f(x)/g(x)=lim_(x->a)(f'(x))/(g'(x))]
 * stem:[lim_(x->0)cos(x)/x = DNE]
 * stem:[lim_(x->oo)sin(**)/x^alpha=0]
 
+=== 渐近线
+
+==== 水平渐近线
+
+如果stem:[lim_(x->oo)f(x)=lim_(x->-oo)f(x)=b], 则y=b是水平渐近线.
+
+==== 垂直渐近线
+
+令分母为0求出x=a, 如果stem:[lim_(x->a)f(x)=+-oo], 则x=a为垂直渐近线.
+
 === 连续的定义
 
 > 如果stem:[lim_(x->x_0)f(x) = f(x_0)], 则函数在点 stem:[x=x_0] 上连续.

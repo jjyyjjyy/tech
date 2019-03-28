@@ -39,6 +39,8 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # network插件
 kubectl apply -f https://cloud.weave.works/k8s/v1.10/net.yaml
+# bash补全
+source <(kubectl completion bash)
 
 # kube单机 (Optional)
 kubectl taint nodes --all node-role.kubernetes.io/master-
