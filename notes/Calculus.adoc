@@ -14,7 +14,6 @@
 .Resources
 * https://study.163.com/course/courseMain.htm?courseId=1003649073[window="_blank"]
 * https://book.douban.com/subject/26899701[window="_blank"]
-* https://book.douban.com/subject/1231399[window="_blank"]
 
 == 函数
 === 函数定义
@@ -466,6 +465,39 @@ stem:[e=lim_(n->oo)(1+1/n)^n=lim_(h->0)(1+h)^(1/h)]
 
 == 积分
 
+=== 不定积分
+
+ 通过导数求原函数
+
+stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
+
+.常用不定积分公式
+* stem:[intx^adx=x^(a+1)/(a+1)+C, (a!=-1)]
+* stem:[intsinkxdx=-(coskx)/k+C]
+* stem:[intcoskxdx=(sinkx)/k+C]
+* stem:[intsec^2xdx=tanx+C]
+* stem:[intcsc^2xdx=-cotx+C]
+* stem:[intsecxtanxdx=secx+C]
+* stem:[intcscxcotxdx=-cscx+C]
+* stem:[intdx/x=ln|x|+C, (x!=0)]
+* stem:[intsin^2xdx=int(1-cos2x)/2dx=1/2int(1-cos2x)dx=x/2-(sin2x)/4+C]
+* stem:[intcos^2xdx=int(1+cos2x)/2dx=x/2+(sin2x)/4+C]
+
+> 如果两个函数的导数相同: stem:[F'(x)=G'(x), 则 F(x)=G(x)+C].
+
+=== 不定积分法则
+
+* stem:[intkf(x)dx=kintf(x)dx]
+* stem:[int-f(x)dx=-intf(x)dx]
+* stem:[int(f(x) +- g(x))dx=intf(x)dx +- intg(x)dx]
+
+=== 求积分方法
+
+* 换元法: stem:[t=f(x), dt=f'(x)dx]
+* 分部积分: stem:[int_a^buv'dx=uv|_(b-a) - int_a^bu'vdx]
+* 部分分式
+* 三角替换
+
 === 求和
 
 stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
@@ -487,7 +519,7 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 * stem:[若 f(x)<=g(x), 则 int_a^bf(x)dx <= int_a^bg(x)dx].
 * stem:[int_(u_1)^(u_2)f(u)du=int_(x_1)^(x_2)g(u(x))u'(x)dx, du=u'(x)dx, u_1=u(x_1), u_2=u(x_2)]. `当且仅当 u'(x) 没有改变符号的时候才成立.`
 
-=== 积分的中值定理
+=== 定积分的中值定理
 
 > 如果函数f在闭区间[a,b]上连续, 那么在开区间(a,b)内总有一点c满足 stem:[f(c)=1/(b-a)int_a^bf(x)dx].
 
@@ -496,36 +528,33 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 . 若函数f在闭区间[a,b]上连续, stem:[F(x)=int_a^xf(t)dt, x in [a,b]], 则 F(x)在开区间(a,b)是可导函数, 且F'(x)=f(x), 记为 stem:[d/dxint_a^xf(t)dt=f(x)]
 . 若函数f在闭区间[a,b]上连续, stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
 
-=== 不定积分
-
- 通过导数求原函数
-
-stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
-
-* stem:[intsinxdx=-cosx+C]
-* stem:[intx^adx=x^(a+1)/(a+1)+C, (a!=-1)]
-* stem:[intdx/x=ln|x|+C, (x!=0)]
-* stem:[intsec^2x=tanx+C]
-
-> 如果两个函数的导数相同: stem:[F'(x)=G'(x), 则 F(x)=G(x)+C].
-
-=== 求积分方法
-
-* 换元法: stem:[t=f(x), dt=f'(x)dx]
-* 分部积分: stem:[int_a^buv'dx=uv|_(b-a) - int_a^bu'vdx]
-* 部分分式
-* 三角替换
+.应用
+* stem:[y=int_1^(x^2)costdt]
+. stem:[令u=x^2, du=2xdx]
+. stem:[dy/dx=(dy)/(du)*(du)/(dx)=int_1^ucost * 2x=cosudu=2xcos(x^2)]
+* stem:[求 int_-1^3(x^3+1)dx]
+. stem:[int(x^3+1)dx=x^4/4+x]
+. stem:[int_-1^3(x^3+1)dx = x^4/4+x|_(3-(-1)) = 24]
 
 == 反常积分
+
+=== 定义
 
 > 如果函数f在闭区间[a,b]是无界的(有垂直渐近线),或 a为 stem:[-oo],或b为 stem:[oo], 则积分 stem:[int_a^bf(x)dx]为反常积分.
 
 > 如果反常积分能满足 stem:[int_a^bf(x)dx=lim_(epsilon->0+)int_(a+epsilon)^bf(x)dx], 则该积分是收敛的, 否则是发散的. 非反常积分自然收敛于常数L.
 
+=== 性质
+
 * stem:[int_a^(oo)f(x)dx=lim_(N->oo)int_a^Nf(x)dx]
 ** stem:[int_1^oo1/xdx=lim_(N->oo)(lnN-ln1)dx=oo]
 ** stem:[int_1^oo1/x^2dx=lim_(N->oo)(-1/x-(-1))dx=1]
 * stem:[int_(-oo)^bf(x)dx=lim_(N->oo)int_-N^af(x)dx]
+
+=== 判断收敛发散
+
+* 比较判别法: stem:[f(x)>=g(x)=oo]
+* p判别法: 积分stem:[int_a^oo1/x^pdx (p>1)和 int_0^a1/x^pdx (p<1)]是收敛的.
 
 == 数列和级数
 
@@ -574,3 +603,5 @@ stem:[f(x)=sum_(n=0)^Nf^(n)(a)/(n!)(x-a)^n+f^(N+1)(c)/((N+1)!)(x-a)^(N+1)]
 === 幂级数
 
 stem:[sum_(n=0)^oof^(n)(a)/(n!)(x-a)^n], 该级数称为 `泰勒级数`, a=0时称为 `麦克劳林级数`.
+
+example: stem:[e^x=1+x+x^2/(2!) + x^3/(3!)+...]

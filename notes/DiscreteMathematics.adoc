@@ -12,6 +12,7 @@
 :docinfo: shared
 
 .Resources
+* https://www.icourse163.org/learn/NJTU-1002530017#/learn/content[window="_blank"]
 * https://book.douban.com/subject/27004846[window="_blank"]
 
 == 逻辑和证明
