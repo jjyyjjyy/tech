@@ -15,6 +15,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>edu.princeton.cs</groupId>
+            <artifactId>algs4</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>${jmh.version}</version>

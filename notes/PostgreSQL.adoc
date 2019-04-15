@@ -20,7 +20,7 @@
 version: '3'
 services:
     postgresql:
-        image: postgres:10.5-alpine
+        image: postgres:alpine
         container_name: postgresql
         volumes:
             - ~/volumes/postgresql/:/var/lib/postgresql/data/
@@ -28,13 +28,8 @@ services:
             - POSTGRES_USER=jy
             - POSTGRES_PASSWORD=123456
             - TZ=Asia/Shanghai
-        ports:
-            - 5432:5432
-        networks:
-            - postgresql
+        network_mode: host
 
-networks:
-    postgresql:
 ----
 === 安装包安装
 
@@ -43,15 +38,12 @@ networks:
 groupadd postgres
 useradd postgres -g postgres
 passwd postgres
-mkdir -p /database/pg10/pg_root
-chown -R postgres:postgres /database/pg10
+mkdir -p /database/pg/pg_root
+chown -R postgres:postgres /database/pg
 
 sudo apt install postgresql-all
-initdb -D /database/pg10/pg_root -E UTF8 --locale=C -U postgres -W
+initdb -D /database/pg/pg_root -E UTF8 --locale=C -U postgres -W
 ----
-
-
-
 
 == 基本命令
 [source,bash]
