@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-SITE_DIR=~/IdeaProjects/jjyyjjyy.github.io/
-CHECK_NOTHING=$(echo `git status` | grep "nothing to commit")
 
+TMP_DIR=/tmp/blog/
+ORIGIN_ADDRESS=git@github.com:jjyyjjyy/tech.git
+ORIGIN_BRANCH=gh-pages
 cd notes
 mvn clean asciidoctor:process-asciidoc
-cd target/generated-docs
-cp -r * ${SITE_DIR}  && cd ${SITE_DIR}
-git pull
-rm -rf pom.xml && rm -rf *.iml
-if [[ ${#CHECK_NOTHING} != 0 ]];then
-    echo "nothing to commit"
-else
-    git add .
-    git commit -m ":memo: Update"
-    git push origin
-fi
+rm -rf ${TMP_DIR} && mkdir -p ${TMP_DIR}
+cp -r target/generated-docs/ ${TMP_DIR}
+cd ${TMP_DIR}
+git init
+git remote add origin ${ORIGIN_ADDRESS}
+git branch -D ${ORIGIN_BRANCH}
+git checkout -b ${ORIGIN_BRANCH}
+git add .
+git commit -m ":memo: Update"
+git push --set-upstream origin ${ORIGIN_BRANCH}
+cd -
+echo "gh-pages sync successfully!"
