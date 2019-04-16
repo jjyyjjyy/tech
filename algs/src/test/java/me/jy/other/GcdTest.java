@@ -1,5 +1,6 @@
 package me.jy.other;
 
+import me.jy.algs4.ch1.Gcd;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

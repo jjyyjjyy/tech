@@ -1,15 +1,17 @@
 package me.jy.algs4.ch1;
 
+import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import me.jy.algs4.CsvToArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -308,7 +310,87 @@ class Exercise1_1 {
         }
         return (1 - p) * binomial(n - 1, k, p) + p * binomial(n - 1, k - 1, p);
     }
-
     // end::ex1.1.27[]
 
+    private static int[] removeDuplicates(int[] arr) {
+        int low = 0;
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[low] != arr[i]) {
+                arr[++low] = arr[i];
+            }
+        }
+        int[] dest = new int[low + 1];
+        System.arraycopy(arr, 0, dest, 0, low + 1);
+        return dest;
+    }
+
+    private static int rank(int[] arr, int limit) {
+        int count = 0;
+        for (int i = 0; i < arr.length; i++, count++) {
+            if (arr[i] >= limit) {
+                break;
+            }
+        }
+        return count;
+    }
+    // end::ex1.1.28[]
+
+    // tag::ex1.1.30[]
+    private static boolean[][] getBooleanArray(int n) {
+        boolean[][] result = new boolean[n][n];
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (gcd(i, j) == 1) {
+                    result[i][j] = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    // tag::ex1.1.32[]
+    private static void drawHistogram(int n, double lo, double hi) {
+        double interval = (hi - lo) / n;
+        double[] seeds = Stream.iterate(lo, a -> a + interval)
+            .limit(n)
+            .mapToDouble(a -> a)
+            .toArray();
+
+        StdDraw.setCanvasSize(1024, 512);
+        StdDraw.setXscale(lo - 1, hi + 1);
+        StdDraw.setYscale(-2, hi + 2);
+
+        // TODO
+
+    }
+    // end::ex1.1.29[]
+
+    // tag::ex1.1.38[]
+    private static int bruteForceSearch(int[] arr, int target) {
+        for (int i = 0; i < arr.length; i++) {
+            if (target == arr[i]) { // Good luck!
+                return i;
+            }
+        }
+        return -1;
+    }
+    // end::ex1.1.30[]
+
+    // tag::ex1.1.28[]
+    @ParameterizedTest
+    @CsvSource({"'1,2,3,5','1,2,3,5,5'"})
+    @DisplayName("1.1.28")
+    void ex1128(@ConvertWith(CsvToArray.class) int[] expect, @ConvertWith(CsvToArray.class) int[] origin) {
+        assertArrayEquals(expect, removeDuplicates(origin));
+    }
+    // end::ex1.1.32[]
+
+    // tag::ex1.1.29[]
+    @ParameterizedTest
+    @CsvSource({"'1,2,3,4,56',4,3", "'2,35,55,66,66,66,332',67,6"})
+    @DisplayName("1.1.29")
+    void ex1129(@ConvertWith(CsvToArray.class) int[] origin, int limit, int expect) {
+        assertEquals(expect, rank(origin, limit));
+    }
+    // end::ex1.1.38[]
 }

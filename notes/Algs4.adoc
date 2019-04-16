@@ -13,6 +13,9 @@
 :docinfo: shared
 :codepath: ../algs/src/test/java/me/jy/algs4
 
+.Resource
+* https://book.douban.com/subject/19952400[window="_blank"]
+
 == 基础
 
 === 基础编程模型
@@ -168,7 +171,7 @@ include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.24]
 
 ==== 证明欧几里得算法
 
- ...
+ TODO
 
 ==== 证明以下代码能让abc按照升序排列
 
@@ -183,3 +186,82 @@ include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.27]
 
 ==== 删除重复元素
 
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.28]
+----
+
+==== 返回数组中小于指定键的元素数量
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.29]
+----
+
+==== 生成互质数boolean数组
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.30]
+----
+
+==== 随机连接
+
+ // TODO
+
+==== 直方图
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.32]
+----
+
+==== 矩阵库
+
+[source,java]
+----
+include::{codepath}/ch1/Matrix.java[]
+----
+
+==== 过滤
+
+* 打印出最大的数 `和N无关`
+* 打印出所有数的中位数 `保存所有值`
+* 打印出第k小的数 `和N无关`
+* 打印出所有数的平方和 `和N无关`
+* 打印出N个数的平均值 `和N无关`
+* 打印出大于平均值的数的百分比 `保存所有值`
+* 将N个数按照升序打印 `保存所有值`
+* 将N个数按照随机顺序打印 `和N无关`
+
+==== 模拟掷骰子
+
+ // TODO
+
+==== 乱序检查
+
+[source,java]
+----
+include::{codepath}/ch1/ShuffleTest.java[tag=ex1.1.36]
+----
+
+==== 糟糕的打乱
+
+[source,java]
+----
+include::{codepath}/ch1/ShuffleTest.java[tag=ex1.1.37]
+----
+
+==== 二分查找与暴力查找
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.38]
+----
+
+==== 随机匹配
+
+[source,java]
+----
+include::{codepath}/ch1/RandomMatch.java[]
+----
