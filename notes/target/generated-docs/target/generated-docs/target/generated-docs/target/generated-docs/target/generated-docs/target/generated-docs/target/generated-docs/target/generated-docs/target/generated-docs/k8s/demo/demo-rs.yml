@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+    name: rs-springboot-demo
+    namespace: springboot
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: springboot-demo
+    template:
+        metadata:
+            name: springboot-demo
+            namespace: springboot
+            labels:
+                app: springboot-demo
+        spec:
+            containers:
+            - name: springboot-demo
+              image: registry.cn-qingdao.aliyuncs.com/jy-test/boot
+              imagePullPolicy: Always
+              ports:
+              - containerPort: 8080

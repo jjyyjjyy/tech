@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: springboot-demo
+    labels:
+        app: springboot-demo
+spec:
+    replicas: 2
+    minReadySeconds: 20
+    template:
+        metadata:
+            name: springboot-demo
+            labels:
+                app: springboot-demo
+        spec:
+            containers:
+            - name: springboot-demo
+              image: registry.cn-qingdao.aliyuncs.com/jy-test/boot:latest
+              imagePullPolicy: Always
+              ports:
+              - containerPort: 8080
+                name: springboot
+    selector:
+        matchLabels:
+            app: springboot-demo

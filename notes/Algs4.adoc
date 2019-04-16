@@ -102,3 +102,84 @@ include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.13]
 ----
 include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.14]
 ----
+
+==== histogram方法
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.15]
+----
+
+==== 返回值
+
+ 311361142246
+
+==== 找出下列递归函数的问题
+
+ 临界条件位置不对, 导致爆栈.
+
+==== 计算返回值
+
+* mystery(2, 25) = 50
+* mystery(3, 11) = 33
+* mystery(a, b) = a * b
+
+==== 斐波拉契数列优化
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.19]
+----
+
+==== 计算 stem:[ln(N!)]的值
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.20]
+----
+
+==== 打印商
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.21]
+----
+
+==== 跟踪二分查找递归方法的深度
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.22]
+----
+
+==== 二分查找打印是否在数组中
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.23]
+----
+
+==== 跟踪二分查找递归方法的深度
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.24]
+----
+
+==== 证明欧几里得算法
+
+ ...
+
+==== 证明以下代码能让abc按照升序排列
+
+ ab,bc,ac按照升序排列, 那么abc也是按照升序排列
+
+==== 二项分布
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.27]
+----
+
+==== 删除重复元素
+

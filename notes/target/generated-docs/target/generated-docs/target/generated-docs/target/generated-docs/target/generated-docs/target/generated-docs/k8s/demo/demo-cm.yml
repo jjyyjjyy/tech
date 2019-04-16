@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-demo
+data:
+  log.level: info
+  log.file: /tmp/cm.log
