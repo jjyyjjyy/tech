@@ -265,3 +265,53 @@ include::{codepath}/ch1/Exercise1_1.java[tag=ex1.1.38]
 ----
 include::{codepath}/ch1/RandomMatch.java[]
 ----
+
+=== 数据抽象
+
+==== 计算两点间的最近距离
+
+[source,java]
+----
+include::{codepath}/ch1/Point2DScratches.java[]
+----
+
+==== 打印所有相交的间隔对
+
+[source,java]
+----
+include::{codepath}/ch1/Interval1DScratches.java[]
+----
+
+==== 生成随机2D间隔对
+
+[source,java]
+----
+include::{codepath}/ch1/Interval2DScratches.java[]
+----
+
+==== 以下代码打印内容
+
+ world
+ hello
+
+==== 以下代码打印内容
+
+ Hello World
+
+==== 判断字符串是否互为回环变位
+
+[source,java]
+----
+include::{codepath}/ch1/CircularShiftPredicate.java[]
+----
+
+==== 以下递归函数的返回值是什么
+
+
+
+
+=== 背包队列和栈
+
+=== 算法分析
+
+=== union-find算法
