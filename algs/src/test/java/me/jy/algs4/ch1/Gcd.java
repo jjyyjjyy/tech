@@ -2,7 +2,7 @@ package me.jy.algs4.ch1;
 
 public class Gcd {
 
-    public int gcd(int a, int b) {
+    public static long gcd(long a, long b) {
         if (b == 0) {
             return a;
         }

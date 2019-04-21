@@ -307,7 +307,76 @@ include::{codepath}/ch1/CircularShiftPredicate.java[]
 
 ==== 以下递归函数的返回值是什么
 
+ 参数字符串逆序
 
+==== 下列代码的作用是什么
+
+ 交换数组a和b
+
+==== 修改二分查找, 统计查找次数
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_2.java[tag=ex1.2.9]
+----
+
+==== 可视化计数器
+
+[source,java]
+----
+include::{codepath}/ch1/VisualCounter.java[]
+----
+
+==== 日期校验
+
+[source,java]
+----
+include::{codepath}/ch1/SmartDate.java[]
+----
+
+==== 获取星期
+
+ 见 1.2.11
+
+==== 实现Transaction类型
+
+[source,java]
+----
+include::{codepath}/ch1/Transaction.java[]
+----
+
+==== 实现Transaction类型的equals方法
+
+ 见 1.2.13
+
+==== 实现readInts方法
+
+[source,java]
+----
+include::{codepath}/ch1/Exercise1_2.java[tag=ex1.2.15]
+----
+
+==== 有理数
+
+[source,java]
+----
+include::{codepath}/ch1/Rational.java[]
+----
+
+==== 有理数的健壮性
+
+ 见 1.2.16
+
+==== 累加器的方差
+
+[source,java]
+----
+include::{codepath}/ch1/Accumlator.java[]
+----
+
+==== 字符串解析
+
+ 见 1.2.13
 
 
 === 背包队列和栈
