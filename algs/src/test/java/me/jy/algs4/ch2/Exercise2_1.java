@@ -31,7 +31,7 @@ class Exercise2_1 {
     }
 
     @ParameterizedTest
-    @CsvSource({"'1,2,3,5,4'"})
+    @CsvSource({"'1,2,3,5,4','2,4324,22,123,12,34,1232,3533,12332,54,344443'"})
     @DisplayName("SortTest")
     void sortTest(@ConvertWith(CsvToArray.class) int[] arr) {
         SORT_TEMPLATES.forEach(s -> {
