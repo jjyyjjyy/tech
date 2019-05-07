@@ -214,6 +214,25 @@ class FluxTests {
 
     }
 
+    @Test
+    void testHotFlux2() {
+        Flux<String> hotFlux1 = Flux.just("A", "B", "C", "D", "E");
+        hotFlux1.subscribe(System.out::println);
+        hotFlux1.subscribe(System.out::println);
+
+        System.out.println("=======================");
+
+        DirectProcessor<Object> processor = DirectProcessor.create();
+        processor.subscribe(c -> System.out.println("Subscribe 1: " + c));
+        processor.onNext("red");
+        processor.onNext("blue");
+
+        processor.subscribe(c -> System.out.println("Subscribe 2: " + c));
+        processor.onNext("yellow");
+        processor.onNext("purple");
+
+    }
+
     @Setter
     private static class StateGenerator {
 
