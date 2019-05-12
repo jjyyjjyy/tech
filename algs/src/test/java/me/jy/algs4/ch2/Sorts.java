@@ -69,6 +69,7 @@ public final class Sorts {
 
     /**
      * 归并排序
+     * 将数组切成若干小数组后排序, 最后合并.
      */
     public static class MergeSort implements SortTemplate {
 
@@ -118,6 +119,10 @@ public final class Sorts {
 
     }
 
+    /**
+     * 快速排序
+     * 保证某一元素左边值比该元素值小且有序, 右边值比该元素值大且有序, 则该数组有序.
+     */
     public static class QuickSort implements SortTemplate {
 
         @Override
@@ -135,8 +140,56 @@ public final class Sorts {
         }
 
         private int partition(int[] arr, int lo, int hi) {
-            return 0;
+            int v = arr[lo];
+            int i = lo, j = hi + 1;
+            while (true) {
+                while (less(arr[++i], v)) {
+                    if (i == hi) {
+                        break;
+                    }
+                }
+                while (less(v, arr[--j])) ;
+                if (i >= j) {
+                    break;
+                }
+                exchange(arr, i, j);
+            }
+            exchange(arr, lo, j);
+            return j;
         }
     }
 
+    /**
+     * 堆排序
+     * 将数组转成最大堆的形式, 再将第一项放到最后. 逐步重复1..n-1项
+     */
+    public static class HeapSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            for (int i = arr.length - 1; i > 0; i--) {
+                buildMaxHeap(arr, i);
+                // 交换首尾元素
+                exchange(arr, 0, i);
+            }
+        }
+
+        private void buildMaxHeap(int[] arr, int i) {
+
+            // 当前尾节点的父节点
+            int parent = (i + 1) / 2 - 1;
+
+            while (parent >= 0) {
+                int left = parent * 2 + 1;
+                int right = parent * 2 + 2;
+                // 找到两个子节点中的值最大的节点
+                int maxChildIndex = less(arr[left], arr[right]) && right <= i ? right : left;
+                // 如果父节点值小, 则交换
+                if (less(arr[parent], arr[maxChildIndex])) {
+                    exchange(arr, parent, maxChildIndex);
+                }
+                parent--;
+            }
+        }
+    }
 }
