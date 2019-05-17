@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -230,6 +232,24 @@ class FluxTests {
         processor.subscribe(c -> System.out.println("Subscribe 2: " + c));
         processor.onNext("yellow");
         processor.onNext("purple");
+
+    }
+
+    @Test
+    void testOperators() {
+
+        Function<Flux<String>, Flux<String>> transFormOperator = f -> f.filter(color -> !"orange".equals(color)).map(String::toUpperCase);
+
+        AtomicInteger flag = new AtomicInteger();
+
+        Function<Flux<String>, Flux<String>> composeOperator = f -> f.filter(color -> !(flag.getAndIncrement() == 1 ? "orange" : "purple").equals(color)).map(String::toUpperCase);
+
+        Flux<String> composeFlux = Flux.fromIterable(Arrays.asList("blue", "orange", "purple"))
+            .doOnNext(System.out::println)
+            .transform(composeOperator);
+        composeFlux.subscribe(System.out::println);
+        System.out.println("================");
+        composeFlux.subscribe(System.err::println);
 
     }
 
