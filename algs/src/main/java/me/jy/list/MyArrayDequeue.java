@@ -4,10 +4,9 @@ import java.util.Arrays;
 
 /**
  * @author jy
- * @date 2018/02/23
  */
 @SuppressWarnings("unchecked")
-public class SelfArrayDequeue<E> {
+public class MyArrayDequeue<E> {
 
     private Object[] elements;
 
@@ -16,7 +15,7 @@ public class SelfArrayDequeue<E> {
 
     private int size = 0;
 
-    public SelfArrayDequeue() {
+    public MyArrayDequeue() {
         this.elements = new Object[16];
     }
 
@@ -118,7 +117,7 @@ public class SelfArrayDequeue<E> {
 
 
     public static void main(String[] args) {
-        SelfArrayDequeue<Integer> dequeue = new SelfArrayDequeue<>();
+        MyArrayDequeue<Integer> dequeue = new MyArrayDequeue<>();
         for (int i = 0; i < 20; i++) {
             dequeue.add(i);
         }

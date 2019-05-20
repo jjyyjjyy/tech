@@ -12,7 +12,7 @@ public @interface Problem {
 
     Difficulty difficulty() default Difficulty.EASY;
 
-    public enum Difficulty {
+    enum Difficulty {
         EASY, MEDIUM, HARD
     }
 }
