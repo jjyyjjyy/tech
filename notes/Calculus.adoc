@@ -242,10 +242,10 @@ WARNING: 当且仅当左右极限存在并相等时极限才存在.
 === 极限法则
 
 .假设stem:[lim_(x->c)f(x)=L,lim_(x->c)g(x)=M]:
-* stem:[lim_(x->c)(f(x)+g(x))=L+M]
-* stem:[lim_(x->c)(f(x)-g(x))=L-M]
-* stem:[lim_(x->c)(f(x)*g(x))=L*M]
-* stem:[lim_(x->c)f(x)/g(x)=L/M]
+* stem:[lim_(x->c)(f(x) + g(x))=L+M]
+* stem:[lim_(x->c)(f(x) - g(x))=L-M]
+* stem:[lim_(x->c)(f(x) * g(x))=L*M]
+* stem:[lim_(x->c)f(x) / g(x)=L/M]
 * stem:[lim_(x->c)(k*f(x))=k*L]
 * stem:[lim_(x-c)f(x)^(r/s)=L^(r/s)]
 

@@ -50,4 +50,9 @@ class BinarySearchTreeTests {
         });
     }
 
+    @Test
+    void testHeight() {
+        System.out.println(tree.height());
+    }
+
 }

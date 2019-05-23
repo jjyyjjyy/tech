@@ -12,7 +12,6 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
     public void insert(T value) {
         checkValue(value);
         root = insert(value, root);
-        System.out.println(toString());
     }
 
     public void remove(T value) {
@@ -37,6 +36,17 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
     public boolean contains(T value) {
         checkValue(value);
         return contains(value, root);
+    }
+
+    public int height() {
+        return height(root);
+    }
+
+    private int height(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        return 1 + Math.max(height(node.left), height(node.right));
     }
 
     private boolean contains(T value, Node node) {
@@ -71,8 +81,8 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
             node.right = remove(value, node.right);
         } else if (node.left != null && node.right != null) {
             // 找到右子节点中最小的节点, 变为node的右子节点
-            Node minNode = findMinNode(node.right);
-            node.right = remove(minNode.value, node.right);
+            node.value = findMinNode(node.right).value;
+            node.right = remove(node.value, node.right);
         } else {
             // node为树叶或者只有一个子节点
             node = Optional.ofNullable(node.left).orElse(node.right);
@@ -114,26 +124,6 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
         if (value == null) {
             throw new IllegalArgumentException("No soup for u!");
         }
-    }
-
-    @Override
-    public String toString() {
-        return printNode(root);
-    }
-
-    private String printNode(Node node) {
-        if (node == null) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.value);
-        if (node.left != null) {
-            sb.append(printNode(node.left)).append("\t");
-        }
-        if (node.right != null) {
-            sb.append("\t").append(printNode(node.right));
-        }
-        return sb.toString();
     }
 
     private class Node {

@@ -86,13 +86,13 @@ include::k8s/vagrant/kubeadm-init.sh[]
 ----
 
 == 插件安装
-=== 4.1 安装Dashboard
+=== 安装Dashboard
 
 [source,bash]
 ----
 kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
 ----
-=== 4.2 创建登陆ServiceAccount
+=== 创建登陆ServiceAccount
 [source,bash]
 ----
 cat <<EOF > sa-dashboard.yml
@@ -124,7 +124,7 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 # https://ip:30001
 ----
 
-=== 4.3 安装Heapster插件
+=== 安装Heapster插件
 
 [source,bash]
 ----
@@ -139,7 +139,7 @@ cd ..
 kubectl create -f heapster/
 ----
 
-=== 4.4 Helm
+=== Helm
 
 [source,bash]
 ----
@@ -153,7 +153,7 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 
 ----
 
-=== 4.5 启用api-server的swagger ui
+=== 启用api-server的swagger ui
 
 [source,bash]
 ----
@@ -168,7 +168,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 
 == kubernetes各个组件功能
 
-=== 5.1 Master
+=== Master
 集群控制节点,运行以下进程:
 
 * kube-apiserver: 提供Kubernetes所有资源操作的REST服务
@@ -178,7 +178,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 * etcd: 保存资源数据
 * coredns
 
-=== 5.2 Node
+=== Node
 
 集群工作负载节点,运行以下进程:
 
@@ -187,74 +187,76 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 * pause: pod组件
 * docker: 负责本机的容器管理
 
-=== 5.3 Pod
+=== Pod
 每个pod包含pause容器和多个用户容器.
 同一个pod内的容器拥有相同的Network/IPC/UTS[和PID] namespace, 所以它们拥有相同的hostname和network interfaces,但文件系统不同
 
 * static pod: 设置在node中,并只在该node上运行
 * normal pod: 存储在etcd中,随后会被Master调度到某个node上进行绑定,node上的kubelet进程会实例化一组docker容器运行
 
-=== 5.4 Label Selector
+=== Label Selector
 * kube-controller进程通过RC上定义的labelSelector来筛选需要监控的Pod数量.
 * kube-proxy进程通过service的labelSelector来选择对应的pod, 自动建立起每个service到对应pod的请求路由, 从而实现service的负载均衡.
 * kube-scheduler通过node定义的label和pod定义nodeSelector实现pod的定向调度.
 
-=== 5.5 ReplicationController
+=== ReplicationController
 
  定期监控labelSelector匹配的pod副本的数量,确保其等于期望值.
 
 WARNING: 如果修改了一个pod的label, 则RC会自动新起一个pod.如果修改了RC的labelSelector, 则RC会自动创建所有pod副本.
 
-=== 5.6 Replica Set
+=== Replica Set
 
  包含ReplicationController所有的功能, 同时增强了labelSelector的功能.
 
-=== 5.7 DaemonSet
+=== DaemonSet
 
  通过nodeSelector在每个节点上运行一个实例
 
-=== 5.8 Job
+=== Job
 
  启动批处理Job, 可以设置任务数/并行数/重试次数等
 
-=== 5.9 CronJob
+=== CronJob
 
  定时任务: 分/时/日/月/星期
 
-=== 5.10 Deployment
+=== Deployment
 
  扩展了Replica Set自动scale的功能.
 
-== kubectl 命令
+== kubectl命令
 
 [source,bash]
 ----
-kubectl version
-kubectl cluster-info
+# 获取k8s版本号
+kubectl version [-o short]
+# 查看所有的api版本号
 kubectl api-versions
+# 查看 Config metadata
 kubectl config view
-kubectl get [po|depoy|cm]
-
-# namespace
+# 查看集群资源概况
+kubectl get [node|ns|po|depoy|cm]
+# 查看指定pod中某个容器日志
+kubectl logs POD -c CONTAINER
+# 创建namespace
 kubectl create namespace xxNameSpace
-# label
-kubectl label po xxPod xxx=xxx [--override]
-# annotation
-kubectl annotate po xxPod xxx=xxx
-# label selector
-kubectl [get|delete] po -l xxx=xxx
 
-# ======资源控制======
-kubectl create -f YML
+# 设置label
+kubectl label po xxPod xxx=xxx [--override]
+# 显示label
+kubectl get pods --show-labels
+# 筛选label
+kubectl get pods --show-labels -l env=xxx
+# 每个node都会有一些默认label: kubernetes.io/hostname=HOSTNAME
+
+# 删除
+kubectl delete [TYPE | all] [--all] [-n NAMESPACE]
 
 # configMap
 kubectl create cm CM_NAME --from-file=xxxFile   # xxxFile=CONTENT
 kubectl create cm CM_NAME --from-file=xxxDir   # xxxFile1=CONTENT1, xxxFile2=CONTENT2
 kubectl create cm CM_NAME --from-literal=a1=v1 --from-literal=a2=v2
-
-kubectl run NAME --image=IMAGE
-
-kubectl delete TYPE NAME
 
 # ======部署管理======
 # 实现水平扩展
@@ -299,9 +301,9 @@ kubectl rollout undo
  如果探测到容器不健康, 则kubelet将杀掉该容器, 并根据容器的重启策略处理
 
 .实现方式
-* ExecAction
-* TCPSocketAction
 * HTTPGetAction
+* TCPSocketAction
+* ExecAction
 [source,yml]
 ----
   livenessProbe:

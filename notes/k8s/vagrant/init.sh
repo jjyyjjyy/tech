@@ -24,7 +24,7 @@ sudo chmod 777 /etc/docker -R
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 # install docker-compose
-sudo wget -q https://soft-1252259164.cos.ap-shanghai.myqcloud.com/docker-compose-1.23.2 -O /usr/local/bin/docker-compose
+sudo wget -q https://soft-1252259164.cos.ap-shanghai.myqcloud.com/docker-compose-1.24.0 -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
 
