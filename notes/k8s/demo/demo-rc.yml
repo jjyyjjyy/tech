@@ -9,7 +9,7 @@ spec:
         app: kubia
     template:
         metadata:
-            name: kubia-v3
+            name: kubia-v2
             namespace: jy-test
             labels:
                 env: test

@@ -13,3 +13,4 @@ spec:
     completions: 3
     parallelism: 2
     backoffLimit: 3
+    activeDeadlineSeconds: 86400

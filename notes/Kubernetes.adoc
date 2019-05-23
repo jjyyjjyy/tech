@@ -102,7 +102,7 @@ metadata:
     name: admin-user
     namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
     name: admin-user
@@ -250,8 +250,14 @@ kubectl get pods --show-labels
 kubectl get pods --show-labels -l env=xxx
 # 每个node都会有一些默认label: kubernetes.io/hostname=HOSTNAME
 
+# 编辑
+kubectl edit rc RC
+
 # 删除
 kubectl delete [TYPE | all] [--all] [-n NAMESPACE]
+# 删除rc但保留所有pod
+kubectl delete rc RC --cascade=false
+
 
 # configMap
 kubectl create cm CM_NAME --from-file=xxxFile   # xxxFile=CONTENT
