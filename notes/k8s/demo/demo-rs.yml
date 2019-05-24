@@ -8,7 +8,7 @@ spec:
     selector:
         matchExpressions:
             - key: app
-              operator: in
+              operator: In
               values:
                   - kubia
     template:
@@ -33,3 +33,8 @@ spec:
                       httpGet:
                           port: 8080
                           path: /
+                  readinessProbe:
+                      initialDelaySeconds: 10
+                      httpGet:
+                          port: 8080
+                          path: /actuator/health

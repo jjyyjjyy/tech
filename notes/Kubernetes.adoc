@@ -285,7 +285,7 @@ kubectl rollout undo
 
 == Pod
 
-=== 7.1 生命周期:
+=== 生命周期:
 
 . Pending `Pod创建成功,但存在容器还未创建`
 . Running `Pod中容器都已成功创建`
@@ -293,7 +293,7 @@ kubectl rollout undo
 . Failed `Pod中所有容器均已退出,并且至少有一个退出为失败状态`
 . Unknown `无法获取Pod的状态`
 
-=== 7.2 重启策略
+=== 重启策略
 * Always `容器失效时kubelet自动重启容器`
 * OnFailure `容器停止运行且退出码不为0时kubelet自动重启容器`
 * Never `kubelet不会自动重启容器`
@@ -301,7 +301,7 @@ kubectl rollout undo
  RC和DS必须设置为Always
  Job必须设置为OnFailure或Never
 
-=== 7.3 健康检查
+=== 健康检查
 * livenessProbe (running)
 
  如果探测到容器不健康, 则kubelet将杀掉该容器, 并根据容器的重启策略处理
@@ -325,7 +325,7 @@ kubectl rollout undo
 
  请求容器, 如果容器不健康, Endpoint Controller 将从Service的Endpoint中删除该Pod的Endpoint
 
-=== 7.4 调度
+=== 调度
 
 * Deployment 自动调度
 * NodeSelector 定向调度
@@ -353,7 +353,7 @@ kubectl rollout undo
 * Job 批处理调度
 * Cronjob 定时任务
 
-=== 7.5 升级和回滚
+=== 升级和回滚
 
 ==== 升级
 
@@ -369,13 +369,13 @@ kubectl rollout undo
 回滚到指定版本 `kubectl rollout undo deployment/<deployment-name> --to-revision=<revision>`
 暂停/继续更新: `kubectl rollout pause/resume deployment/<deployment-name>`
 
-=== 7.6 扩容和缩容
+=== 扩容和缩容
 
  kubectl scale deployment <deployment-name> --replicas <number>
 
 == Service
 
-=== 8.1 基本用法:
+=== 基本用法:
 
 [source,yml]
 .springboot-svc.yml
@@ -394,7 +394,13 @@ spec:
 
  kubectl create -f springboot-svc.yml
 
-=== 8.2 暴露外部端口
+=== Pod间访问
+
+* 每一个pod中都会有集群中所有service的host/port环境变量. 如 `KUBERNETES_SERVICE_HOST/KUBERNETES_SERVICE_PORT` 对应名为kubernetes的service
+
+* 直接通过dns访问: SERVICE[.NAMESPACE.svc.cluster.local], 如 `kubia.jy-test.svc.cluster.local`
+
+=== 暴露外部端口
 
 * 设置容器级别的hostPort, 将容器应用的端口号映射到物理机上
 
@@ -426,13 +432,13 @@ ports:
 
  Kubernetes 包管理工具
 
-=== 9.1 基本概念
+=== 基本概念
 
 * Chart: chart用于描述一个安装包
 * Repository: 存放chart的database
 * Release: 包安装后的一个实例
 
-=== 9.2 https://docs.helm.sh/developing_charts/#charts[常用命令]
+=== https://docs.helm.sh/developing_charts/#charts[常用命令]
 
  helm search <chart>
  helm inspect [values] <chart>
@@ -446,7 +452,7 @@ ports:
 
 == Istio
 
-=== 10.1 核心功能
+=== 核心功能
 
  ServiceMesh解决方案
 
@@ -457,7 +463,7 @@ ports:
 
 image::https://istio.io/docs/concepts/what-is-istio/arch.svg[]
 
-=== 10.2 安装
+=== 安装
 
 [source,bash]
 ----
