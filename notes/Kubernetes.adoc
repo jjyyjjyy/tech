@@ -428,6 +428,43 @@ ports:
 * 设置service的spec.type为LoadBalancer, 不需要设置NodePort
 * Ingress
 
+== PV
+
+当集群用户需要在其 pod 中使用持久化存储(PV)时, 他们首先创建持久卷声明
+(Persistent VolumeClaim, 简称 PVC) 清单, 指定所需要的最低容量要求和访问模式,
+然后用户将PV提交给Kubernetes apiserver, Kubernetes将找到可匹
+配的PV并将其绑定到PVC。
+
+== ConfigMap
+
+=== 创建方式
+* 命令行直接创建 `kubectl create configmap kubia-config --from-literal=interval=2 --from-literal=foo=bar`
+* 从文件(夹)创建 `kubectl create configmap kubia-config --from-file=config.conf`
+* yaml创建:
+[source,yml]
+.demo-cm.yml
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubia-cm
+  namespace: jy-test
+data:
+  log.level: debug
+----
+
+=== 使用:
+
+[source,yml]
+----
+envFrom:
+  - configMapRef:
+      name: kubia-cm
+    prefix: log
+----
+
+
+
 == Helm
 
  Kubernetes 包管理工具

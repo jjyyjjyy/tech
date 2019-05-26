@@ -13,6 +13,10 @@ spec:
           ports:
               - containerPort: 8080
                 protocol: TCP
+          envFrom:
+              - configMapRef:
+                    name: kubia-cm
+                prefix: log
           livenessProbe:
               initialDelaySeconds: 10
               periodSeconds: 60
