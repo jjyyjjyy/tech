@@ -463,8 +463,6 @@ envFrom:
     prefix: log
 ----
 
-
-
 == Helm
 
  Kubernetes 包管理工具
@@ -473,9 +471,23 @@ envFrom:
 
 * Chart: chart用于描述一个安装包
 * Repository: 存放chart的database
-* Release: 包安装后的一个实例
+* Release: chart在Kubernetes集群中部署后的一个实例
+* Tiller: Helm的服务端, 用于接收Helm的请求, 根据Chart生成Kubernetes的manifest文件后再部署应用.
 
-=== https://docs.helm.sh/developing_charts/#charts[常用命令]
+=== 安装
+
+[source,bash]
+----
+sudo wget https://soft-1252259164.cos.ap-shanghai.myqcloud.com/helm -O /usr/local/bin/helm
+sudo chmod +x /usr/local/bin/helm
+kubectl -n kube-system create sa tiller
+kubectl -n kube-system create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+helm init --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.0 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts --service-account tiller
+----
+
+=== 常用命令
+
+https://docs.helm.sh/developing_charts/#charts
 
  helm search <chart>
  helm inspect [values] <chart>
