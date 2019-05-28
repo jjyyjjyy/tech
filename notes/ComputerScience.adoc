@@ -17,7 +17,7 @@
 * https://book.douban.com/subject/26745780[window="_blank"]
 * https://book.douban.com/subject/19952400[window="_blank"]
 
-== CS journey
+== 计算机系统漫游
 
 === 信息等于位+上下文
 
@@ -43,6 +43,11 @@ plantuml::charts/CompilerSystem.puml[format=svg, height=300]
 TIP: 较大的存储设备要比较小的存储设备运行的慢, 快速设备的造价远高于同类的低俗设备.
 
 高速缓存存储器: 作为一个暂存区域, 存放处理器近期可能会需要的信息.
+
+* CPU寄存器保存最常用的数据.
+* 靠近CPU的小的, 快速的高速缓存存储器作为主存一部分数据和指令的缓冲区域.
+* 主存缓存容量较大的慢速的磁盘上的数据.
+* 本地磁盘常常作为存储在通过网络连接的其他机器的磁盘上的数据的缓冲区域.
 
 plantuml::charts/StorageDeviceLevel.puml[format=svg, scale=0.5]
 
@@ -72,6 +77,50 @@ plantuml::charts/CSAbstract.puml[format=svg]
 
 .新的总执行时间
 stem:[T_(n\ew)=(1-alpha)T_(old)+alphaT_(old)/k=T_(old)*((1-alpha)+alpha/k)]
+
 .加速比
 stem:[S=T_(old)/ T_(n\ew)=1/((1-alpha)+alpha/k]
+
+TIP: 当stem:[k->oo]时, 加速比最多能达到 stem:[1/(1-alpha)]
+
+== 存储器层次结构
+
+=== 随机访问存储器
+
+==== SRAM
+
+只要有电, SRAM存储器就能永远保持它的值.
+
+==== DRAM
+
+DRAM存储单元对干扰非常敏感, 当电容的电压被扰乱后, 它就永远不会恢复到原来的状态了.
+
+每个DRAM被分为stem:[d*m]个超单元,
+
+==== SRAM和DRAM区别
+
+[cols="h,6*1h"]
+|===
+| | 每位晶体管数 | 相对访问时间 | 数据是否持久化 | 敏感的 | 相对花费 | 应用
+
+| SRAM
+| 6
+| 1x
+| 是
+| 否
+| 1000x
+| 高速缓存存储器
+
+| DRAM
+| 1
+| 10x
+| 否
+| 是
+| 1x
+| 主存
+
+|===
+
+==== 常规DRAM获取数据流程
+
 

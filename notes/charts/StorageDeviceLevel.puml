@@ -2,6 +2,10 @@
 
 !include global/stylesheet.iuml
 
+package CPU {
+[寄存器] as PC
+}
+
 package SRAM {
 [L1高速缓存] as l1Cache
 [L2高速缓存] as l2Cache
@@ -17,7 +21,7 @@ package DISK {
 [远程磁盘存储] as remoteStorage
 }
 
-[寄存器] ..> l1Cache
+PC ..> l1Cache
 l1Cache ..> l2Cache
 l2Cache ..> l3Cache
 l3Cache ..> memory
