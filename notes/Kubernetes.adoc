@@ -275,14 +275,6 @@ kubectl rollout history
 kubectl rollout undo
 ----
 
-=== k8s优势
-
-* 简化应用部署
-* 有效利用硬件资源
-* 健康检查和自我修复
-* 自动扩容和滚动升级
-* 扩展性强
-
 == Pod
 
 === 生命周期:
