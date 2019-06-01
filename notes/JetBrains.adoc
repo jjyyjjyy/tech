@@ -1,0 +1,271 @@
+= JetBrains IDE tips
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+.Resources
+* https://www.youtube.com/watch?v=uu7j1_jhiU4[window="_blank"]
+* https://www.imooc.com/learn/924[window="_blank"]
+
+TIP: https://soft-1252259164.cos.ap-shanghai.myqcloud.com/jetbrains/IDEA-mac.zip[Self used settings for Mac]
+
+== 快捷键
+
+=== Navigate
+
+|===
+| command | keymap | description
+
+| Back/Forward
+| `command + option + ←/→`
+| 前进/后退
+
+| Last edit location
+| `command + shift + delete`
+| 跳转到上次编辑的地方
+
+| Next/Previous method
+| `control + ↑/↓`
+| 前/后一个方法
+
+| Recent files
+| `command + E`
+| 查看最近打开的文件列表
+
+| Recent locations
+| `command + shift + E`
+| 查看最近编辑过的位置列表
+
+| Open class
+| `command + N`
+| 定位到类
+
+| Open file
+| `command + shift + N`
+| 定位到文件
+
+| Open symbol
+| `command + shift + option + N`
+| 定位到符号
+
+| Go to
+| `command + B`
+| 查看Usage
+
+| Implements
+| `command + option + B`
+| 查看子类
+
+| Next highlighted error
+| `F2`
+| 定位到报错的地方
+
+| Bookmarks
+| `command + F11`
+| 加入书签
+
+| Go to bookmark
+| `control + BOOKMARK_ID`
+| 跳转到指定id的书签
+
+| Add to favorites
+| `option + shift + F`
+| 加入到收藏
+
+| Next/Previous Project Window
+| `option + command + [/]`
+| 跳转到前/后一个工程
+
+| Find in path
+| `control + shift + F`
+| 在当前路径下搜索
+
+|===
+
+=== Edit
+
+|===
+| command | keymap | description
+
+| Extend selection
+| `command + W`
+| 扩大选择范围
+
+| Shrink selection
+| `command + shift + W`
+| 缩小选择范围
+
+| Move statement up/down
+| `command + shift + ↑/↓`
+| 向上/下移动代码块
+
+| Toggle column selection mode
+| `shift + command + 8`
+| 打开/关闭列批量选择模式
+
+| Generate
+| `control + N/Enter`
+| 生成代码(getter/setter之类)
+
+| Cyclic Expand Word
+| `option + /`
+| 循环提示变量名
+
+| Toggle case
+| `command + shift + U`
+| 转换大小写
+
+| Select all occurrences
+| `control + command + G`
+| 选中当前文件所有相同的字符
+
+| Show intention action
+| `option + enter`
+| IDEA save my life!
+|===
+
+=== Refactor
+
+|===
+| command | keymap | description
+
+| Rename
+| `command + shift + R`
+| 修改变量/文件名
+
+| Change signature
+| `command + F6`
+| 修改方法签名
+
+| Extract to variable/constant
+| `option + command + V/C`
+| 抽取选中的字符为变量/常量
+
+|===
+
+=== View
+
+|===
+| command | keymap | description
+
+| Toggle all windows
+| `command + shift + F12`
+| 打开/关闭所有窗口
+
+| File structure
+| `command + F12`
+| 文件/类结构
+
+| Class Hierarchy
+| `control + H`
+| 查看类继承层次
+
+| Show method callees
+| `control + option + H`
+| 查看方法调用层次
+
+|===
+
+=== Run
+
+|===
+| command | keymap | description
+
+| Run/Debug last
+| `shift + F10/F9`
+| 运行/debug上次运行的文件
+
+| Run/Debug current file
+| `control + shift + F10/F9`
+| 运行/debug当前类/测试方法
+
+| Run/Debug ...
+| `option + shift + F10/F9`
+| 弹出运行项目选择框
+
+| Edit configuration
+| `command + shift + J`
+| 编辑所有运行配置
+
+|===
+
+=== File
+
+|===
+| command | keymap | description
+
+| New file in this directory
+| `control + option + `
+
+| Copy file
+| `F5`
+| 复制当前文件
+
+| Move file
+| `F6`
+| 移动当前文件
+
+| Copy filename
+| `command + C`
+| 复制文件名
+
+| Copy absolute path
+| `command + shift + C`
+| 复制文件绝对路径
+
+| Paste from history
+| `command + shift + V`
+
+|===
+
+== 常用插件
+
+* .ignore
+* AsciiDOc
+* ASM Bytecode viewer
+* Bash support
+* Emoji support plugin
+* Free MyBatis plugin
+* Grep Console
+* Kubernetes
+* Lombok
+* PlantUML integration
+* Rainbow Brackets
+* SonarLint
+* Swagger
+* Translation
+
+== Live template
+
+https://soft-1252259164.cos.ap-shanghai.myqcloud.com/jetbrains/live-templates.zip[下载后导入]
+
+== Debug
+
+=== Tomcat远程Debug
+
+. 远程tomcat server 启动时设置debug环境变量.
+.. `ENV JPDA_TRANSPORT dt_socket`
+.. `ENV JPDA_ADDRESS 8000`
+. 本地下载 http://mirror.bit.edu.cn/apache/tomcat/tomcat-9/v9.0.20/bin/apache-tomcat-9.0.20.zip[tomcat] 并解压.
+. 创建一个 `Run configuration(Tomcat Server - Remote)`.
+.. Server栏 `Application Server` 配置本地tomcat路径.
+.. Server栏 `Remote connection settings` 设置远程server的ip和debug端口.
+.. Startup/Connection栏 Debug选项选中, 在下面设置debug端口.
+. 以Debug运行该Configuration.
+
+=== Webpack项目Debug
+
+. `webpack.base.conf.js` 中设置: `module.export = {devtool: 'source-map'}`
+. Preference -> Language&Frameworks -> webpack 设置 `webpack.base.conf.js` 路径.
+. 创建一个 `Run configuration(Javascript Debug)`:
+.. 设置 `URL`.
+.. 下方 `src` 的 `Remote URL` 设置为 `webpack:///src`.
+. 以Debug运行该Configuration.
