@@ -1,6 +1,6 @@
 @startuml
 
-!include global/stylesheet.iuml
+!include ../global/stylesheet.iuml
 
 package CPU {
 [寄存器] as PC

@@ -1,6 +1,6 @@
 @startuml
 
-!include global/stylesheet.iuml
+!include ../global/stylesheet.iuml
 
 node 虚拟机 {
   interface 操作系统

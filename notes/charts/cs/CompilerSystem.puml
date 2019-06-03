@@ -1,6 +1,6 @@
 @startuml
 
-!include global/stylesheet.iuml
+!include ../global/stylesheet.iuml
 
 [*] -> 预处理器cpp : hello.c(文本)
 预处理器cpp -> 编译器ccl : hello.i(被修改过的文本)
