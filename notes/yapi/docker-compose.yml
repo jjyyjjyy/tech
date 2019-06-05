@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+    yapi:
+        image: 192.168.0.7/yiye/yapi:1.7.0
+        container_name: yapi
+        ports:
+            - 10001:10001
+        networks:
+            - yapi
+        depends_on:
+            - mongo
+    mongo:
+        image: mongo
+        container_name: mongo
+        environment:
+            - MONGO_INITDB_DATABASE=yapi
+        #            - MONGO_INITDB_ROOT_USERNAME=yiye
+        #            - MONGO_INITDB_ROOT_PASSWORD=sonic333
+        volumes:
+            - /data/softs/yapi:/data/db
+        ports:
+            - 17017:27017
+        networks:
+            - yapi
+
+networks:
+    yapi:

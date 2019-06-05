@@ -260,3 +260,30 @@ TIP: `set` 命令会使key的失效时间消失.
 
 WARNING: `migrate` 命令不能在同一Redis实例上执行.
 
+== 慢查询
+
+* `slowlog-log-slower-than(微秒)` : 慢查询执行阈值, 默认10000微秒, 负数时不记录慢查询. *建议设置为1000.*
+* `slowlog-max-len` : 慢查询日志最多存储多少条. *建议设置为1000以上.*
+* `slowlog get [n]` : 获取前n条慢查询.
+* `slowlog len` : 获取慢查询数量.
+* `slowlog reset` : 重置慢查询.
+
+== Redis Shell
+
+=== redis-cli
+
+* `-r n` : 将命令重复执行n次.
+* `-i n` : 每隔几秒执行一次.
+* `-a password` : 密码认证.
+* `--scan --pattern` : scan key名.
+* `--rdb filename` : dump数据到rdb文件中.
+* `--bigkeys` : 找到内存占比比较大的key.
+* `--latency` : 测试延迟.
+* `--stat` : 获取Redis统计信息.
+
+=== redis-benchmark
+
+* `-c` : 客户端的并发数量, 默认50.
+* `-n` : 客户端的请求总数, 默认100K.
+* ``
+
