@@ -29,7 +29,7 @@ services:
 
 == 数据结构
 
-=== String
+=== string
 
 ==== 命令
 
@@ -68,7 +68,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 * session共享 `set, get`
 * 限速 `setnx, incr`
 
-=== Hash
+=== hash
 
 ==== 命令
 
@@ -106,7 +106,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 * 缓存 `hmset, hgetall`
 
-=== List
+=== list
 
 ==== 命令
 
@@ -154,7 +154,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 * 有限集合 `lpush, ltrim`
 * 优先级调度 `lpush l1/l2/l3..., brpop l1 l2 l3 0`
 
-=== Set
+=== set
 
 ==== 命令
 
@@ -185,7 +185,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 * 打tag `sinter`
 * 抽奖 `spop, srandmember`
 
-=== ZSet
+=== zset
 
 ==== 命令
 
@@ -285,5 +285,86 @@ WARNING: `migrate` 命令不能在同一Redis实例上执行.
 
 * `-c` : 客户端的并发数量, 默认50.
 * `-n` : 客户端的请求总数, 默认100K.
-* ``
+* `-q` : 每秒请求数.
+* `-r` : 插入随机键, 10000表示对后四位处理.
+* `-t` : 对指定命令进行基准测试.
+* `--csv` : 结果按csv格式输出.
+
+== 事务
+
+=== 原子性
+
+. `multi`
+. `commands ...`
+. `discard/exec`
+
+TIP: |
+* 事务期间命令拼错会导致整个事务回滚.
+* 事务期间命令没有拼写错误, 但是命令使用错误(如对set执行zadd), 则会执行没有错误的部分命令.
+
+=== 隔离性
+
+. `watch`
+. `multi`
+. `commands ...`
+. `discard/exec`
+
+watch某一个key期间, 如果 `exec` 后返回null, 则表示这期间key其他client修改过, 直接回滚.
+
+=== 原子性
+
+* `script load <lua content>` : load lua脚本到redis server中, 返回一个SHA1值, 以后可以直接用SHA1值调用lua脚本.
+* `script flush` : 删除所有被加载过的lua脚本.
+* `script kill` : 取消正在执行读操作的lua脚本.
+* `script exists <SHA1>` : 返回相关lua脚本的SHA1是否被加载过.
+
+.lua脚本执行
+* `eval <script> numberKeys key args`
+* `evalsha <SHA1> numberKeys key args`
+
+== bitmap
+
+* `setbit <bitmap_key> <offset> 1|0` : 设置offset为1/0.
+* `getbit <bitmap_key> <offset>` : 获取offset处是1还是0.
+* `bitcount [<bitmap_key> start end]` : 获取start到end的1的个数.
+* `bitop and|or|not|nor <destination_key> key [key1 key2 ...]` : 对多个bitmap key执行逻辑操作.
+* `bitpos <bitmap_key> 1|0 [start end]` : 获取第一个值为1/0的偏移量.
+
+== HyperLogLog
+
+* `pfadd key element [element ...]` : 添加元素.
+* `pfcount key` : 计数.
+* `pfmerge <destination_key> key [key1 key2 ...]` : 求多个key的并集, 插入到destination_key中.
+
+== Publish/Subscribe
+
+* `publish <channel> <message>` : 向channel的每个订阅者发送message.
+* `subscribe <channel>` : 订阅channel.
+* `pubsub channels` : 查看当前活跃的channel.
+* `psubscribe/punsubscribe <pattern>` : 批量订阅channel.
+* `pubsub numsub <channel>` : 查看channel的订阅数.
+* `pubsub numpat` : 查看按模式订阅数.
+
+== Redis Serialization Protocol
+
+=== Request
+
+[source,bash]
+----
+*<参数数量> CRLF
+$<参数1的字节数> CRLF
+<参数1> CRLF
+$<参数2的字节数> CRLF
+<参数2> CRLF
+...
+----
+
+=== Response
+
+.Response的第一个字节
+* 状态回复: `+`
+* 错误回复: `-`
+* 整数回复: `:`
+* 字符串回复: `$`
+* 多条字符串回复: `*`
 
