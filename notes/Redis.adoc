@@ -358,7 +358,6 @@ $<参数2的字节数> CRLF
 <参数2> CRLF
 ...
 ----
-
 === Response
 
 .Response的第一个字节
@@ -368,3 +367,178 @@ $<参数2的字节数> CRLF
 * 字符串回复: `$`
 * 多条字符串回复: `*`
 
+== 持久化
+
+=== RDB
+
+RDB持久化是把当前进程的数据生成快照保存到硬盘里.
+
+==== 手动触发
+
+* `save` : 阻塞redis server直到RDB过程完成为止.
+* `bgsave` : fork出子进程, 让子进程持久化.
+
+==== 自动触发
+
+* `save <m> <n>` : 表示m秒内数据存在n次修改时, 自动触发bgsave.
+* 如果从节点执行全量复制操作, 主节点自动执行bgsave生成RDB文件发送给从节点.
+* `debug reload`
+* `shutdown` : 如果没有开启AOF持久化功能则自动执行 `bgsave` .
+
+==== 问题
+
+* bgsave 属于全量复制, 每次执行都要创建子进程, 频繁操作执行成本太高.
+* RDB使用特定二进制格式保存, 可能会出现不兼容的问题.
+
+=== AOF
+
+所有的写入命令追加到aof_buf中, aof_buf会根据相应的策略向磁盘做同步操作.
+
+.AOF重写
+* `bgrewriteaof`
+* 根据 `auto-aof-rewrite-min-size` 和 `auto-aof-rewrite-percentage` 参数确定自动触发时机. `aof_current_size > auto-aof-rewrite-min-size && (aof_current_size - aof_base_size) / aof_base_size >= auto-aof-rewrite-percentage`
+** `auto-aof-rewrite-min-size` : AOF文件重写时文件最小体积.
+** `auto-aof-rewrite-percentage` : 当前aof文件体积和上一次重写后aof文件体积比值.
+
+=== 持久化文件加载流程
+
+. appendonly开启时优先加载aof文件, aof不存在时加载rdb文件
+. appendonly未开启时加载rdb文件
+. 加载aof/rdb文件成功后, redis启动成功.
+. aof/rdb文件存在错误时, redis启动失败并打印错误信息. (可以使用redis-check-aof --fix命令修复)
+
+== 主从复制
+
+=== 从节点开启方式
+
+* `redis-server replicaof <host> <port>` .
+* 配置文件添加 `replicaof <host> <port>` .
+* 直接运行命令 `replicaof <host> <port>` .
+
+=== 从节点断开
+
+`replicaof no one` .
+
+=== 数据同步方式
+
+* 全量复制: 用于初次复制场景. 把主节点全部数据一次性地发送给从节点.
+* 部分复制: 补发丢失数据给从节点.
+
+== Sentinel
+
+Redis Sentinel 负责监控redis主从节点, 主节点故障时自动切换从节点为主节点.
+
+=== 安装
+
+[source,yml]
+.docker-compose.yml
+----
+version: '3.7'
+services:
+    redis-master:
+        image: redis:alpine
+        container_name: redis-master
+        volumes:
+            - ./master.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6379:6379
+    redis-replica1:
+        image: redis:alpine
+        container_name: redis-replica1
+        volumes:
+            - ./replica1.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6380:6379
+        depends_on:
+            - redis-master
+    redis-replica2:
+        image: redis:alpine
+        container_name: redis-replica2
+        volumes:
+            - ./replica2.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6381:6379
+        depends_on:
+            - redis-master
+    redis-sentinel1:
+        image: redis:alpine
+        container_name: redis-sentinel1
+        volumes:
+            - ./sentinel1.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16379:6379
+        depends_on:
+            - redis-master
+    redis-sentinel2:
+        image: redis:alpine
+        container_name: redis-sentinel2
+        volumes:
+            - ./sentinel2.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16380:6379
+        depends_on:
+            - redis-master
+    redis-sentinel3:
+        image: redis:alpine
+        container_name: redis-sentinel3
+        volumes:
+            - ./sentinel3.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16381:6379
+        depends_on:
+            - redis-master
+
+networks:
+    redis:
+
+----
+
+[source,conf]
+.master.conf
+----
+appendonly yes
+logfile "master.log"
+dbfilename "dump-master.rdb"
+----
+[source,conf]
+.replica1.conf
+----
+appendonly yes
+logfile "replica1.log"
+dbfilename "dump-replica1.rdb"
+replicaof redis-master 6379
+----
+[source,conf]
+.replica2.conf
+----
+appendonly yes
+logfile "replica2.log"
+dbfilename "dump-replica2.rdb"
+replicaof redis-master 6379
+----
+[source,conf]
+.sentinel1.conf, sentinel2.conf, sentinel3.conf
+----
+logfile "sentinel.log"
+sentinel monitor master redis-master 6379 2
+sentinel down-after-milliseconds master 15000
+sentinel parallel-syncs master 1
+----
