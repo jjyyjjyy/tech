@@ -2,36 +2,11 @@
     "port": "10001",
     "adminAccount": "yapi@yiye.ai",
     "db": {
-        "servername": "192.168.0.7",
+        "servername": "mongo",
         "DATABASE": "yapi",
-        "port": 17017
+        "port": 27017
     },
     "mail": {
-        "enable": true,
-        "host": "smtp.exmail.qq.com",
-        "port": 465,
-        "from": "yapi@yiye.ai",
-        "auth": {
-            "user": "info@yiye.ai",
-            "pass": "Sonic333"
-        }
-    },
-    "plugins": [
-        {
-            "name": "gitlab",
-            "options": {
-                "host": "https://codebase.hailiangtong.com/",
-                "redirectUri": "http://221.226.23.130:10001/api/plugin/oauth2/callback",
-                "appId": "d2ee40c3df9e5f7bd2c84acd7f11103e7c9da302a85fa4deba9eda82a7cc2857",
-                "appSecret": "45d01a9da831c9d93f3fab83faaccfaabc558255f91548ec473f8bd8deec8d37",
-                "accessToken": "z2JBbxBg72yCHYKnyPW4",
-                "loginPath": "/api/v4/user",
-                "authPath": "/oauth/authorize",
-                "tokenPath": "/oauth/token",
-                "emailKey": "email",
-                "userKey": "username",
-                "emailPostfix": "@yiye.ai"
-            }
-        }
-    ]
+        "enable": false
+    }
 }

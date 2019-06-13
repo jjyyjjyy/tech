@@ -11,6 +11,5 @@ ENV TZ="Asia/Shanghai" HOME="/"
 WORKDIR ${HOME}
 COPY --from=builder /api/vendors /api/vendors
 COPY config.json /api/
-COPY plugin.json /api/vendors/
 EXPOSE 10001
 ENTRYPOINT ["node","/api/vendors/server/app.js"]
