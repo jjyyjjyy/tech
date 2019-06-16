@@ -1,5 +1,7 @@
 package me.jy.algs4.ch2;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * @author jy
  */
@@ -134,28 +136,30 @@ public final class Sorts {
             if (hi <= lo) {
                 return;
             }
-            int j = partition(arr, lo, hi);
-            sort(arr, lo, j - 1);
-            sort(arr, j + 1, hi);
+            // 随机选择数组中一位作为partition
+            exchange(arr, hi, ThreadLocalRandom.current().nextInt(lo, hi));
+            // 取到左区间和右区间位置
+            int[] indexes = partition(arr, lo, hi);
+            sort(arr, lo, indexes[0]);
+            sort(arr, indexes[1] + 1, hi);
         }
 
-        private int partition(int[] arr, int lo, int hi) {
-            int v = arr[lo];
-            int i = lo, j = hi + 1;
-            while (true) {
-                while (less(arr[++i], v)) {
-                    if (i == hi) {
-                        break;
-                    }
+        private int[] partition(int[] arr, int lo, int hi) {
+            int less = lo - 1;
+            int more = hi;
+            while (lo < more) {
+                if (arr[lo] < arr[hi]) {
+                    // 左指针加1, 交换lo
+                    exchange(arr, ++less, lo++);
+                } else if (arr[lo] > arr[hi]) {
+                    // 右指针减1
+                    exchange(arr, --more, lo);
+                } else {
+                    lo++;
                 }
-                while (less(v, arr[--j])) ;
-                if (i >= j) {
-                    break;
-                }
-                exchange(arr, i, j);
             }
-            exchange(arr, lo, j);
-            return j;
+            exchange(arr, more, hi);
+            return new int[]{less, more};
         }
     }
 
