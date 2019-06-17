@@ -1,4 +1,4 @@
-package me.jy.algs4;
+package me.jy.util;
 
 import org.junit.jupiter.params.converter.ArgumentConversionException;
 import org.junit.jupiter.params.converter.SimpleArgumentConverter;

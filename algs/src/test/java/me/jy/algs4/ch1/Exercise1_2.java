@@ -1,7 +1,7 @@
 package me.jy.algs4.ch1;
 
 import edu.princeton.cs.algs4.Counter;
-import me.jy.algs4.CsvToArray;
+import me.jy.util.CsvToArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

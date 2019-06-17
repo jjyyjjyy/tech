@@ -1,4 +1,4 @@
-package me.jy.algs4.ch2;
+package me.jy.sort;
 
 import java.util.Arrays;
 

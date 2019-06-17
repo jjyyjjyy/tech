@@ -10,6 +10,6 @@ public class RandomArrayGenerator extends SimpleArgumentConverter {
 
     @Override
     protected Object convert(Object source, Class<?> targetType) throws ArgumentConversionException {
-        return ArrayUtil.getRandomArray(Integer.valueOf(source.toString()));
+        return ArrayUtil.getRandomArrayWithBound(Integer.valueOf(source.toString()));
     }
 }

@@ -33,6 +33,7 @@
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>6.3</nimbus-jose-jwt.version>
 
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -103,6 +104,10 @@
                     <target>${java.version}</target>
                     <compilerVersion>${java.version}</compilerVersion>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
             </plugin>
         </plugins>
     </build>

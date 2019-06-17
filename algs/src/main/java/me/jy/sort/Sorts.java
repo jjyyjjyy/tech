@@ -1,4 +1,4 @@
-package me.jy.algs4.ch2;
+package me.jy.sort;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -16,10 +16,10 @@ public final class Sorts {
 
         @Override
         public void sort(int[] arr) {
-            for (int i = 0; i < arr.length; i++) {
+            for (int i = 0; i < arr.length - 1; i++) {
                 int minIndex = i;
                 for (int j = i + 1; j < arr.length; j++) {
-                    if (less(arr[j], arr[i])) {
+                    if (less(arr[j], arr[minIndex])) {
                         minIndex = j;
                     }
                 }
@@ -48,7 +48,7 @@ public final class Sorts {
     }
 
     /**
-     * 希尔排序
+     * 希尔排序(优化过的插入排序)
      */
     public static class ShellSort implements SortTemplate {
 
@@ -165,29 +165,37 @@ public final class Sorts {
 
     /**
      * 堆排序
-     * 将数组转成最大堆的形式, 再将第一项放到最后. 逐步重复1..n-1项
+     * 先将数组转成最大堆的形式, 再将第一项放到最后. 逐步重复1..n-1项
      */
     public static class HeapSort implements SortTemplate {
 
         @Override
         public void sort(int[] arr) {
-            for (int i = arr.length - 1; i > 0; i--) {
-                buildMaxHeap(arr, i);
+
+            int last = arr.length - 1;
+
+            // 构造最大堆
+            buildMaxHeap(arr, last);
+            while (last > 0) {
                 // 交换首尾元素
-                exchange(arr, 0, i);
+                exchange(arr, 0, last);
+                buildMaxHeap(arr, --last);
             }
         }
 
-        private void buildMaxHeap(int[] arr, int i) {
+        private void buildMaxHeap(int[] arr, int last) {
 
+            if (last == 0) {
+                return;
+            }
             // 当前尾节点的父节点
-            int parent = (i + 1) / 2 - 1;
+            int parent = (last - 1) / 2;
 
             while (parent >= 0) {
                 int left = parent * 2 + 1;
                 int right = parent * 2 + 2;
                 // 找到两个子节点中的值最大的节点
-                int maxChildIndex = less(arr[left], arr[right]) && right <= i ? right : left;
+                int maxChildIndex = right <= last && less(arr[left], arr[right]) ? right : left;
                 // 如果父节点值小, 则交换
                 if (less(arr[parent], arr[maxChildIndex])) {
                     exchange(arr, parent, maxChildIndex);

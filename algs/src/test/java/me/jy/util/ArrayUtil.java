@@ -13,9 +13,16 @@ public class ArrayUtil {
     private ArrayUtil() {
     }
 
-    public static int[] getRandomArray(int size) {
+    public static int[] getRandomArrayWithBound(int size) {
         return IntStream.rangeClosed(1, size)
             .map(i -> ThreadLocalRandom.current().nextInt(BOUND))
+            .distinct()
+            .toArray();
+    }
+
+    public static int[] getRandomArray(int size) {
+        return IntStream.rangeClosed(1, size)
+            .map(i -> ThreadLocalRandom.current().nextInt())
             .distinct()
             .toArray();
     }
