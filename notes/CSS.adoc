@@ -1,0 +1,220 @@
+= CSS
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== 选择器
+
+=== 元素选择器
+
+*HTML element*
+
+[source,css]
+----
+p {
+  color: gray;
+}
+h2 {
+  color: silver;
+}
+----
+
+=== 群组选择器
+
+*selector1, selector2...*
+
+[source,css]
+----
+h1, h2, h3 {
+  color: silver;
+}
+----
+
+=== 通用选择器
+
+*
+
+[source,css]
+----
+* {
+  color: red;
+}
+----
+
+=== 类选择器
+
+*.class*
+
+[source,css]
+----
+.warning {
+  font-weight: bold;
+}
+p.warning {
+  font-weight: lighter;
+}
+p.warning.urgent {
+  font-weight: lighter;
+}
+
+----
+
+TIP: 类的顺序没有要求
+
+=== id选择器
+
+*#id*
+
+[source,css]
+----
+#first {
+  font-weight: bold;
+}
+----
+
+=== 属性选择器
+
+*[prop[="value"]]*
+
+[source,css]
+----
+h1[class] {
+  color: silver;
+}
+a[href="https://baidu.com"][title="Baidu"] {
+  font-weight: bold;
+}
+----
+
+.根据部分属性值选择
+* `[class|="btn"]` : class值以 `btn` 或者 `btn-` 开头, 如 `class="btn-primary"` .
+* `[class~="btn]` : class值是包含 `btn` 这个词的一组词, 如 `class="btn btn-primary"` .
+* `[class*="btn]` : class值包含子串 `btn` , 如 `class="btna"` .
+* `[class^="btn"]` : class值以 `btn` 开头, 如 `class="btnb"` .
+* `[class$="btn"]` : class值以 `btn` 结尾, 如 `class="cbtn"` .
+
+=== 后代选择器
+
+选中祖先级下所有该类型的后代元素 *ancient descendant*
+
+[source,css]
+----
+blockquote b, p b {
+  color: gray;
+}
+----
+
+TIP: 两个元素之间的层级间隔可以是无限的.
+
+=== 子代选择器
+
+选中父级下一层级的子元素 *parent > child*
+
+[source,css]
+----
+h1 > strong {
+  color: red;
+}
+----
+
+=== 紧邻同胞选择器
+
+选中相同父级的与prev相邻的下一个指定元素 *prev + next*
+
+[source,css]
+----
+/**
+  h1后面的p元素设置margin-top为0.
+ */
+h1 + p {
+ margin-top: 0;
+}
+----
+
+=== 一般同胞选择器
+
+选中相同父级的prev之后的指定元素 *prev ~ siblings*
+
+[source,css]
+----
+h2 ~ p {
+  font-style: italic;
+}
+----
+
+=== 伪类选择器
+
+.结构伪类
+* `:root` :页面根元素, 如 `<html>`
+* `:empty` :选择空元素, 如 `<p></p>`
+* `:only-child` :选择只有一个子元素的情况下该子元素, 如 `a img:only-child` 选中 `<a><img> w3c</a>`
+* `:only-of-type` :选择只有一种子元素的情况下该子元素, 如 `a img:only-child` 选中 `<a><img><span>w3c</span></a>`
+* `:first-child` :选中第一个子元素
+* `:last-child` :选中最后一个子元素
+* `:nth-child(n)` :选中第stem:[n]个元素
+* `:nth-last-child(n)` :选中倒数第stem:[n]个元素
+* `:first-of-type` :选中第一指定类型的子元素
+* `:last-of-type` :选中最后一个指定类型的子元素
+* `:nth-of-type(n)` :选中第stem:[n]个指定类型的元素
+* `:nth-last-of-type(n)` :选中倒数第stem:[n]个指定类型的元素
+
+.动态伪类
+* `:visited`
+* `:link`
+* `:focus`
+* `:hover`
+* `:active`
+* `:enabled`
+* `:disabled`
+* `:checked`
+* `:indeterminate`
+* `:default`
+* `:valid`
+* `:invalid`
+* `:in-range`
+* `:out-of-range`
+* `:required`
+* `:optional`
+* `:read-write`
+* `:read-only`
+
+=== 伪元素选择符
+
+* `::first-letter`
+* `::first-line`
+* `::before`
+* `::after`
+
+== 特指度
+
+=== 选择器特指度
+
+* 行内样式特指度 加1000
+* 每个 _id选择器_ 特指度加100
+* 每个 _class/属性/伪类选择器_ 特指度加10
+* 每个 _元素/伪元素选择器_ 特指度加1
+* 通用选择器 特指度为0
+
+=== 继承
+
+某些样式不但应用到所指定的元素上, 而且还应用到元素的后代上.
+不继承的属性: `border, margin, padding, background...`
+
+IMPORTANT: 继承的属性值没有特指度, 可能会被 _0特指度_ 覆盖.
+
+=== CSS层叠规则
+
+. 找到匹配指定元素的所有规则.
+. 把规则按显示权重排序, 以 `!important` 标记的规则权重高.
+. 按来源排序所有规则, `reader !important > author !important > author > reader > userAgent.`
+. 按特指度排序所有来源相同的规则.
+* 按声明的前后位置排序, 靠后的规则权重较高.
