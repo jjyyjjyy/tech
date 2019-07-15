@@ -24,12 +24,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <spring-cloud.version>Greenwich.SR1</spring-cloud.version>
-        <project-reactor.version>Californium-SR8</project-reactor.version>
+        <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
+        <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
+        <project-reactor.version>Californium-SR9</project-reactor.version>
 
         <jmh.version>1.21</jmh.version>
-        <junit.version>5.4.2</junit.version>
+        <junit.version>5.5.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>6.3</nimbus-jose-jwt.version>
 

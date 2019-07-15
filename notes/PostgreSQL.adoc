@@ -116,34 +116,36 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 
 == Monitor
 
+> https://www.postgresql.org/docs/current/monitoring-stats.html
+
 [source,sql]
 ----
 -- 查看活动会话
-select pid, usename, datname, query, client_addr
+select pid, client_addr, query_start, state, query, wait_event, wait_event_type
+from pg_stat_activity
+where datid is not null
+  and pid <> pg_backend_pid()
+order by query_start desc;
+
+-- 查看数据库连接数
+select datname, client_addr, count(*)
 from pg_stat_activity
 where pid <> pg_backend_pid()
-  and state = 'active'
-order by query;
-
--- 查看会话等待事件
-select pid, usename, datname, query, client_addr, wait_event_type, wait_event
-from pg_stat_activity
-where pid <> pg_backend_pid()
-  and wait_event is not null
-order by wait_event_type;
-
--- 查看数据库等待数
-select datname, usename, client_addr, count(*)
-from pg_stat_activity
-where pid <> pg_backend_pid()
-group by 1, 2, 3
-order by 1, 2, 4 desc;
-
+group by datname, client_addr
+order by 1, 2, 3 desc;
 ----
+
+.state字段含义
+* active: 后台进程正在执行该SQL.
+* idle: 后台进程处于空闲状态, 等待后续客户端发出命令.
+* idle in transaction: 后台进程正在事务中.
+* idle in transaction(aborted): 事务中的部分SQL异常.
+* fastpath function call: 正在执行fast-path函数.
 
 == 数据类型
 
 === 数字类型
+
 * int2 int4 int8
 * decimal/numeric[(precision,scale)]
 * real 6位十进制精度浮点数
@@ -151,18 +153,21 @@ order by 1, 2, 4 desc;
 * smallserial/serial/bigserial 2/4/8字节自增序列
 
 === 字符串类型
+
 * varchar/character varying 变长
 * character/char 定长
-* text 变长,无长度限制
+* text 变长, 长度小于1GB
 
 === 日期类型
-* timestamp[without time zone]
-* timestamp[with time zone] / timestamptz
-* date
-* time[with[out] time zone]
-* interval
+
+* timestamp[without time zone] 不带时区的时间戳
+* timestamp[with time zone] / timestamptz 带时区的时间戳
+* date 日期
+* time[with[out] time zone] 一天的时间
+* interval 时间间隔
 
 === range类型
+
 * int4range
 * int8range
 * numrange
@@ -171,10 +176,100 @@ order by 1, 2, 4 desc;
 * daterange
 
 === 其他
+
 * boolean
 * cidr/inet/macaddr/macaddr8
 * 数组
 * json/jsonb
+
+.json和jsonb的区别
+* json以文本格式存储, jsonb以二进制存储.
+* json输入和输出的键顺序保持一致, jsonb不保证.
+* json会保留输入中的空格, jsonb不会.
+* jsonb会删除重复的键, 只保留最后一个.
+
+== 函数
+
+[source,sql]
+----
+-- 计算字符串中的字符数
+select char_length('abcd'); -- 4
+-- 计算字符串占用的字节数
+select octet_length('abcd'); -- 4
+-- 获取字符在字符串中的位置, 位置从1开始
+select position('bc' in 'abcd'); -- 2
+-- 提取字符串中的子串
+select substring('abcd' from 2 for 3); -- bcd
+-- 分割字符串
+select split_part('abc,def,ghi', ',', 2); -- def
+
+-- 时间字段提取
+select extract(year from '2019-07-15:12:34:56'::timestamp); -- 2019
+
+-- 数组两种形式
+select array[1,2,3];
+select '{1,2,3}';
+-- 获取数组指定下标元素, 位置从1开始
+select arr[1] from (select array[1,2,3] arr) a; -- 1
+-- 数组追加元素
+select array_append(array[1,2,3],4); -- {1,2,3,4}
+select array[1,2,3]||4;
+select array[1,2,3] || array[1,2,3]; -- {1,2,3,1,2,3}
+-- 数组删除元素
+select array_remove(array[1,2,2,2,3],2); -- {1,3}
+-- 判断数组是否相等
+select array[1,2,3] = array [1,2,2,2,3]; -- false
+-- 判断数组是否不相等
+select array[1,2,3] <> array [1,2,2,2,3]; -- true
+-- 比较数组
+select array[1,2,3] <= array[2,1]; -- true
+select array[1,2,3] >= array[2,1]; -- false
+-- 判断数组包含关系
+select array[1,2,3] @> array[1]; -- true
+select array[1,2,3] <@ array[1,2,3,4,5]; -- true
+-- 判断数组是否有公共元素
+select array[1,2,3] && array[22]; -- false
+-- 获取数组维度
+select array_dims(array[[4],[3],[2],[1]]); -- [1:4] [1:1]
+-- 获取数组指定维度的长度
+select array_length(array[1,2,3,4],1); -- 3
+select array_length(array[[4],[3],[2],[1]],2); -- 1
+-- 获取数组某一个元素第一次出现的位置, 位置从1开始
+select array_position(array[1,2,3],3); -- 3
+-- 替换数组指定元素
+select array_replace(array[1,2,3],2,11); -- {1,11,3}
+-- 数组转为字符串
+select array_to_string(array[1,2,3,null],',','99'); -- 1,2,3
+
+-- 范围
+select int4range(1,10,'[]'); -- [1,11)
+select daterange('2019-06-01','2019-07-02'); -- [2019-06-01,2019-07-02)
+-- 获取范围下界
+select lower(int4range(1,10));
+-- 获取范围上界
+select upper(int4range(1,10));
+-- 判断范围是否为空
+select isempty(int4range(1,10));
+
+-- json表示
+select '{"a":1}'::json;
+-- json字段值获取
+select j -> 'a' from ( select '{"a":1}'::json j) sub; -- 1
+-- 提取json中的键值对
+select * from json_each('{"a":1,"b":2}'::json); -- a 1 b 2
+select * from json_each_text('{"a":"aaa","b":2}'::json); -- a 1 b 2
+-- 删除jsonb中的key
+select '{"a":1,"b":2}'::jsonb - 'a'; -- {"b":2}
+-- 判断key是否为顶层key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb ? 'd'; -- false
+-- 获取json所有key
+select json_object_keys('{"a":1,"b":2}'); -- a b
+-- 删除json指定key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb - 'a'; -- {"b": 2, "c": {"d": 4}}
+-- 删除json嵌套key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];
+
+----
 
 == 高级特性
 * with从句
@@ -317,18 +412,18 @@ TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受�
 
 [source,sql]
 ----
-# 创建主表
+-- 创建主表
 CREATE TABLE [ IF NOT EXISTS ] parent_table ( [
   { column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
  ] ) PARTITION BY { RANGE | LIST | HASH } ( { column_name | ( expression ) }
-# 创建range型分区表
+-- 创建range型分区表
 CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES FROM (start) TO (end);
-# 创建list型分区表
+-- 创建list型分区表
 CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES IN (val1, val2) ;
-# 创建hash型分区表
+-- 创建hash型分区表
 CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES WITH (MODULUS 4, REMAINDER 3);
 
-# 删除分区关系
+-- 删除分区关系
 ALTER TABLE parent_table ATTACH PARTITION partition_table_name
 ----
 
