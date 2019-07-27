@@ -334,6 +334,144 @@ select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];
 
 == 事务
 
+[source,sql]
+----
+create table tbl_mvcc
+(
+    id   bigserial primary key,
+    ival integer
+);
+insert into tbl_mvcc(ival) values (1);
+----
+
+=== 脏读
+
+> 一个事务看到了另外一个事务未提交的数据.
+(PostgreSQL下不可复现)
+
+.Dirty Read
+|===
+| console1 | console2
+
+a|
+
+```sql
+-- MySQL
+set session transaction isolation level read uncommitted;
+start transaction;
+select * from tbl_mvcc where id = 1; -- 1
+```
+
+|
+
+|
+a|
+```sql
+start transaction;
+update tbl_mvcc set ival = 10 where id = 1;
+```
+
+a|
+```sql
+select * from tbl_mvcc where id = 1; -- 10
+```
+|
+
+|===
+
+=== 不可重复读
+
+> 一个事务查询结果与第一次的结果不同.(受到其他已提交事务 *UPDATE* 的影响)
+
+.Non-repeatable Read
+|===
+| console1 | console2
+
+a|
+
+```sql
+begin transaction isolation level read committed;
+select * from tbl_mvcc where id = 1; -- 1
+```
+
+|
+
+|
+a|
+```sql
+begin;
+update tbl_mvcc set ival = 10 where id = 1;
+end;
+```
+
+a|
+```sql
+select * from tbl_mvcc where id = 1; -- 10
+```
+|
+
+|===
+
+=== 幻读
+
+> 一个事务两次查询的结果集数量不一致.(受到其他已提交事务 *INSERT/DELETE* 的影响)
+
+.Phantom Read
+|===
+| console1 | console2
+
+a|
+
+```sql
+begin transaction isolation level read committed;
+select * from tbl_mvcc where id between 1 and 10;
+```
+|
+
+|
+a|
+```sql
+begin;
+delete from tbl_mvcc where id > 5 ;
+end;
+```
+
+a|
+```sql
+-- 与之前结果相比少了一些数据
+select * from tbl_mvcc where id between 1 and 10;
+```
+|
+
+|===
+
+.Serialization Anomaly
+|===
+| console1 | console2
+
+a|
+```sql
+begin transaction isolation level repeatable read;
+select ival from tbl_mvcc where id =1;
+```
+|
+
+|
+a|
+```sql
+update tbl_mvcc set ival = 10 where id = 1;
+```
+
+a|
+```sql
+update tbl_mvcc set ival = 100 where id = 1;
+-- [40001] ERROR: could not serialize access due to concurrent update
+```
+|
+
+|===
+
+.PostgreSQL事务隔离级别
 |===
 | 隔离级别 | 脏读 | 不可重复读 | 幻读 | 序列化异常
 

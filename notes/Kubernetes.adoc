@@ -62,6 +62,7 @@ alias kp='kubectl get pods --all-namespaces -o wide'
 alias kc='kubectl create -f'
 alias ka='kubectl apply -f'
 alias kr='kubectl replace -f'
+alias kt="kubectl -n kube-system describe secret `kubectl -n kube-system get secret | grep admin-user | awk '{print $1}'`"
 
 ----
 
@@ -90,7 +91,12 @@ include::k8s/vagrant/kubeadm-init.sh[]
 
 [source,bash]
 ----
-kubectl create -f http://soft-1252259164.file.myqcloud.com/dashboard.yml
+mkdir certs
+openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"
+Generating a 2048 bit RSA private key
+openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
+kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
+kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
 ----
 === 创建登陆ServiceAccount
 [source,bash]
@@ -122,35 +128,6 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 
 # 浏览器访问
 # https://ip:30001
-----
-
-=== 安装Heapster插件
-
-[source,bash]
-----
-mkdir -p heapster
-cd heapster
-wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/grafana.yaml
-wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
-wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
-wget https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/rbac/heapster-rbac.yaml
-sed -i s/"k8s.gcr.io"/"registry.cn-hangzhou.aliyuncs.com\/google_containers"/g *.*
-cd ..
-kubectl create -f heapster/
-----
-
-=== Helm
-
-[source,bash]
-----
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-chmod 700 get_helm.sh
-./get_helm.sh
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-helm init --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.11.0 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
-kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-
 ----
 
 === 启用api-server的swagger ui

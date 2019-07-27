@@ -168,11 +168,21 @@
 * 使用 `Statement` 获取 `ResultSet` 后, 当前使用中的 `ResultSet` 会直接关闭.
 * 用完后需要close.
 
+== QA
 
+[qanda]
+`ClassLoader.loadClass()` 和 `Class.forName()` 有什么区别?::
+`Class.forName()` 会初始化类的static代码块和static参数, `ClassLoader.loadClass()` 不会.
+`ClassNotFoundException` 和 `NoClassDefFoundError` 有什么区别?::
+* `ClassNotFoundException` 是Exception类型, `NoClassDefFoundError` 是Error类型.
+* 使用 `Class.forName()` / `ClassLoader.loadClass()` / `ClassLoader.findSystemClass()` 动态加载类时找不到类就会抛出 `ClassNotFoundException` ,当编译成功但运行时(调用该类的一个方法或者new一个实例时)找不到类或者初始化static成员时有异常则会抛出 `NoClassDefFoundError` 异常.
+Java异常分类?::
+* Checked Exception:
+继承Exception但不是RuntimeException的异常类.
+* Unchecked Exception:
+继承RuntimeException/Error的异常类.
+强引用/软引用/弱引用/虚引用区别及使用场景?::
+* 普通对象被其他对象引用, 这样的引用为强引用.
+* JVM在内存不足时回收软引用
+* TODO
 
-
-
-
-== 一些问题
-
-* `ClassLoader#loadClass` 和 `Class#forName` 有什么区别?
