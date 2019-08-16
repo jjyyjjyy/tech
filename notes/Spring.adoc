@@ -1,0 +1,312 @@
+= Spring
+
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+
+== IoC Demo
+
+=== Bean
+
+[source,java]
+.CallbackBean.java
+----
+public class CallbackBean implements InitializingBean, DisposableBean, Lifecycle, BeanPostProcessor {
+
+    private boolean running = false;
+
+    public CallbackBean() {
+        System.out.println("CallbackBean constructor");
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        System.out.println("DisposableBean.afterPropertiesSet");
+    }
+
+    @Override
+    public void destroy() {
+        System.out.println("DisposableBean.destroy");
+    }
+
+    @PostConstruct
+    public void PostConstruct() {
+        System.out.println("PostConstruct");
+    }
+
+    @PreDestroy
+    public void preDestroy() {
+        System.out.println("PreDestroy");
+    }
+
+    public void init() {
+        System.out.println("init...");
+    }
+
+    public void close() {
+        System.out.println("close...");
+    }
+
+    @Override
+    public void start() {
+        System.out.println("Lifecycle start...");
+        running = true;
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("Lifecycle stop...");
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) {
+        System.out.println("postProcessBeforeInitialization");
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
+        System.out.println("postProcessAfterInitialization");
+        return bean;
+    }
+}
+----
+
+=== Configuration
+
+[source,java]
+.BeanConfiguration.java
+----
+@Configuration
+@ComponentScan("me.jy.bean")
+public class BeanConfiguration {
+}
+----
+
+=== Main方法
+
+[source,java]
+.Bootstrap.java
+----
+public class Bootstrap {
+
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(BeanConfiguration.class); // <1>
+        applicationContext.start();
+        applicationContext.close();
+    }
+}
+----
+<1> 初始化 `ApplicationContext` , 注册 `BeanConfiguration` 配置类.
+
+== IoC启动过程
+
+=== ApplicationContext初始化
+
+[source,java]
+.AnnotationConfigApplicationContext.java
+----
+    public AnnotationConfigApplicationContext() {
+		this.reader = new AnnotatedBeanDefinitionReader(this); // <1>
+		this.scanner = new ClassPathBeanDefinitionScanner(this); // <2>
+	}
+
+    public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
+		this();
+		register(annotatedClasses); // <3>
+		refresh();
+	}
+----
+
+<1> 初始化 `AnnotatedBeanDefinitionReader`, 创建一个 `Environment` 对象.
+注册一些 `BeanDefinitionRegistryPostProcessor`/`BeanPostProcessor`/`BeanFactoryPostProcessor`.
+<2> 初始化 `ClassPathBeanDefinitionScanner`.
+<3> 使用 `AnnotatedBeanDefinitionReader` 注册配置类.
+
+=== 注册BeanDefinition
+
+[source,java]
+.AnnotatedBeanDefinitionReader.java
+----
+    <T> void doRegisterBean(Class<T> annotatedClass, @Nullable Supplier<T> instanceSupplier, @Nullable String name,
+			@Nullable Class<? extends Annotation>[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) {
+
+		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(annotatedClass); // <1>
+		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) { // <2>
+			return;
+		}
+
+		abd.setInstanceSupplier(instanceSupplier);
+		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd); // <3>
+		abd.setScope(scopeMetadata.getScopeName());
+		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
+
+		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd); // <4>
+		if (qualifiers != null) {
+			for (Class<? extends Annotation> qualifier : qualifiers) {
+				if (Primary.class == qualifier) {
+					abd.setPrimary(true);
+				}
+				else if (Lazy.class == qualifier) {
+					abd.setLazyInit(true);
+				}
+				else {
+					abd.addQualifier(new AutowireCandidateQualifier(qualifier));
+				}
+			}
+		}
+		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
+			customizer.customize(abd);
+		}
+
+		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry); // <5>
+		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry); // <6>
+	}
+----
+
+<1> 配置类包装成 `AnnotatedGenericBeanDefinition` 对象.
+<2> 判断是否满足注册bean的条件.
+<3> 解析scope.
+<4> 解析bean类上的 `@Lazy/@Primary/@DependsOn/@Role/@Description` 注解.
+<5> 根据 `scopeMode` 判断生成对应的代理类.
+<6> 注册beanDefinition(将 `definitionHolder` 放到 `BeanFactory` 的 `beanDefinitionMap` 中).
+
+=== refresh
+
+[source,java]
+.AbstractApplicationContext.java
+----
+    @Override
+	public void refresh() throws BeansException, IllegalStateException {
+		synchronized (this.startupShutdownMonitor) {
+			// Prepare this context for refreshing.
+			prepareRefresh(); // <1>
+			// Tell the subclass to refresh the internal bean factory.
+			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+			// Prepare the bean factory for use in this context.
+			prepareBeanFactory(beanFactory); // <2>
+			try {
+				// Allows post-processing of the bean factory in context subclasses.
+				postProcessBeanFactory(beanFactory);
+				// Invoke factory processors registered as beans in the context.
+				invokeBeanFactoryPostProcessors(beanFactory); // <3>
+				// Register bean processors that intercept bean creation.
+				registerBeanPostProcessors(beanFactory); // <4>
+				// Initialize message source for this context.
+				initMessageSource(); // <5>
+				// Initialize event multicaster for this context.
+				initApplicationEventMulticaster(); // <6>
+				// Initialize other special beans in specific context subclasses.
+				onRefresh();
+				// Check for listener beans and register them.
+				registerListeners();
+				// Instantiate all remaining (non-lazy-init) singletons.
+				finishBeanFactoryInitialization(beanFactory); // <7>
+				// Last step: publish corresponding event.
+				finishRefresh(); // <8>
+			}
+			catch (BeansException ex) {
+				if (logger.isWarnEnabled()) {
+					logger.warn("Exception encountered during context initialization - " + "cancelling refresh attempt: " + ex);
+				}
+				// Destroy already created singletons to avoid dangling resources.
+				destroyBeans();
+				// Reset 'active' flag.
+				cancelRefresh(ex);
+				// Propagate exception to caller.
+				throw ex;
+			}
+			finally {
+				// Reset common introspection caches in Spring's core, since we
+				// might not ever need metadata for singleton beans anymore...
+				resetCommonCaches();
+			}
+		}
+	}
+----
+<1> 子类自定义初始化一些 `properties` , 校验必填属性.
+<2> 设置 `BeanFactory` 的一些属性, 注册 `environment/systemProperties/systemEnvironment` .
+<3> 调用 `ConfigurationClassPostProcessor.processConfigBeanDefinitions` 解析 `Configuration` 类并生成CGLIB代理, 根据 `@ComponentScan` 扫描包下面的bean注册到 `BeanFactory` 中.
+<4> 注册 `beanPostProcessor` 到 `BeanFactory` 中.
+<5> 注册 `DelegatingMessageSource` .
+<6> 注册 `ApplicationEventMulticaster` .
+<7> 调用 `BeanFactory.getBean()` 初始化所有非懒加载的bean.
+<8> 注册 `LifecycleProcessor` , 执行 `onRefresh` 方法, 发布 `ContextRefreshedEvent` .
+
+== QA
+
+[qanda]
+IoC?::
+对象自身生命周期的控制以及与其他对象的依赖关系交由Spring容器管理.
+
+依赖注入的方式?::
+* 构造函数注入
+* setter方法注入
+* 接口注入
+
+ApplicationContext与BeanFactory的区别?::
+* BeanFactory在spring-beans包中, ApplicationContext在spring-context包中.
+* ApplicationContext扩展了BeanFactory的功能:
+** MessageSource:
+实现国际化功能.
+** EventPublisher:
+实现事件订阅发布功能.
+** LifeCycle:
+管理生命周期.
+** 集成AOP.
+** 新增一些应用层context, 如 `WebApplicationContext` .
+** ...
+
+如何手动注册bean?::
+* BeanFactory.registerBeanDefinition:
+通过BeanFactory注册
+* ApplicationContext.register:
+通过ApplicationContext注册
+* ApplicationContext.scan: 扫描包下所有的bean
+
+如何实例化bean?::
+* 构造函数
+* static factory method
+* instance factory method
+
+单例bean中如何注入prototype型bean?::
+* `@Lookup` 一个抽象方法
+* `ObjectFactory/Provider`
+
+bean的生命周期?::
+. @PostConstruct
+. DisposableBean.afterPropertiesSet
+. initMethod
+. BeanPostProcessor.postProcessBeforeInitialization
+. BeanPostProcessor.postProcessAfterInitialization
+. LifeCycle.start
+. LifeCycle.stop
+. @PreDestroy
+. DisposableBean.destroy
+. destroyMethod
+
+Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?::
+Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.
+
+Spring如何检测Bean循环引用?::
+参见 `DefaultSingletonBeanRegistry.beforeSingletonCreation` 方法. 每个bean在创建前 `beanName` 会放到 `singletonsCurrentlyInCreation` 这个set中, bean创建完会从这个set中移出.
+解析构造函数上 `@Autowired` 注解时会看需要注入的bean在不在这个set中, 如果在, 则抛出循环引用异常.
+
+Bean循环引用如何解决?::
+`@Autowired` 时添加 `@Lazy` 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.
+*原理* :
+如果注入时有 `@Lazy` 注解, 则会注入一个代理, 只有当使用这个字段时才会从 `BeanFactory` 中获取真正的bean.
