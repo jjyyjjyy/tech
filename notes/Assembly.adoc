@@ -1,0 +1,115 @@
+= Assembly
+
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+.Resources
+* https://book.douban.com/subject/25726019[window="_blank"]
+
+== 总线
+
+总线分为地址总线, 数据总线和控制总线.
+
+* n根地址总线可以寻址 stem:[2^n]个内存单元.
+* n根数据总线可以一次性传输 stem:[n/8]个字节的数据.
+* 控制总线的宽度决定了CPU对外部器件的控制能力.
+
+== CPU
+
+=== 内存地址
+
+对于16位CPU, 物理地址 = 段地址 * 16 + 偏移地址.
+一个段的长度最大为64KB(偏移地址数量).
+
+=== 寄存器
+
+==== 数据寄存器
+
+AX BX CX DX
+
+每个寄存器都可以分为*H和*L, 各代表高低8位.
+
+==== 段寄存器
+
+> 提供内存单元的段地址
+
+CS DS SS ES
+
+==== 指令指针寄存器
+
+> 保存下一条将要指定的指令地址.
+
+IP
+
+.jmp
+* jmp <cs>:<ip>. `jmp FFFFH,3`
+* jmp <ip> `jmp ax`
+
+=== 指令执行流程
+
+. CPU从 stem:[CS*16+IP] 中读取指令, 读取到的指令放入指令缓冲器.
+. IP+=读取到的指令长度.
+. 执行指令.
+. 重复步骤1.
+
+CS初始值0xFFFFH, IP初始值0x0000H,内存单元0xFFFF0H保存第一条要被执行的指令地址.
+
+== Check points
+
+=== 1.1
+
+. 13
+. stem:[1024,0,1023]
+. stem:[2^13,2^10]
+. stem:[2^30,2^20,2^10]
+. stem:[64,1,16,4]
+. stem:[1,1,2,2,4]
+. stem:[512,256]
+. 二进制
+
+=== 2.1
+
+. 计算寄存器内的值
+.. f4a3H
+.. 31a3H
+.. 3123H
+.. 6246H
+.. 826CH
+.. 6246H
+.. 826CH
+.. 04D8H
+.. 0482H
+.. 6C82H
+.. D882H
+.. D888H
+.. D810H
+.. 6246H
+
+. 求2的4次方
+
+[source,asm]
+----
+mov ax, 2
+add ax, ax
+add ax, ax
+add ax, ax
+----
+
+=== 2.2
+
+. stem:[00010H,1000FH]
+. stem:[1001H,2000H]
+
+=== 2.3
+
+IP被修改过4次, 最后IP的值为0000H

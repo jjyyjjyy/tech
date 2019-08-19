@@ -1,11 +1,4 @@
 ######################
-# Project Specific
-######################
-/src/main/webapp/content/css/main.css
-/target/www/**
-/src/test/javascript/coverage/
-
-######################
 # Node
 ######################
 /node/
@@ -71,7 +64,7 @@ out/
 # Maven
 ######################
 /log/
-/target/
+target/
 
 ######################
 # Gradle
