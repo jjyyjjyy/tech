@@ -1,5 +1,4 @@
 = Assembly
-
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
@@ -45,13 +44,16 @@ AX BX CX DX
 
 CS DS SS ES
 
+NOTE: 8086CPU不支持将数据直接送入到段寄存器, 只能送入一个数据寄存器/内存空间的值.
+段寄存器的值可以送入到数据寄存器/内存空间中.
+
 ==== 指令指针寄存器
 
 > 保存下一条将要指定的指令地址.
 
 IP
 
-.jmp
+.使用jmp修改IP寄存器的值:
 * jmp <cs>:<ip>. `jmp FFFFH,3`
 * jmp <ip> `jmp ax`
 
@@ -63,6 +65,10 @@ IP
 . 重复步骤1.
 
 CS初始值0xFFFFH, IP初始值0x0000H,内存单元0xFFFF0H保存第一条要被执行的指令地址.
+
+=== 栈寄存器
+
+SS:SP指向栈顶元素, push和pop指令执行时, CPU从SS和SP中得到栈顶地址.
 
 == Check points
 
@@ -97,7 +103,7 @@ CS初始值0xFFFFH, IP初始值0x0000H,内存单元0xFFFF0H保存第一条要被
 
 . 求2的4次方
 
-[source,asm]
+[source,x86asm]
 ----
 mov ax, 2
 add ax, ax
@@ -113,3 +119,52 @@ add ax, ax
 === 2.3
 
 IP被修改过4次, 最后IP的值为0000H
+
+=== 3.1
+
+. 计算相关寄存器的值
+.. 2662H
+.. E626H
+.. E626H
+.. 2662H
+.. D6E6H
+.. 0D48H
+.. 3C14H
+.. 0
+.. 00E6H
+.. 0
+.. 0026H
+.. 001CH
+
+. 写出汇编指令
+
+[source,x86asm]
+----
+mov ax,6622H  # IP=3
+jmp 0ff0:0100 # IP=8
+mov ax,2000H # IP=11, ax=2000H
+mov ds,ax # IP=13, ds=2000H
+mov ax,[0008] #IP=16, ax=C389H
+mov ax,[0002] #IP=19
+----
+
+=== 3.2
+
+. 补全逆序复制代码1
+
+[source,x86asm]
+----
+mov ax,2000H
+mov ss,ax
+mov sp,10H
+----
+
+. 补全逆序复制代码2
+
+[source,x86asm]
+----
+mov ax,1000H
+mov ss,ax
+mov sp,0
+----
+
