@@ -30,6 +30,9 @@
                     <requires>
                         <require>asciidoctor-diagram</require>
                     </requires>
+                    <attributes>
+                        <highlightjsdir>highlight</highlightjsdir>
+                    </attributes>
                 </configuration>
                 <dependencies>
                     <dependency>
