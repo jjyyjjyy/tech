@@ -1,4 +1,4 @@
-= Assembly
+= X86 Assembly
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea

@@ -302,6 +302,10 @@ bean的生命周期?::
 Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?::
 Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.
 
+什么情况下会发生Bean循环引用?::
+* 两个bean互相在构造函数中注入
+* 两个prototype类型的bean互相注入
+
 Spring如何检测Bean循环引用?::
 参见 `DefaultSingletonBeanRegistry.beforeSingletonCreation` 方法. 每个bean在创建前 `beanName` 会放到 `singletonsCurrentlyInCreation` 这个set中, bean创建完会从这个set中移出.
 解析构造函数上 `@Autowired` 注解时会看需要注入的bean在不在这个set中, 如果在, 则抛出循环引用异常.
@@ -310,3 +314,15 @@ Bean循环引用如何解决?::
 `@Autowired` 时添加 `@Lazy` 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.
 *原理* :
 如果注入时有 `@Lazy` 注解, 则会注入一个代理, 只有当使用这个字段时才会从 `BeanFactory` 中获取真正的bean.
+
+为什么JDK动态代理调用同类中方法时不走切面?::
+JDK动态代理会生成一个子类, 调用这个子类的方法时会直接调用 `InvocationHandler` 中的invoke方法, 并且传递对象的是原被代理的对象.
+所以在被代理的对象中直接调用同类的方法不会调用切面的代码.
+
+使用CGLIB代理有什么要求?::
+* 被代理的类不能是 `final` 类.
+* 被代理的方法不能是私有方法.
+
+Spring配置的placeholder占位符是如何替换的, 有什么办法可以自定义替换方式?::
+依靠 `Environment` 对象的 `propertyResolver` 解析:
+替换掉 `${}` 占位符, 再从 `Environment` 的 `propertySources` 中获取该属性名对应的值.
