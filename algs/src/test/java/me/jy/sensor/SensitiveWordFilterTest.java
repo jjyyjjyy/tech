@@ -17,7 +17,8 @@ class SensitiveWordFilterTest {
 
     @BeforeAll
     static void init() {
-        filter = new SensitiveWordFilter(() -> Stream.of("你是", "sb").collect(Collectors.toSet()));
+        filter = new SensitiveWordFilter(() -> Stream.of("你是", "sb").collect(Collectors.toSet()),
+            new SensitiveWordMaskDecorator());
     }
 
     @ParameterizedTest

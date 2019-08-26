@@ -1,17 +1,13 @@
 package me.jy.sensor;
 
+import java.util.List;
+
 /**
  * @author jy
  */
-public abstract class SensitiveWordDecorator {
+public interface SensitiveWordDecorator {
 
-    private final SensitiveWordDecorator decorator;
-
-    protected SensitiveWordDecorator(SensitiveWordDecorator decorator) {
-        this.decorator = decorator;
-    }
-
-    public void decorate(String words) {
-
+    default String decorate(char[] words, List<Range> sensorRanges) {
+        return new String(words);
     }
 }

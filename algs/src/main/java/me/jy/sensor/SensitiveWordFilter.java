@@ -15,9 +15,11 @@ public class SensitiveWordFilter {
 
     private final Set<String> sensitiveWords;
     private final SensitiveWordNode root = new SensitiveWordNode();
+    private final SensitiveWordDecorator decorator;
 
-    public SensitiveWordFilter(SensitiveWordInitializer initializer) {
-        sensitiveWords = initializer.load();
+    public SensitiveWordFilter(SensitiveWordInitializer initializer, SensitiveWordDecorator decorator) {
+        this.sensitiveWords = initializer.load();
+        this.decorator = decorator;
         log.debug("sensitive worlds: {}", sensitiveWords);
         buildTree();
     }
@@ -46,6 +48,7 @@ public class SensitiveWordFilter {
         if (originString == null || originString.length() == 0) {
             return originString;
         }
+        List<Range> ranges = new ArrayList<>();
         char[] chars = originString.toCharArray();
         int start = 0;
         SensitiveWordNode prefixNode = root;
@@ -60,7 +63,8 @@ public class SensitiveWordFilter {
             // 为敏感词最后一个字
             if (nextWordNode.isEnd()) {
                 // 处理该敏感词
-                Arrays.fill(chars, start, i + 1, '*');
+//                Arrays.fill(chars, start, i + 1, '*');
+                ranges.add(new Range(start, i));
                 // 重置
                 start = i + 1;
                 prefixNode = root;
@@ -69,7 +73,7 @@ public class SensitiveWordFilter {
                 prefixNode = nextWordNode;
             }
         }
-        return new String(chars);
+        return decorator.decorate(chars, ranges);
     }
 
     @Data
