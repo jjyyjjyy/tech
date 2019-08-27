@@ -54,10 +54,11 @@ public class SensitiveWordFilter {
         SensitiveWordNode prefixNode = root;
         for (int i = 0; i < chars.length; i++) {
             SensitiveWordNode nextWordNode = prefixNode.getNextWordNode(chars[i]);
-            // 没有后缀, 则从i开始重新检测
+            // 没有后缀, 则重新开始检测
             if (nextWordNode == null) {
-                start = i;
-                prefixNode = Optional.ofNullable(root.getNextWordNode(chars[i])).orElse(root);
+                SensitiveWordNode firstNode = root.getNextWordNode(chars[i]);
+                start = i + (firstNode == null ? 1 : 0);
+                prefixNode = Optional.ofNullable(firstNode).orElse(root);
                 continue;
             }
             // 为敏感词最后一个字
