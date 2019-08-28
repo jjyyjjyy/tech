@@ -14,7 +14,8 @@
 == 安装
 
 === docker
-[source,bash]
+
+[source,yaml]
 .docker-compose.yml
 ----
 version: '3'
@@ -118,7 +119,7 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 
 > https://www.postgresql.org/docs/current/monitoring-stats.html
 
-[source,sql]
+[source,postgresql]
 ----
 -- 查看活动会话
 select pid, client_addr, query_start, state, query, wait_event, wait_event_type
@@ -190,7 +191,7 @@ order by 1, 2, 3 desc;
 
 == 函数
 
-[source,sql]
+[source,postgresql]
 ----
 -- 计算字符串中的字符数
 select char_length('abcd'); -- 4
@@ -548,7 +549,7 @@ TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受�
 
 === SQL
 
-[source,sql]
+[source,postgresql]
 ----
 -- 创建主表
 CREATE TABLE [ IF NOT EXISTS ] parent_table ( [

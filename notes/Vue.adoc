@@ -13,12 +13,13 @@ v2.6.10
 :tabsize: 4
 :docinfo: shared
 
-== Vue原型初始化
+[#Vue-prototype-init]
+== Vue prototype初始化过程
 
-. instance/index.js:
+.instance/index.js
 .. 定义Vue构造函数: `function Vue(options){this._init(options)}`
 .. 设置Vue.prototype一些属性/方法:
-... \_init
+... _init
 ... $data
 ... $props
 ... $set
@@ -28,12 +29,13 @@ v2.6.10
 ... $emit
 ... $once
 ... $off
-... \_update
+... _update
 ... $forceUpdate
 ... $destroy
 ... $nextTick
-... \_render
-. core/index.js:
+... _render
+
+.core/index.js
 .. 设置config默认属性
 .. 设置Vue一些方法:
 ... set
@@ -57,14 +59,125 @@ v2.6.10
 .. 设置Vue.prototype一些属性:
 ... $isServer
 ... $ssrContext
-. runtime/index.js
+
+.runtime/index.js
 .. 设置config一些属性
 .. 设置Vue.options.directives mode/show
 .. 设置Vue.options.components Transition/TransitionGroup
 .. 设置Vue.prototype.\\__patch__
 .. 设置Vue.prototype.$mount
 
-== Vue init
+[#Vue-instance-init]
+== Vue实例init
 
+.src/core/instance/init.js
 . 合并构造函数的参数到vm.$options中
-.
+. init events & lifecycle & render
+. beforeCreate
+. init injections & state & provide
+. created
+. 将el转化为template, 再将template转化为render函数
+. beforeMount
+. $mount
+.. new Watcher()
+.. vm.render(): 调用 `vm.$createElement` 将html转成VNode
+.. 将解析后的VNode append到el的parent的children下
+.. 将旧的el删除
+. mounted
+
+[#Vue-patch]
+== patch
+
+NOTE: *sameVnode:* ① key相同.
+② 如果是文本节点, 则文本内容相同.
+③ 如果是input标签, 则type相同.
+
+=== patchVNode
+
+. updateAttrs
+. updateClass
+. updateDOMListeners
+. updateDOMProps
+. updateStyle
+. update
+. updateDirectives
+
+=== updateChildren
+
+[source,javascript]
+.src/core/vdom/patch.js
+----
+function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
+    let oldStartIdx = 0;
+    let newStartIdx = 0;
+    let oldEndIdx = oldCh.length - 1;
+    let oldStartVnode = oldCh[0];
+    let oldEndVnode = oldCh[oldEndIdx];
+    let newEndIdx = newCh.length - 1;
+    let newStartVnode = newCh[0];
+    let newEndVnode = newCh[newEndIdx]; // <1>
+    let oldKeyToIdx, idxInOld, vnodeToMove, refElm;
+    const canMove = !removeOnly;
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      if (isUndef(oldStartVnode)) {
+        oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
+      } else if (isUndef(oldEndVnode)) {
+        oldEndVnode = oldCh[--oldEndIdx]
+      } else if (sameVnode(oldStartVnode, newStartVnode)) { // <2>
+        patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
+        oldStartVnode = oldCh[++oldStartIdx];
+        newStartVnode = newCh[++newStartIdx]
+      } else if (sameVnode(oldEndVnode, newEndVnode)) { // <3>
+        patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
+        oldEndVnode = oldCh[--oldEndIdx];
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldStartVnode, newEndVnode)) { // <4>
+        patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
+        canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm));
+        oldStartVnode = oldCh[++oldStartIdx];
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // <5>
+        patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
+        canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm);
+        oldEndVnode = oldCh[--oldEndIdx];
+        newStartVnode = newCh[++newStartIdx]
+      } else {
+        if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+        idxInOld = isDef(newStartVnode.key)
+          ? oldKeyToIdx[newStartVnode.key]
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx); // <6>
+        if (isUndef(idxInOld)) { // <7>
+          createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+        } else {
+          vnodeToMove = oldCh[idxInOld];
+          if (sameVnode(vnodeToMove, newStartVnode)) { // <8>
+            patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
+            oldCh[idxInOld] = undefined;
+            canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+          } else { // <9>
+            createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
+          }
+        }
+        newStartVnode = newCh[++newStartIdx]
+      }
+    }
+    if (oldStartIdx > oldEndIdx) {
+      refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm;
+      addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue) // <10>
+    } else if (newStartIdx > newEndIdx) {
+      removeVnodes(oldCh, oldStartIdx, oldEndIdx) // <11>
+    }
+  }
+----
+
+<1> 初始化新旧children首尾index以及VNode
+<2> 旧首和新首相同, 则patch下旧首.
+<3> 旧尾和新尾相同, 则patch下旧尾.
+<4> 旧首和新尾相同, 则patch下旧首, 并将旧首移动到旧尾的后面.
+<5> 旧尾和新首相同, 则patch下旧尾, 并将旧尾移动到旧首的前面.
+<6> 如果新旧首尾都不同, 则在oldChildren中根据新首的key寻找相同的VNode.
+<7> 如果找不到, 则将新首插入到旧首前.
+<8> 如果找到, 并且是同类VNode, 则patch该VNode, 并将patch后的VNode插入到旧首的前面. 原旧节点位置元素置为undefined.
+<9> 如果找到, 但不是同类VNode, 则相当于没找到, 同步骤7.
+<10> 如果oldChildren先遍历完, 则说明newChildren中有新VNode加入, 则将newChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode插入到旧尾.
+<11> 如果newChildren先遍历完, 则说明newChildren中有VNode被删除, 则将oldChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode删除.
