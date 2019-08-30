@@ -19,17 +19,30 @@ class BufferTests {
         assertEquals(0, buffer.position());
         assertEquals(100, buffer.limit());
         assertEquals(100, buffer.capacity());
+        buffer.flip();
+        assertEquals(0, buffer.position());
+        assertEquals(0, buffer.limit());
 
         int[] arr = new int[100];
         IntBuffer bufferFromArray = IntBuffer.wrap(arr);
         assertEquals(0, bufferFromArray.position());
         assertEquals(100, bufferFromArray.limit());
         assertEquals(100, bufferFromArray.capacity());
+        bufferFromArray.rewind();
+        assertEquals(0, bufferFromArray.position());
 
         IntBuffer bufferFromArray2 = IntBuffer.wrap(arr, 12, 40);
         assertEquals(12, bufferFromArray2.position());
         assertEquals(52, bufferFromArray2.limit());
         assertEquals(100, bufferFromArray2.capacity());
+        bufferFromArray2.mark();
+        bufferFromArray2.put(2);
+        assertEquals(13, bufferFromArray2.position());
+        bufferFromArray2.reset();
+        assertEquals(12, bufferFromArray2.position());
+        bufferFromArray2.clear();
+        assertEquals(0, bufferFromArray2.position());
+        assertEquals(100, bufferFromArray2.limit());
 
         assertEquals(ByteOrder.LITTLE_ENDIAN, ByteOrder.nativeOrder()); // Intel CPU
         assertEquals(ByteOrder.BIG_ENDIAN, ByteBuffer.allocate(0).order()); // ByteBuffer默认为大端

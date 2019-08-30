@@ -168,6 +168,23 @@
 * 使用 `Statement` 获取 `ResultSet` 后, 当前使用中的 `ResultSet` 会直接关闭.
 * 用完后需要close.
 
+== NIO
+
+=== Buffer
+
+Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属性/方法:
+
+* capacity:
+容器长度
+* limit:
+能够写入的长度
+* position:
+下一个被写入的位置
+* flip(): 将position赋值给limit, 再将position设置为0, 重置mark
+* rewind(): 将position设置为0, 重置mark
+* mark(): 将position赋值给mark
+* reset(): 将mark赋值给position
+
 == QA
 
 [qanda]
