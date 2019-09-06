@@ -14,6 +14,7 @@
         <module>spring-mvc-demo</module>
         <module>spring-mq</module>
         <module>spring-session-demo</module>
+        <module>spring-aop-demo</module>
     </modules>
     <artifactId>spring-notes</artifactId>
 
