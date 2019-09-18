@@ -2,7 +2,10 @@ package me.jy.tree;
 
 import lombok.NonNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Red-Black tree implementation.
@@ -15,28 +18,6 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
     private RBEntry<K, V> root;
 
     private int size = 0;
-
-    /**
-     * Returns the successor of the specified Entry, or null if no such.
-     */
-    static <K, V> RBEntry<K, V> successor(RBEntry<K, V> t) {
-        if (t == null)
-            return null;
-        else if (t.rightChild != null) {
-            RBEntry<K, V> p = t.rightChild;
-            while (p.leftChild != null)
-                p = p.leftChild;
-            return p;
-        } else {
-            RBEntry<K, V> p = t.parent;
-            RBEntry<K, V> ch = t;
-            while (p != null && ch == p.rightChild) {
-                ch = p;
-                p = p.parent;
-            }
-            return p;
-        }
-    }
 
     public V put(@NonNull K key, V value) {
         if (root == null) {
@@ -59,7 +40,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
 
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
-
+        m.forEach(this::put);
     }
 
     private RBEntry<K, V> doInsert(@NonNull K key, V value) {
@@ -122,6 +103,14 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
         return left;
     }
 
+    public RBEntry<K, V> getLastEntry() {
+        RBEntry<K, V> p = root;
+        if (p != null)
+            while (p.rightChild != null)
+                p = p.rightChild;
+        return p;
+    }
+
     public V get(@NonNull Object key) {
         RBEntry<K, V> entry = getEntry((K) key);
         return entry == null ? null : entry.getValue();
@@ -163,7 +152,21 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return new EntrySet();
+        Set<Entry<K, V>> entries = new LinkedHashSet<>();
+        iterateTree(entries, root);
+        return entries;
+    }
+
+    /**
+     * 中序遍历
+     */
+    private void iterateTree(Set<Entry<K, V>> entrySet, RBEntry<K, V> entry) {
+        if (entry == null) {
+            return;
+        }
+        iterateTree(entrySet, entry.leftChild);
+        entrySet.add(entry);
+        iterateTree(entrySet, entry.rightChild);
     }
 
     /**
@@ -189,7 +192,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
             if (colorOf(uncle) == EntryColor.RED) {
                 // 将父节点和uncle节点标记为黑色, grandParent节点标记为红色
                 setColor(parent, EntryColor.BLACK);
-                setColor(rightParent, EntryColor.BLACK);
+                setColor(uncle, EntryColor.BLACK);
                 setColor(grandParent, EntryColor.RED);
                 // 重置X节点
                 t = grandParent;
@@ -199,17 +202,20 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
                         t = parent;
                         leftRotate(t);
                     }
+                    // 交换parent和grandParent的颜色(此时parent肯定为红色, grantParent肯定为黑色, 所以可以直接设置颜色)
+                    setColor(parentOf(t), EntryColor.BLACK);
+                    setColor(parentOf(parentOf(t)), EntryColor.RED);
                     rightRotate(parentOf(parentOf(t))); // 右单旋
                 } else {
                     if (t == leftOf(parent)) { // RL -> 右左双旋, 先右单旋
                         t = parent;
                         rightRotate(t);
                     }
+                    // 交换parent和grandParent的颜色(此时parent肯定为红色, grantParent肯定为黑色, 所以可以直接设置颜色)
+                    setColor(parentOf(t), EntryColor.BLACK);
+                    setColor(parentOf(parentOf(t)), EntryColor.RED);
                     leftRotate(parentOf(parentOf(t)));
                 }
-                // 交换parent和grandParent的颜色(此时parent肯定为红色, grantParent肯定为黑色)
-                setColor(parentOf(t), EntryColor.BLACK);
-                setColor(parentOf(parentOf(t)), EntryColor.RED);
             }
         }
 
@@ -255,7 +261,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
             return;
         }
         RBEntry<K, V> rightChild = p.rightChild;
-        p.rightChild = rightChild.rightChild;
+        p.rightChild = rightChild.leftChild;
         if (p.rightChild != null) {
             p.rightChild.parent = p;
         }
@@ -329,41 +335,22 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
             this.value = value;
             return value;
         }
-    }
-
-    private class EntrySet extends AbstractSet<Entry<K, V>> {
-        @Override
-        public Iterator<Entry<K, V>> iterator() {
-            return new EntryIterator(getFirstEntry());
-        }
 
         @Override
-        public int size() {
-            return size;
-        }
-    }
-
-    private class EntryIterator implements Iterator<Entry<K, V>> {
-
-        private RBEntry<K, V> next;
-
-        public EntryIterator(RBEntry<K, V> next) {
-            this.next = next;
+        public String toString() {
+            return key + "=" + value;
         }
 
-        @Override
-        public boolean hasNext() {
-            return next != null;
+        public RBEntry<K, V> getLeftChild() {
+            return leftChild;
         }
 
-        @Override
-        public Entry<K, V> next() {
-            RBEntry<K, V> pre = next;
-            if (pre == null) {
-                throw new NullPointerException();
-            }
-            next = successor(pre);
-            return pre;
+        public RBEntry<K, V> getRightChild() {
+            return rightChild;
+        }
+
+        public RBEntry<K, V> getParent() {
+            return parent;
         }
     }
 
