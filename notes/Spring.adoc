@@ -314,6 +314,14 @@ args(java.io.Serializable) // 匹配参数只有一个并且类型为Serializabl
 
 ----
 
+=== Aop注册流程
+
+. 解析Configuration类的 `@EnableAspectJAutoProxy` 注解, 注册 `AnnotationAwareAspectJAutoProxyCreator` .
+. `postProcessBeforeInstantiation` 时扫描所有的Aspect, 标记出所有需要被aop的bean.
+. `postProcessAfterInitialization` 时创建代理对象.
+.. 根据 `AopUtils.findAdvisorsThatCanApply` 找到每个bean的advisor.
+.. 使用 `CGLIB` 生成代理类, 使用 `sun.reflect.ReflectionFactory` 创建代理对象.
+
 == QA
 
 [qanda]
