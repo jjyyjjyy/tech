@@ -2,7 +2,6 @@ package me.jy.lang.thread.juc.lock;
 
 /**
  * @author jy
- * @date 2018/03/11
  */
 public class LockOne implements Lock {
 
@@ -15,8 +14,8 @@ public class LockOne implements Lock {
         int id = getThreadId();
 
         flags[id] = true;
-        while (flags[LIMIT - id]) { // wait for another one unlock,dead lock causes when threads come here at same time
-        }
+        // 等待另一个线程释放锁. 两个线程同时执行到这会发生死锁
+        while (flags[LIMIT - id]) ;
     }
 
     @Override

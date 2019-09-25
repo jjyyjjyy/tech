@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author jy
- * @date 2018/03/12
  */
 public class QueueLock implements Lock {
 

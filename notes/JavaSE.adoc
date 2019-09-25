@@ -185,6 +185,59 @@ Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属
 * mark(): 将position赋值给mark
 * reset(): 将mark赋值给position
 
+== 多处理器编程
+
+=== 定义
+
+线程A产生一个事件序列stem:[a_0,a_1,...].
+由于线程中往往包含循环, 因此一条程序语句可以产生多次事件.
+用stem:[a_i^j]表示事件stem:[a_i]的第stem:[j]次发生. 如果事件a在事件b之前发生, 则称a先于b, 记作stem:[a->b].
+
+令stem:[a_0,a_1]表示事件, 且stem:[a_0->a_1], stem:[I_A]=interval(stem:[a_0->a_1])表示stem:[a_0和a_1]事件之间的间隔.
+如果stem:[a_1->b_0],则stem:[I_A->I_B].多个不存在stem:[->]的关系称为 *并发的*.
+
+* *互斥*: 对于线程A,B, 以及整数j,k, 都有 stem:[CS_A^j->CS_B^i]或者stem:[CS_B^j->CS_A^i].
+* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁.
+如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
+* *无饥饿*: 每个尝试获得锁的线程最终都能成功.
+(无饥饿意味着无死锁)
+
+=== 互斥
+
+[source,java]
+.Lock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/Lock.java[]
+----
+
+==== 双线程实现互斥
+
+[source,java]
+.LockOne.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/LockOne.java[]
+----
+
+[source,java]
+.LockTwo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/LockTwo.java[]
+----
+
+[source,java]
+.PetersonLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/PetersonLock.java[]
+----
+
+==== 多线程实现互斥
+
+[source,java]
+.FilterLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/FilterLock.java[]
+----
+
 == QA
 
 [qanda]

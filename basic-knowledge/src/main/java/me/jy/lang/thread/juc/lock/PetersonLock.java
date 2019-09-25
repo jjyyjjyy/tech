@@ -2,7 +2,6 @@ package me.jy.lang.thread.juc.lock;
 
 /**
  * @author jy
- * @date 2018/03/11
  */
 public class PetersonLock implements Lock {
 
@@ -12,16 +11,12 @@ public class PetersonLock implements Lock {
 
     private int victim = LIMIT;
 
-
     @Override
     public void lock() {
         int id = getThreadId();
-
         flags[id] = true;
-
         victim = id;
-        while (flags[LIMIT - id] && (victim == id)) {
-        }
+        while (flags[LIMIT - id] && victim == id) ;
     }
 
     @Override

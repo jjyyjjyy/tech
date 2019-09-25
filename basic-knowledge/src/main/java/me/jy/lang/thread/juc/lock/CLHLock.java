@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author jy
- * @date 2018/03/12
  */
 public class CLHLock implements Lock {
 
