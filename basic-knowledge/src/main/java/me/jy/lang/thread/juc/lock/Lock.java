@@ -22,4 +22,8 @@ public interface Lock {
         }
         return THREAD_ID_HOLDER.get();
     }
+
+    static void resetThreadId() {
+        THREAD_ID_INCREMENTER.set(0);
+    }
 }

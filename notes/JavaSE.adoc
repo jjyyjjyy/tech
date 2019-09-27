@@ -238,6 +238,12 @@ include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/PetersonLoc
 include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/FilterLock.java[]
 ----
 
+[source,java]
+.BakeryLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/BakeryLock.java[]
+----
+
 == QA
 
 [qanda]

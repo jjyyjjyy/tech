@@ -1,6 +1,10 @@
 package me.jy.lang.thread.juc.lock;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
+ * Peterson锁, 实现双线程互斥
+ *
  * @author jy
  */
 public class PetersonLock implements Lock {
@@ -9,14 +13,14 @@ public class PetersonLock implements Lock {
 
     private final boolean[] flags = new boolean[LIMIT + 1];
 
-    private int victim = LIMIT;
+    private AtomicInteger victim = new AtomicInteger();
 
     @Override
     public void lock() {
         int id = getThreadId();
-        flags[id] = true;
-        victim = id;
-        while (flags[LIMIT - id] && victim == id) ;
+        flags[id] = true; // 表示当前线程正在竞争临界区
+        victim.set(id); // 让其他正在竞争临界区的线程通过
+        while (flags[LIMIT - id] && victim.get() == id) ;
     }
 
     @Override
