@@ -2,6 +2,7 @@
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
+:hardbreaks:
 :sectlinks:
 :sectnums:
 :stem:
@@ -189,12 +190,12 @@ Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属
 
 === 定义
 
-线程A产生一个事件序列stem:[a_0,a_1,...].
+线程A产生一个事件序列 stem:[a_0,a_1,...].
 由于线程中往往包含循环, 因此一条程序语句可以产生多次事件.
-用stem:[a_i^j]表示事件stem:[a_i]的第stem:[j]次发生. 如果事件a在事件b之前发生, 则称a先于b, 记作stem:[a->b].
+用 stem:[a_i^j] 表示事件 stem:[a_i] 的第 stem:[j] 次发生. 如果事件a在事件b之前发生, 则称a先于b, 记作 stem:[a->b] .
 
-令stem:[a_0,a_1]表示事件, 且stem:[a_0->a_1], stem:[I_A]=interval(stem:[a_0->a_1])表示stem:[a_0和a_1]事件之间的间隔.
-如果stem:[a_1->b_0],则stem:[I_A->I_B].多个不存在stem:[->]的关系称为 *并发的*.
+令 stem:[a_0,a_1]表示事件, 且 stem:[a_0->a_1], stem:[I_A] =interval( stem:[a_0->a_1] )表示 stem:[a_0和a_1] 事件之间的间隔.
+如果 stem:[a_1->b_0],则 stem:[I_A->I_B].多个不存在 stem:[->]的关系称为 *并发的*.
 
 * *互斥*: 对于线程A,B, 以及整数j,k, 都有 stem:[CS_A^j->CS_B^i]或者stem:[CS_B^j->CS_A^i].
 * *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁.
@@ -235,13 +236,94 @@ include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/PetersonLoc
 [source,java]
 .FilterLock.java
 ----
-include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/FilterLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/FilterLock.java[]
 ----
 
 [source,java]
 .BakeryLock.java
 ----
-include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/BakeryLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/BakeryLock.java[]
+----
+
+=== 内存访问
+
+处理器和存储控制器之间通过总线通信, 同一时间只能有一个处理器在总线上广播, 但处理器可以和存储控制器同时广播.
+所有的处理器都可以监听.
+每一个处理器都有一个cache. 当处理器想从存储器读数据时, 首先检查该内存地址以及值是否已经在cache中. 如果在cache中, 那么处理器可以产生一个cache命中, 立即加载这个值.
+如果不在, 则产生一个 `cache miss` , 紧接着在总线上广播这个地址, 其他的处理器监听总线, 如果某个处理器在自己的cache中发现这个地址, 则广播该地址及其值做出响应.
+如果所有的处理器都没有发现该地址, 则从内存中加载.
+
+=== 自旋锁
+
+多线程竞争临界区, 如果不能获得锁, 有两种选择:
+
+* 让其继续尝试, 称为 *自旋锁* .
+* 挂起自己, 请求操作系统调度另外一个线程, 称为 *阻塞* .
+
+许多操作系统将这两种结合起来使用, 先旋转一个小的时间段再阻塞.
+
+==== TestAndSet
+
+[source,java]
+.TASLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/TASLock.java[]
+----
+
+.TAS缺点:
+* 每个 `getAndSet` 对应总线上一次广播, 该广播会延迟所有的线程, 包括那些没有阻塞锁和准备释放锁的线程.
+* `getAndSet` 设置值后会导致所有处理器丢弃 `cache` .
+
+==== TestAndTestAndSet
+
+[source,java]
+.TTASLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/TTASLock.java[]
+----
+
+.TTAS改进:
+* 自旋时只会读取本地的cache值, 不产生总线流量.
+
+==== Backoff TestAndTestAndSet
+
+[source,java]
+.Backoff.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/Backoff.java[]
+----
+
+[source,java]
+.TTASBackoffLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/TTASBackoffLock.java[]
+----
+
+.TTASBackoffLock改进:
+* 当有其他线程释放锁, 但当前线程没有竞争到锁后会后退一个随机的时间间隔再去争用锁, 减少CPU消耗.
+
+==== 队列锁(数组)
+
+[source,java]
+.ArrayLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/ArrayLock.java[]
+----
+
+==== 队列锁(CLH)
+
+[source,java]
+.CLHLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/CLHLock.java[]
+----
+
+==== 队列锁(MCS)
+
+[source,java]
+.MCSLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/lock/spin/MCSLock.java[]
 ----
 
 == QA

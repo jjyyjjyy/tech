@@ -1,5 +1,6 @@
 package me.jy.lang.thread.juc.lock;
 
+import me.jy.lang.thread.juc.lock.spin.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -16,12 +17,16 @@ import java.util.stream.IntStream;
  */
 class LockTest {
 
+    private static final int TEST_REPEAT_TIMES = 10;
+
+    private static final int THREAD_NUM = Runtime.getRuntime().availableProcessors();
+
     @BeforeEach
     void reset() {
         Lock.resetThreadId();
     }
 
-    @RepeatedTest(20)
+    @RepeatedTest(TEST_REPEAT_TIMES)
     void testPetersonLock() {
         Lock lock = new PetersonLock();
         LockTester lockTester = new LockTester(lock);
@@ -29,19 +34,67 @@ class LockTest {
         verify(lockTester, executorService);
     }
 
-    @RepeatedTest(20)
+    @RepeatedTest(TEST_REPEAT_TIMES)
     void testFilterLock() {
-        Lock lock = new FilterLock(10);
+        Lock lock = new FilterLock(THREAD_NUM);
         LockTester lockTester = new LockTester(lock);
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
         verify(lockTester, executorService);
     }
 
-    @RepeatedTest(20)
+    @RepeatedTest(TEST_REPEAT_TIMES)
     void testBakeryLock() {
-        Lock lock = new BakeryLock(10);
+        Lock lock = new BakeryLock(THREAD_NUM);
         LockTester lockTester = new LockTester(lock);
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testTASLock() {
+        Lock lock = new TASLock();
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testTTASLock() {
+        Lock lock = new TTASLock();
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testBackoffTTSLock() {
+        Lock lock = new TTASBackoffLock(5, 100);
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testArrayLock() {
+        Lock lock = new ArrayLock(64);
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testCLHLock() {
+        Lock lock = new CLHLock();
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        verify(lockTester, executorService);
+    }
+
+    @RepeatedTest(TEST_REPEAT_TIMES)
+    void testMCSLock() {
+        Lock lock = new MCSLock();
+        LockTester lockTester = new LockTester(lock);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         verify(lockTester, executorService);
     }
 

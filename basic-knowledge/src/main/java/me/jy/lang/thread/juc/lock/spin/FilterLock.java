@@ -1,4 +1,6 @@
-package me.jy.lang.thread.juc.lock;
+package me.jy.lang.thread.juc.lock.spin;
+
+import me.jy.lang.thread.juc.lock.Lock;
 
 import java.util.stream.IntStream;
 
