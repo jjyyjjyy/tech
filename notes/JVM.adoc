@@ -68,6 +68,19 @@ HotSpot内置多种编译器: C1(启动块,编译时间短)/C2(编译时间比�
 
 |===
 
+== Class文件组成
+
+* magic number
+* minor&major versions
+* constant pool
+* access flags
+* this class
+* super class
+* interfaces
+* fields
+* methods
+* attributes
+
 == JDK常用工具
 
 * jps
@@ -85,6 +98,14 @@ HotSpot内置多种编译器: C1(启动块,编译时间短)/C2(编译时间比�
 * jstat [option] <pid> [interval]
 
  查看指定进程的内存概况. 如: jstat -gcutil 1 1000 每隔1秒输出1进程的概况
+
+* javap <class file>
+** -c: 反编译class
+** -p: 显示 `private` 方法和字段
+** -v: 显示详细信息
+** -s: 显示类型签名
+** -l: 输出行号和本地变量表
+** -sysinfo: 显示类的系统信息
 
 == JVM参数概述
 

@@ -1,0 +1,20 @@
+= Sketch
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== Talk
+
+* 将演讲划分为多个阶段, 每个阶段设立检查点, 确认大家是否都听懂了.
+(保证演讲行之有效, 否则就是在浪费时间)
+* 演讲过程中尽量问封闭性问题, 少问开放性问题.
+(防止被带偏)
