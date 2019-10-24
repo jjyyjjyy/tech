@@ -286,3 +286,209 @@ GET /_mget
 | <0,13>
 
 |===
+
+== 聚合查询
+
+Elasticsearch聚合查询分为4种:
+
+* Metric
+* Bucket
+* Pipeline
+* Matrix
+
+=== Metrics
+
+==== avg
+
+> 平均值
+
+[source,http]
+.计算填单率
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "fillRate": {
+        "avg": {
+          "field": "fill"
+        }
+      }
+    }
+}
+----
+
+==== weighted_avg
+
+> 加权平均值: stem:[(sum(weight * value)) / (sum(weight))]
+
+[source,http]
+----
+GET /page_view_info/_search
+{
+  "size": 0,
+  "aggs": {
+    "weightAvgST": {
+      "weighted_avg": {
+        "value": {
+          "field": "lengthOfStay"
+        },
+        "weight": {
+          "field": "fill"
+        }
+      }
+    }
+  }
+}
+----
+
+==== cardinality
+
+> distinct count
+
+[source,http]
+.获取uv
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "uv": {
+        "cardinality": {
+          "field": "uid"
+        }
+      }
+    }
+}
+----
+
+==== extended_stats
+
+> 详细统计, 包括平均值, 最大值, 最小值, 标准差, 方差, 平方和等维度.
+
+[source,http]
+.统计停留时长
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "extendedStatsST": {
+        "extended_stats": {
+        "field": "lengthOfStay"
+        }
+      }
+    }
+}
+----
+
+==== max
+
+> 最大值
+
+[source,http]
+.获取最大停留时长
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "maxST": {
+        "max": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}
+----
+
+==== min
+
+> 最小值
+
+[source,http]
+.获取最小停留时长
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "minST": {
+        "min": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}
+----
+
+==== sum
+
+> 求和
+
+[source,http]
+.统计填单数
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "fillAmount": {
+        "sum": {
+          "field": "fill"
+        }
+      }
+    }
+}
+----
+
+==== value_count
+
+> 计数
+
+[source,http]
+.统计pv
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "pv": {
+        "value_count": {
+          "field": "id"
+        }
+      }
+    }
+}
+----
+
+==== percentiles
+
+> 百分位
+
+[source,http]
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "stPercentiles": {
+        "percentiles": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}
+----
+
+==== percentile_ranks
+
+> 数值所处的百分位
+
+[source,http]
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "stPercentileRanks": {
+        "percentile_ranks": {
+          "field": "lengthOfStay",
+          "values": [2, 120]
+        }
+      }
+    }
+}
+----
+

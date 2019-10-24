@@ -31,7 +31,7 @@
         <jmh.version>1.21</jmh.version>
         <junit.version>5.5.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>6.3</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>8.2</nimbus-jose-jwt.version>
 
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
