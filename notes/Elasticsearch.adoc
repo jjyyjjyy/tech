@@ -360,6 +360,25 @@ GET /page_view_info/_search
 }
 ----
 
+==== stats
+
+> 统计信息, 包括平均值, 最大值, 最小值, 总和, 次数计数.
+
+[source,http]
+.统计停留时长
+----
+GET /page_view_info/_search
+{
+    "aggs": {
+      "statsST": {
+        "stats": {
+        "field": "lengthOfStay"
+        }
+      }
+    }
+}
+----
+
 ==== extended_stats
 
 > 详细统计, 包括平均值, 最大值, 最小值, 标准差, 方差, 平方和等维度.
@@ -460,6 +479,7 @@ GET /page_view_info/_search
 > 百分位
 
 [source,http]
+.查看 lengthOfStay
 ----
 GET /page_view_info/_search
 {
@@ -479,6 +499,7 @@ GET /page_view_info/_search
 
 [source,http]
 ----
+.查看 lengthOfStay 小于2秒和120秒的百分比
 GET /page_view_info/_search
 {
     "aggs": {
@@ -491,4 +512,6 @@ GET /page_view_info/_search
     }
 }
 ----
+
+==== top_hits
 
