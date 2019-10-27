@@ -51,6 +51,16 @@ JSON中每个字段都有对应的字段类型 `(boolean/number/string/date/bina
 * `_version`: 文档版本号
 * `_score`: 文档搜索时的评分
 
+=== Term
+
+多个单词形成 `OR` 查询, 不要求顺序.
+比如 "Mac OS" 会查询某个字段存在 `Mac` 或 `OS` 的文档.
+
+=== Phrase
+
+多个单词形成短语, 作为一个整体查询.
+比如 "Mac OS" 会查询某个字段存在 `Mac OS` 字符串的文档.
+
 === 索引
 
 表示一类文档的集合.
@@ -78,6 +88,80 @@ JSON中每个字段都有对应的字段类型 `(boolean/number/string/date/bina
 | DSL
 
 |===
+
+=== 倒排索引
+
+倒排索引由两部分组成:
+
+* 单词词典: 记录所有单词, 单词到倒排列表的关系.
+* 倒排列表: 记录了单词所处文档的信息:
+** 文档id
+** 词频 `(TF)`: 记录单词在文档中出现的次数, 用于相关性评分.
+** 位置 `(Position)`: 记录单词在文档中分词的位置, 用于语句搜索.
+** 偏移 `(Offset)`: 记录单词的开始和结束位置, 用于高亮显示.
+
+=== 倒排索引例子
+
+.源文档
+|===
+| 文档id | 文档内容
+
+| 1
+| Mastering Elasticsearch
+
+| 2
+| Elasticsearch Server
+
+| 3
+| Elasticsearch Essentials
+
+|===
+
+.Elasticsearch 倒排列表
+|===
+| 文档id | TF | Position | Offset
+
+| 1
+| 1
+| 1
+| <10,23>
+
+| 2
+| 1
+| 0
+| <0,13>
+
+| 3
+| 1
+| 0
+| <0,13>
+
+|===
+
+=== Analysis
+
+文本分析: 把全文本转换为一系列单词的过程, 也叫 _分词_ .
+Elasticsearch通过 https://www.elastic.co/guide/en/elasticsearch/reference/current/analyzer-anatomy.html#analyzer-anatomy[Analyser] 实现分词.
+
+Analyser由三部分组成:
+
+* Character filter: 处理原始文本, 比如去除html标签, unicode字符转换等.
+* Tokenizer: 将文本切分为多个单词.
+* Token filter: 处理切分后的单词, 比如转小写.
+
+[source,http]
+.自定义Analyser
+----
+POST /_analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [{
+    "type": "mapping",
+    "mappings":["- => _"]
+  }],
+  "text": ["123-345"]
+}
+----
 
 === 集群
 
@@ -238,65 +322,143 @@ GET /_mget
 }
 ----
 
-== 倒排索引
+== URL查询
 
-倒排索引由两部分组成:
+`GET /<index>/_search`
 
-* 单词词典: 记录所有单词, 单词到倒排列表的关系.
-* 倒排列表: 记录了单词所处文档的信息:
-** 文档id
-** 词频 `(TF)`: 记录单词在文档中出现的次数, 用于相关性评分.
-** 位置 `(Position)`: 记录单词在文档中分词的位置, 用于语句搜索.
-** 偏移 `(Offset)`: 记录单词的开始和结束位置, 用于高亮显示.
+=== 参数
 
-=== 倒排索引例子
+* q: 查询条件
+* df: 查询字段, 如果为空则查询所有字段
+* sort: 排序, 格式为 `<field>:[asc|desc]`
 
-.源文档
-|===
-| 文档id | 文档内容
+[source,http]
+----
+# 查询存在一个字段包含"Mac"的文档
+GET /page_view_info/_search?q=Mac
 
-| 1
-| Mastering Elasticsearch
+# 查询ua字段包含"Mac"的文档
+GET /page_view_info/_search?q=ua:Mac
+GET /page_view_info/_search?df=ua&q=Mac
 
-| 2
-| Elasticsearch Server
+# 查询ua包含"Mac"或者其他字段包含"Firefox"的文档
+GET /page_view_info/_search?q=ua:Mac Firefox
 
-| 3
-| Elasticsearch Essentials
+# 查询ua包含"Mac"或者"Firefox"的文档
+GET /page_view_info/_search?q=ua:(Mac Firefox)
 
-|===
+# 查询ua包含"Mac Firefox"的文档
+GET /page_view_info/_search?q=ua:"Mac Firefox"
+----
 
-.Elasticsearch 倒排列表
-|===
-| 文档id | TF | Position | Offset
+=== 查询条件操作符
 
-| 1
-| 1
-| 1
-| <10,23>
+==== 布尔操作符
 
-| 2
-| 1
-| 0
-| <0,13>
+* `AND OR NOT` *必须大写*
+* `+ -`
 
-| 3
-| 1
-| 0
-| <0,13>
+[source,http]
+----
+# 查询ua包含"Mac"并且包含"Firefox"的文档
+GET /page_view_info/_search?q=ua:(Mac AND Firefox)
+GET /page_view_info/_search?q=ua:(+Mac AND +Firefox)
 
-|===
+# 查询ua包含"Mac"并且但不包含"OS"的文档
+GET /page_view_info/_search?q=ua:(Mac NOT OS)
+GET /page_view_info/_search?q=ua:(+Mac -OS)
+----
+
+==== 范围查询操作符
+
+[source,http]
+----
+# 查询year大于2018的文档
+GET /page_view_info/_search?q=year:>2018
+
+# 查询ua字段存在以"OP"开头的term的文档
+GET /page_view_info/_search?q=ua:OP*
+----
+
+== Query DSL
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html[]
+
+[source,http]
+.DSL查询示例
+----
+GET /page_view_info/_search
+{
+  "sort": {"id": "desc"},
+  "_source": ["id", "pid", "createdAt"],
+  "from": 0,
+  "size": 20,
+  "query": {}
+}
+----
+
+=== query_string
+
+[source]
+----
+# 查询ua或os字段包含"Mac"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "query_string": {
+      "query": "Mac",
+      "fields": ["ua", "os"]
+    }
+  }
+}
+----
+
+=== match
+
+[source,http]
+----
+# 查询ua包含"Mac"并且包含"Firefox"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "match": {
+      "ua": {
+        "query": "Mac Firefox",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+----
+
+=== match_phrase
+
+[source,http]
+----
+# 查询ua包含"Mac Firefox"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "match_phrase": {
+      "ua": {
+        "query": "Mac Firefox"
+      }
+    }
+  }
+}
+----
 
 == 聚合查询
 
 Elasticsearch聚合查询分为4种:
 
-* Metric
-* Bucket
-* Pipeline
-* Matrix
+* Metric: 对文档字段进行数学运算或统计分析.
+* Bucket: 将文档按照条件分组.
+* Pipeline: 对聚合结果进行二次聚合.
+* Matrix: 对多个字段操作, 结果作为矩阵形式.
 
-=== Metrics
+=== Metric
 
 ==== avg
 
@@ -514,4 +676,91 @@ GET /page_view_info/_search
 ----
 
 ==== top_hits
+
+=== Bucket
+
+==== range
+
+[source,http]
+----
+# lengthOfStay按[2,2-60,60-120,120]分组
+GET /page_view_info/_search
+{
+  "size":0,
+  "aggs": {
+    "st": {
+      "range": {
+        "field": "lengthOfStay",
+        "ranges": [
+          {
+            "to": 2
+          },
+          {
+            "from": 2,
+            "to": 60
+          },
+          {
+            "from": 60,
+            "to": 120
+          },
+          {
+            "from": 120
+          }
+        ]
+      }
+    }
+  }
+}
+----
+
+==== histogram
+
+[source]
+----
+# accessDepth直方图
+GET /page_view_info/_search
+{
+  "size":0,
+  "aggs": {
+    "st": {
+      "histogram": {
+        "field": "accessDepth",
+        "interval": 10
+      }
+    }
+  }
+}
+----
+
+=== Pipeline
+
+==== max_bucket
+
+[source]
+----
+# 找到pv最多的companyId
+GET /page_view_info/_search
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "companyId"
+      },
+      "aggs": {
+        "pv": {
+          "cardinality": {
+            "field": "id"
+          }
+        }
+      }
+    },
+    "maxPvCompany": {
+      "max_bucket": {
+        "buckets_path": "company>pv"
+      }
+    }
+  }
+}
+----
 
