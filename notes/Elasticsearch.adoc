@@ -677,9 +677,61 @@ GET /page_view_info/_search
 
 ==== top_hits
 
+> 分组后排序/取前几条记录
+
+[source,http]
+----
+.查看每个落地页最近10条PV
+GET /page_view_info/_search
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "landingPageId"
+      },
+      "aggs": {
+        "topPV": {
+          "top_hits": {
+            "_source": ["pid"],
+            "sort": [{
+              "createdAt": {
+                "order": "desc"
+              }
+            }],
+            "size": 10
+          }
+        }
+      }
+    }
+  }
+}
+----
+
 === Bucket
 
+==== term
+
+> 将文档按照指定field分组
+
+[source,http]
+----
+GET /page_view_info/_search
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "landingPageId"
+      }
+    }
+  }
+}
+----
+
 ==== range
+
+> 将文档按照范围分组
 
 [source,http]
 ----
@@ -714,6 +766,8 @@ GET /page_view_info/_search
 ----
 
 ==== histogram
+
+> 将文档按照一定的间隔大小分组
 
 [source]
 ----
