@@ -399,7 +399,7 @@ GET /page_view_info/_search
 
 === query_string
 
-[source]
+[source,http]
 ----
 # 查询ua或os字段包含"Mac"的文档
 GET /page_view_info/_search
@@ -769,7 +769,7 @@ GET /page_view_info/_search
 
 > 将文档按照一定的间隔大小分组
 
-[source]
+[source,http]
 ----
 # accessDepth直方图
 GET /page_view_info/_search
@@ -786,11 +786,161 @@ GET /page_view_info/_search
 }
 ----
 
+==== filter
+
+> 为某一聚合查询添加过滤条件
+
+[source,http]
+----
+GET /sales/_search?size=0
+{
+    "aggs" : {
+        "t_shirts" : {
+            "filter" : { "term": { "type": "t-shirt" } },
+            "aggs" : {
+                "avg_price" : { "avg" : { "field" : "price" } }
+            }
+        }
+    }
+}
+----
+
+==== filters
+
+> 根据条件分组
+
+[source,http]
+----
+#分别查看公司759和790的PV数量
+GET /page_view_info/_search?size=0
+{
+  "aggs": {
+    "landingPages": {
+      "filters": {
+        "filters": {
+          "c759": {
+            "bool": {
+              "filter": {
+                "term": {
+                  "companyId": {
+                    "value": 759
+                  }
+                }
+              }
+            }
+          },
+          "c790": {
+            "bool": {
+              "filter": {
+                "term": {
+                  "companyId": {
+                    "value": 790
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+==== global
+
+> 使该聚合查询忽略query查询条件
+
+[source,http]
+----
+#统计759和所有公司的pv
+GET /page_view_info/_search?size=0
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "companyId": {
+              "value": 759
+            }
+          }
+        },
+        {
+          "range": {
+            "createdAt": {
+              "gte": "now/d-60d"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "pv": {
+      "value_count": {
+        "field": "pid"
+      }
+    },
+    "all_pv": {
+      "global": {},
+      "aggs": {
+        "all_pv": {
+          "value_count": {
+            "field": "pid"
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+==== missing
+
+> 统计没有指定字段的文档数量
+
+[source,http]
+----
+# 统计没有clickId的文档数量
+GET /page_view_info/_search?size=0
+{
+  "aggs": {
+    "missPV": {
+      "missing": {
+        "field": "clickId"
+      }
+    }
+  }
+}
+----
+
+==== nested
+
+> 聚合JSON子字段
+
+[source,http]
+----
+GET /products/_search
+{
+    "aggs" : {
+        "resellers" : {
+            "nested" : {
+                "path" : "resellers"
+            },
+            "aggs" : {
+                "min_price" : { "min" : { "field" : "resellers.price" } }
+            }
+        }
+    }
+}
+----
+
 === Pipeline
 
 ==== max_bucket
 
-[source]
+[source,http]
 ----
 # 找到pv最多的companyId
 GET /page_view_info/_search
@@ -817,4 +967,3 @@ GET /page_view_info/_search
   }
 }
 ----
-
