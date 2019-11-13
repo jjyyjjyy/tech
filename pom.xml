@@ -24,15 +24,16 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.1.8.RELEASE</spring-boot.version>
-        <spring-cloud.version>Greenwich.SR2</spring-cloud.version>
-        <project-reactor.version>Californium-SR9</project-reactor.version>
+        <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
+        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
+        <project-reactor.version>Dysprosium-SR1</project-reactor.version>
 
-        <jmh.version>1.21</jmh.version>
-        <junit.version>5.5.0</junit.version>
+        <jmh.version>1.22</jmh.version>
+        <junit.version>5.5.2</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>8.2</nimbus-jose-jwt.version>
 
+        <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
@@ -98,7 +99,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${maven-complier-plugin.version}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
