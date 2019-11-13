@@ -186,7 +186,48 @@ TCP MSS = MTU - IP header头大小 - TCP 头大小 (stem:[1500-20-20=1460])
 . [S]服务端收到ACK包断开连接. `CLOSED`
 . [C]客户端经过两个MSL后断开连接. `CLOSED`
 
+[qanda]
+TIME-WAIT 状态存在的意义?::
+* 保证上一个连接的包不会因为网络慢发送到一个连接里.
+* 可以收到对方的第二个 `FIN` 包.
+* 如果主动断开方重用端口, 进行三次握手发送SYN包, 对方( `LAST_ACK` )立即会返回 `RST` 包导致三次握手失败.
+为什么是两个MSL?::
+* 1个MSL保证 `ACK` 包能发送到对方.
+* 1个MSL保证对方如果没有收到 `ACK` 包, 那么可以收到对方重传的 `FIN` 包.
+
+=== TCP timestamp option header
+
+TCP时间戳选项首部由四部分组成:
+
+* Kind: 时间戳类别固定为8
+* Length: 固定为10
+* TS value
+* TS echo reply
+
+. 三次握手SYN包将时间戳写在 `TS value` 字段上.
+.
+
 === TCP Fast Open
+
+=== SO_REUSEADDR
+
+TCP四次挥手后, 主动断开连接的一方会进入 `TIME_WAIT` 状态, 等待两个MSL后才最终释放这个连接, 此时进程虽然结束, 但是不能在 `TIME_WAIT` 状态下继续使用该端口.
+`SO_REUSEADDR` 设置为1后即使在 `TIME_WAIT` 状态下也可以复用该端口.
+
+=== SO_LINGER
+
+[source,c]
+----
+struct linger {
+    int l_onoff;    /* linger active */
+    int l_linger;   /* how many seconds to linger for */
+};
+----
+
+* `l_onoff` 为0时表示禁用该特性, close函数会立即返回，操作系统负责把缓冲队列中的数据全部发送至对方.
+* `l_onoff` 为非0时表示启用该特性.
+** `l_linger` 为0, close函数会立即返回，不执行正常的四次挥手, 操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
+** `l_linger` 为非0, 那么此时close函数在l_linger时间内发送数据, 之后操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
 
 == Appendix
 

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -20,10 +21,14 @@ public class BioServer {
 
     @SneakyThrows
     public static void main(String[] args) {
-        @Cleanup ServerSocket serverSocket = new ServerSocket(9000);
-        @Cleanup Socket socket = serverSocket.accept();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        System.out.println(bufferedReader.readLine());
-        socket.getOutputStream().write("Thank you!".getBytes());
+        @Cleanup ServerSocket serverSocket = new ServerSocket();
+//        serverSocket.setReuseAddress(false);
+        serverSocket.bind(new InetSocketAddress(9000));
+        while (true) {
+            @Cleanup Socket socket = serverSocket.accept();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            System.out.println(bufferedReader.readLine());
+            socket.getOutputStream().write("Thank you!".getBytes());
+        }
     }
 }
