@@ -81,7 +81,8 @@
 * RARP 0x80length > 1500 ? Ethernet2 : 802.3
 
 === ARP帧格式
-`ARP提供网络层地址到硬件地址的映射`
+
+ARP提供网络层地址到硬件地址的映射
 
 . 目标地址(1.1.1.1)
 . 源地址
@@ -97,7 +98,8 @@
 . 接收方IP地址
 
 == IP
-`IP提供了一种尽力而为,无连接的数据包交付服务.`
+
+IP提供了一种尽力而为,无连接的数据包交付服务.
 
 . 版本(0x0100/0x0110)
 . 首部长度(一般为0101)
@@ -171,7 +173,7 @@ TCP MSS = MTU - IP header头大小 - TCP 头大小 (stem:[1500-20-20=1460])
 === 三次握手
 
 . [C]客户端发送SYN包. `SYN-SENT`
-. [S]服务端接收到后加一作为ACK包, 然后自己生成一个SYN包一起发送. `SYN-RCVD`
+. [S]服务端接收到后加一作为ACK包, 然后自己生成一个SYN包一起发送. `SYN-RECV`
 .. 服务端此时会将这个连接信息放入 _半连接队列_ `(SYN 队列)` .
 . [C]客户端接收到服务端的SYN包加一, 作为ACK包发送给服务端. `ESTABLISHED`
 .. 服务端收到客户端的ACK包后会将这个连接信息移动到 _全连接队列_ `(Accept队列)` . 此时socket处于 `ESTABLISHED` 状态,每次调用 `accept` 函数会移除队列头的连接. 如果队列为空, 则会阻塞 `accept` 函数.
@@ -205,7 +207,8 @@ TCP时间戳选项首部由四部分组成:
 * TS echo reply
 
 . 三次握手SYN包将时间戳写在 `TS value` 字段上.
-.
+. 服务端收到SYN包后, 将收到的 `TS value` 写到 `TS echo reply` 字段上, 然后生成自己的时间戳写到 `TS value` 字段上.
+. 以此往复.
 
 === TCP Fast Open
 
@@ -228,6 +231,102 @@ struct linger {
 * `l_onoff` 为非0时表示启用该特性.
 ** `l_linger` 为0, close函数会立即返回，不执行正常的四次挥手, 操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
 ** `l_linger` 为非0, 那么此时close函数在l_linger时间内发送数据, 之后操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
+
+== 网络查看命令行工具
+
+=== netstat
+
+_netstat_ 能够查看所有已连接的TCP/UDP网络连接, 网络协议分析, 端口分析, 查看路由表等.
+
+==== 安装
+
+[source,bash]
+----
+sudo apt install net-tools
+----
+
+==== 命令选项
+
+* `-l` 显示所有正在 `listen` 的socket
+* `-a` 显示所有的socket
+* `-r` 显示路由表
+* `-i` 显示所有接口
+* `-g` 显示所有广播组
+* `-s` 显示网络使用情况
+* `-M` 显示所有伪装的链接
+* `-v` 显示详细信息
+* `-W` 显示时不截断ip地址
+* `-n` 不解析主机名
+* `-e` 显示更多信息
+* `-p` 显示socket的进程id
+* `-o` 显示所有的定时器
+* `-F` 显示转发信息
+* `-C` 显示路由缓存
+
+==== 命令示例
+
+[source,bash]
+----
+# 查看端口占用的进程
+sudo netstat -lnp | grep 22| awk '{print $NF}'
+
+# 查看IPv4监听的端口列表
+sudo netstat -vutlnp --listening -4
+
+# 查看tcp使用情况分析
+sudo netstat -st
+
+# 查看所有监听的unix socket
+sudo netstat -lx
+
+----
+
+=== ss
+
+ss相比于netstat还能够查看更多socket信息.
+
+==== 安装
+
+[source,bash]
+----
+sudo apt install iproute2 iproute2-doc
+----
+
+==== 命令选项
+
+* `-n` 不解析服务名称
+* `-r` 解析主机
+* `-l` 显示所有监听中的socket
+* `-o` 显示所有的定时器
+* `-e` 显示socket详细信息
+* `-m` 显示socket内存使用
+* `-p` 显示socket所属的进程
+* `-s` 显示socket使用概况
+* `-4` 仅显示 IPv4 socket
+* `-6` 仅显示 IPv6 socket
+* `–0` 显示 PACKET sockets
+* `-t` 显示 TCP sockets
+* `-S` 显示 SCTP sockets
+* `-u` 显示 UDP sockets
+* `-w` 显示 RAW sockets
+* `-x` 显示 Unix domain sockets
+* `-f` 显示指定FAMILY_TYPE的sockets, 支持 unix, inet, inet6, link, netlink
+* `-tun` 不解析主机名
+
+==== 命令示例
+
+[source,bash]
+----
+# 查看指定目标地址/端口的连接
+ss dst 192.168.0.2
+
+# 查看指定状态的socket
+ss state ESTABLISHED
+
+# 查看port小于1024的socket
+ss -n sport \< 1024
+
+----
 
 == Appendix
 
