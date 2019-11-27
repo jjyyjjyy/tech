@@ -14,7 +14,6 @@ image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 * link:DesignPattern.html[DesignPattern]
 * link:Spring.html[Spring]
 * link:Spring-Boot-Seq.html[Spring-Boot]
-* link:RabbitMQ.html[Spring-AMQP]
 * link:Mockito.html[Mockito]
 
 .Math
@@ -32,16 +31,17 @@ image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 * link:Ubuntu.html[Ubuntu]
 * link:Vagrant.html[Vagrant]
 * link:Kubernetes.html[Kubernetes]
+* link:RabbitMQ.html[Spring-AMQP]
 
 .DB
 * link:PostgreSQL.html[PostgreSQL]
 * link:Redis.html[Redis]
 * link:Elasticsearch.html[Elasticsearch]
 * link:MySQL.html[MySQL]
+* link:Prometheus.html[Prometheus]
 
 .Other
-* link:JetBrains.html[JetBrains IDE tips]
-* link:CSS.html[CSS]
 * link:Vue.html[Vue]
-* link:ReadingList.html[ReadingList]
-* link:sketch.html[Sketches]
+* link:CSS.html[CSS]
+* link:JetBrains.html[JetBrains IDE tips]
+* link:Sketch.html[Sketches]
