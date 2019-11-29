@@ -1,0 +1,94 @@
+= rrweb
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:tabsize: 4
+
+== 页面加载
+
+=== load回调
+
+* document的 `DOMContentLoaded` 事件
+* window的 `onload` 函数
+
+浏览器下载完整HTML文档后, 开始从上到下解析.
+解析完之后会生成DOM. 如果页面中有CSS, 则会根据CSS的内容形成CSSOM, 然后CSSOM和DOM会生成一颗渲染树.
+最后浏览器将渲染树绘制在页面上.
+JS脚本会阻塞HTML文档的解析, 而脚本需要等位于前面的CSS文件加载完才能执行.
+当HTML/CSS/JS解析并执行完后, 会触发 document 的 `DOMContentLoaded` 事件.
+页面上的视频/音频/图片等外部资源加载完之后, 会回调 window 的 `onload` 函数.
+JQuery的 `ready` 函数监听的就是 document的 `DOMContentLoaded` 事件, `onload` 函数回调的就是 `window.onload` 函数.
+
+但现代浏览器尝试尽快在屏幕上渲染页面内容, 如果将JS放在前面, 则会延迟浏览器的 _first_paint_ , 所以应该尽量将 `script` 标签放在body最后.
+
+=== document.readyState
+
+* `loading` : document正在被加载并解析, 此时CSS等外部资源还未被处理.
+* `interactive` : document已经被加载并解析结束, CSS等资源正在被解析. document 的 `DOMContentLoaded` 事件被触发.
+* `complete` : 所有资源加载并解析完毕, `window.onload` 函数被触发.
+
+== Node 属性
+
+=== nodeType
+
+|===
+| 常量名 | 常量值 | 节点类型 | 描述
+
+| Node.ELEMENT_NODE
+| 1
+| Element
+| 代表元素
+
+| Node.TEXT_NODE
+| 3
+| Text
+| 代表元素或属性中的文本内容
+
+| Node.CDATA_SECTION_NODE
+| 4
+| CDATASection
+| 代表文档中的 CDATA 部（不会由解析器解析的文本）
+
+| Node.PROCESSING_INSTRUCTION_NODE
+| 7
+| ProcessingInstruction
+| 代表处理指令
+
+| Node.COMMENT_NODE
+| 8
+| Comment
+| 代表注释
+
+| Node.DOCUMENT_NODE
+| 9
+| Document
+| 代表整个文档（DOM 树的根节点）
+
+| Node.DOCUMENT_TYPE_NODE
+| 10
+| DocumentType
+| 向为文档定义的实体提供接口
+
+| Node.DOCUMENT_FRAGMENT_NODE
+| 11
+| DocumentFragment
+| 代表轻量级的 Document 对象（文档的某个部分）
+
+|===
+
+=== nodeName
+
+* 元素节点的 nodeName 是标签名称（大写）
+* 属性节点的 nodeName 是属性名称
+* 文本节点的 nodeName 永远是 `#text`
+* 文档节点的 nodeName 永远是 `#document`
+
+=== nodeValue
+
+* 对于文本节点，nodeValue 属性包含文本
+* 对于属性节点，nodeValue 属性包含属性值
+* 文档节点和元素节点，nodeValue 属性的值始终为 null
