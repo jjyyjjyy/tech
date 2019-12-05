@@ -16,7 +16,7 @@ class SortTests {
 
         return Stream.of(Sorts.class.getDeclaredClasses()).map(c -> {
             try {
-                return (SortTemplate) c.newInstance();
+                return (SortTemplate) c.getConstructor().newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

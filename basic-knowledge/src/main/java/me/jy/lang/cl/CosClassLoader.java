@@ -20,7 +20,7 @@ public class CosClassLoader extends ClassLoader {
 
     public static void main(String[] args) throws Exception {
         ClassLoader classLoader = new CosClassLoader(CosClassLoader.class.getClassLoader());
-        classLoader.loadClass("HelloWorld").newInstance();
+        classLoader.loadClass("HelloWorld").getConstructor().newInstance();
     }
 
     /**

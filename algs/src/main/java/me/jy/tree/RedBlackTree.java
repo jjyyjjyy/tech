@@ -13,6 +13,7 @@ import java.util.Set;
  *
  * @author jy
  */
+@SuppressWarnings("unchecked")
 public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
 
     private RBEntry<K, V> root;

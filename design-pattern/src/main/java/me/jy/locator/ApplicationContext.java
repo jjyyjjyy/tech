@@ -11,7 +11,7 @@ public class ApplicationContext {
     public <T> T lookup(String serviceName, Class<T> type) {
         String packagePrefix = getClass().getPackage().getName();
         try {
-            return type.cast(Class.forName(packagePrefix + PACKAGE_SEPARATOR + serviceName).newInstance());
+            return type.cast(Class.forName(packagePrefix + PACKAGE_SEPARATOR + serviceName).getConstructor().newInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }

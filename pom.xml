@@ -7,7 +7,7 @@
     <groupId>me.jy.java</groupId>
     <artifactId>tech</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <modules>
         <module>basic-knowledge</module>
@@ -19,19 +19,20 @@
     </modules>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>13</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
-        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
-        <project-reactor.version>Dysprosium-SR1</project-reactor.version>
+        <spring-boot.version>2.2.1.RELEASE</spring-boot.version>
+        <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+        <project-reactor.version>Dysprosium-SR2</project-reactor.version>
 
+        <algs4.version>1.0.4</algs4.version>
         <jmh.version>1.22</jmh.version>
         <junit.version>5.5.2</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>8.2</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>8.2.1</nimbus-jose-jwt.version>
         <netty.version>4.1.43.Final</netty.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
@@ -83,6 +84,11 @@
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
             </dependency>
+            <dependency>
+                <groupId>edu.princeton.cs</groupId>
+                <artifactId>algs4</artifactId>
+                <version>${algs4.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -98,6 +104,26 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
