@@ -1,17 +1,15 @@
 package me.jy.lang;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author jy
- * @date 2017/12/19
  */
 public class EqualsTests {
 
@@ -28,7 +26,7 @@ public class EqualsTests {
     public void testLong() {
         Long a = 127L;
         Long b = 127L;
-        Assert.assertTrue(a == b);
+        assertTrue(a == b);
     }
 
     @Test

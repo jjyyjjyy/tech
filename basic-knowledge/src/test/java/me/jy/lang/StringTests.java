@@ -1,7 +1,9 @@
 package me.jy.lang;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * @author jy
@@ -13,8 +15,8 @@ public class StringTests {
         String s1 = new StringBuilder("js").append("nb").toString();
         String s2 = new StringBuilder("js").append("nb").toString();
 
-        Assert.assertSame(s1, s1.intern());
-        Assert.assertNotSame(s2, s2.intern());
+        assertSame(s1, s1.intern());
+        assertNotSame(s2, s2.intern());
 
     }
 

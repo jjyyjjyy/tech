@@ -1,9 +1,8 @@
 package me.jy.mockito;
 // tag::demo[]
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -13,8 +12,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -26,7 +24,7 @@ public class MockitoScratches {
     @Mock
     private List<String> mockedList;
 
-    @Before
+    @BeforeEach
     public void initMock() {
         mockedList = mock(List.class); // option 1
 //        MockitoAnnotations.initMocks(this); // option 2 with @Mock
@@ -49,7 +47,7 @@ public class MockitoScratches {
 //        mockedList.get(1); // A RuntimeException occurs
 
         // By default, for all methods that return a value, a mock will return either null, a primitive value, or an empty collection
-        Assert.assertNull(mockedList.get(333)); // <2>
+        assertNull(mockedList.get(333)); // <2>
 
         when(mockedList.get(anyInt())).thenReturn("a");
         // last one wins
@@ -109,7 +107,7 @@ public class MockitoScratches {
         verifyNoInteractions(secondMockedList); // <5>
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testStubException() {
 
         // Stub void method
@@ -119,13 +117,15 @@ public class MockitoScratches {
         doReturn("a").when(mockedList).get(anyInt());
         assertEquals("a", mockedList.get(-1));
 
-        // Stub void method with exceptions
-        doThrow(RuntimeException.class).when(mockedList).clear(); // <1>
-        mockedList.clear();
+        assertThrows(RuntimeException.class, () -> {
+            // Stub void method with exceptions
+            doThrow(RuntimeException.class).when(mockedList).clear(); // <1>
+            mockedList.clear();
+        });
 
     }
 
-    @Test(expected = VerificationInOrderFailure.class)
+    @Test
     public void testIsInOrder() {
 
         mockedList.add("a");
@@ -133,12 +133,14 @@ public class MockitoScratches {
 
         InOrder inOrder = inOrder(mockedList);
 
-        // verify the order of invocation
-        inOrder.verify(mockedList).add("b"); // <1>
-        inOrder.verify(mockedList).add("a");
+        assertThrows(VerificationInOrderFailure.class, () -> {
+            // verify the order of invocation
+            inOrder.verify(mockedList).add("b"); // <1>
+            inOrder.verify(mockedList).add("a");
+        });
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testStubConsecutiveCall() {
 
         // Stub consecutive call
@@ -148,7 +150,9 @@ public class MockitoScratches {
 
         assertEquals("a", mockedList.get(1));
         assertEquals("b", mockedList.get(1));
-        mockedList.get(1); // Exception occurs
+        assertThrows(RuntimeException.class, () -> {
+            mockedList.get(1); // Exception occurs
+        });
     }
 
     @Test

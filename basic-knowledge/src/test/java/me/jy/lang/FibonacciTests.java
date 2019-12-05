@@ -1,10 +1,11 @@
 package me.jy.lang;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author jy
@@ -37,7 +38,7 @@ public class FibonacciTests {
         return (int) ((1 / SQRT5) * (Math.pow(FACTOR1, n) - Math.pow(FACTOR2, n)));
     }
 
-    @Test(expected = StackOverflowError.class)
+    @Test
     public void testCal1() {
         assertEquals(1, cal1(1));
         assertEquals(1, cal1(2));
@@ -46,7 +47,9 @@ public class FibonacciTests {
         assertEquals(5, cal1(5));
         assertEquals(8, cal1(6));
         assertEquals(13, cal1(7));
-        assertEquals(1836311903, cal1(100_000));
+        Assertions.assertThrows(StackOverflowError.class, () -> {
+            assertEquals(1836311903, cal1(100_000));
+        }, "stack overflow");
     }
 
     @Test

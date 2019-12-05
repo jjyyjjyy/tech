@@ -1,13 +1,12 @@
 package me.jy.list;
 
 import lombok.Data;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 /**
  * @author jy
- * @date 2018/02/26
  */
 public class RoleTest {
 
@@ -29,17 +28,17 @@ public class RoleTest {
     }
 
     @Test
-    public void testGetAllRoles() {
+    void testGetAllRoles() {
         Map<String, List<String>> result = new HashMap<>();
         ROLES.forEach(n -> result.put(n.getName(), n.getChildren()));
 
         Set<String> upRoles = result.keySet();
         upRoles
-                .forEach(upRole -> {
-                    List<String> subRoles = new ArrayList<>();
-                    addReachableRole(result, upRole, subRoles);
-                    result.put(upRole, subRoles);
-                });
+            .forEach(upRole -> {
+                List<String> subRoles = new ArrayList<>();
+                addReachableRole(result, upRole, subRoles);
+                result.put(upRole, subRoles);
+            });
 
         System.out.println(result);
     }

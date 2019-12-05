@@ -4,8 +4,8 @@ import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lombok.Data;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class DisruptorTests {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         disruptor = new Disruptor<>(TestEvent::new, 16, Executors.defaultThreadFactory(), ProducerType.SINGLE, new BlockingWaitStrategy());
 

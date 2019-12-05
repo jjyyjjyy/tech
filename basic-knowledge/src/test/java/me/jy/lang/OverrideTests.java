@@ -1,7 +1,7 @@
 package me.jy.lang;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author jy
@@ -18,7 +18,7 @@ public class OverrideTests {
 
     @Test
     public void testOverride() {
-        Assert.assertEquals("String", new OverrideTests().o("123"));
+        Assertions.assertEquals("String", new OverrideTests().o("123"));
 
     }
 

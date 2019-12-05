@@ -1,6 +1,6 @@
 package me.jy.juc;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -17,12 +17,12 @@ public class SynchronizedBenchmark {
 
 
     @Test
-    public void testSync() {
+    void testSync() {
         tes(Counter::addSync);
     }
 
     @Test
-    public void testLock() {
+    void testLock() {
         tes(Counter::addByLock);
     }
 

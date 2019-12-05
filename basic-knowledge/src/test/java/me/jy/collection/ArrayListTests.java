@@ -1,13 +1,13 @@
 package me.jy.collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * ArrayList:允许空元素,有序,允许重复元素,非线程安全
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 public class ArrayListTests {
 
     @Test
-    public void testToArray() {
+    void testToArray() {
         Object[] objects = Arrays.asList(1, 2, 3).toArray();
         assertEquals("Integer[]", objects.getClass().getSimpleName());
 
@@ -35,7 +35,7 @@ public class ArrayListTests {
     }
 
     @Test
-    public void testItrBug() {
+    void testItrBug() {
         List<Integer> demoList = Stream.of(1, 2, 3).collect(Collectors.toList());
         for (Integer element : demoList) {
             if (element == 2) {

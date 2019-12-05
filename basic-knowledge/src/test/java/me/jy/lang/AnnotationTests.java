@@ -1,17 +1,16 @@
 package me.jy.lang;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.lang.annotation.*;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author jy
- * @date 2017/11/06
  */
 @AnnotationTests.Miracle("hello")
 @AnnotationTests.Miracle("world")

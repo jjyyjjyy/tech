@@ -1,22 +1,27 @@
 package me.jy.lang;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import sun.misc.Unsafe;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author jy
  * @date 2017/12/05
  */
-public class LangTests {
+class LangTests {
 
-    // ~ Overload & Override test
-    // ========================================================================================================
+    int a = 1;
+    private byte foo;
+
+    public LangTests() {
+        a = 2;
+    }
 
     public Number testOverload(Number a) {
         return 0;
@@ -26,7 +31,7 @@ public class LangTests {
     }
 
     @Test
-    public void testClassLoader() {
+    void testClassLoader() {
         ClassLoader classLoader = getClass().getClassLoader();
         do {
             System.out.println(classLoader);
@@ -34,26 +39,9 @@ public class LangTests {
         } while (classLoader != null);
     }
 
-    private static class A {
-        Number a() {
-            return 0;
-        }
-    }
-
-    private static class B extends A {
-        @Override
-        Integer a() {
-            return 0;
-        }
-    }
-
-    // ~ switch test
-    // ========================================================================================================
-
     @Test
-    public void testSwitch() {
+    void testSwitch() {
 
-//        new Type(); enum types cannot be instantiated
         Type type = Type.A;
         switch (type) {
             case A:
@@ -89,22 +77,8 @@ public class LangTests {
         System.out.println(Math.round(-11.5));
     }
 
-
-    private enum Type {
-        A, B, C
-    }
-
-
-    int a = 1;
-
-    private byte foo;
-
-    public LangTests() {
-        a = 2;
-    }
-
     @Test
-    public void testChar() {
+    void testChar() {
         int c1 = -1;
         int c2 = 65535;
         char cc1 = (char) c1;
@@ -113,13 +87,13 @@ public class LangTests {
     }
 
     @Test
-    public void testInfinite() {
+    void testInfinite() {
         assertEquals(1 / 0.0F, Double.POSITIVE_INFINITY, 0);
         assertEquals(1 / -0.0F, Double.NEGATIVE_INFINITY, 0);
     }
 
     @Test
-    public void testUnsafe() {
+    void testUnsafe() {
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
@@ -134,17 +108,15 @@ public class LangTests {
             assertTrue(unsafe.getBoolean(t, foo));
         } catch (IllegalAccessException | NoSuchFieldException ignore) {
         }
-
-
     }
 
     @Test
-    public void testInit() {
+    void testInit() {
         assertEquals(2, new LangTests().a);
     }
 
     @Test
-    public void testStrReverse() {
+    void testStrReverse() {
         System.out.println(reverseStr("abcdefg"));
     }
 
@@ -156,7 +128,7 @@ public class LangTests {
     }
 
     @Test
-    public void testTCF() {
+    void testTCF() {
         assertEquals(3, tryTest1());
         assertEquals(2, tryTest2());
         assertEquals(1, tryTest3());
@@ -209,12 +181,6 @@ public class LangTests {
         }
     }
 
-    class Annoyance extends Exception {
-    }
-
-    class Sneeze extends Annoyance {
-    }
-
     public void testCascadeEx() {
         try {
             try {
@@ -231,9 +197,43 @@ public class LangTests {
     }
 
     @Test
-    public void testEx() {
+    void testEx() {
         testCascadeEx();
     }
 
+    @Test
+    void testOperator() {
+        boolean a = true;
+        int b = 0;
+        boolean c = a | b++ > 0;
+        assertEquals(1, b);
+
+        b = 0;
+        c = a || b++ > 0;
+        assertEquals(0, b);
+    }
+
+    private enum Type {
+        A, B, C
+    }
+
+    private static class A {
+        Number a() {
+            return 0;
+        }
+    }
+
+    private static class B extends A {
+        @Override
+        Integer a() {
+            return 0;
+        }
+    }
+
+    class Annoyance extends Exception {
+    }
+
+    class Sneeze extends Annoyance {
+    }
 
 }
