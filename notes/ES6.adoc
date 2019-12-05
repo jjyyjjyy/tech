@@ -1,0 +1,116 @@
+= ES6
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== 解构
+
+=== 对象解构
+
+[source,js]
+----
+const obj = {a: 1};
+const {a} = obj; // 1
+
+const person = {name: "han", age: 18, occupation: null};
+const {name, age, address, occupation = 'teacher'} = person; // han, 18, undefined, null
+const {name:n} = person;
+console.log(n)
+----
+
+=== 数组解构
+
+[source,js]
+----
+const arr = [1,2,3, undefined, null];
+const [a,b,c, d=9, e=10] = arr; // 1, 2, 3, 9, null
+
+let [f, g] = [11,22];
+[g, f] = [f,g]; // 22, 11
+----
+
+=== 字符串解构
+
+[source,js]
+----
+const str = '1uu';
+const [a, b] = str; // 1, u
+----
+
+== 字符串新增方法
+
+* codePointAt
+
+* includes
+* startsWith
+* endsWith
+* repeat
+* padStart
+* padEnd
+* trimStart
+* trimEnd
+* matchAll
+
+== 数组新增方法
+
+[source,js]
+----
+let arrayLike = {
+    '0': 'a',
+    length: 1
+};
+
+const es5Arr = [].slice.call(arrayLike);
+
+// from
+const arr = Array.from(arrayLike); // ["a"]
+
+// of
+const arrayOf = Array.of(1,2,3); // [1, 2, 3]
+
+// ... 扩展运算符
+const newArray = [...arrayOf, 4, 5]; // [1, 2, 3, 4, 5]
+
+newArray.includes(5); // true
+
+[[1,2],[3,4]].flat(); // 1, 2, 3, 4
+
+new Array(3).fill(6); // 6, 6, 6
+
+[1,2,3,4,5].find(item => item > 3); // 4
+
+----
+
+== 数据结构
+
+=== Set
+
+[source,js]
+----
+const s = new Set();
+
+----
+
+=== Map
+
+== Proxy
+
+== Reflect
+
+[source,js]
+----
+const person = {age: 18};
+Reflect.has(person, 'age'); // true
+Reflect.deleteProperty(person, 'name');
+
+----
+
