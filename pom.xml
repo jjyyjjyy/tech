@@ -28,6 +28,7 @@
         <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
         <project-reactor.version>Dysprosium-SR2</project-reactor.version>
 
+        <guava.version>28.1-jre</guava.version>
         <algs4.version>1.0.4</algs4.version>
         <jmh.version>1.22</jmh.version>
         <junit.version>5.5.2</junit.version>
@@ -68,6 +69,11 @@
                 <version>${junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lmax</groupId>
