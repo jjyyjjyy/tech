@@ -67,17 +67,17 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
         int newSize = this.tableSize << 1;
         List<Entry<K, V>>[] table = new LinkedList[newSize];
         entrySet()
-                .parallelStream()
-                .forEach(entry -> {
-                    int hashCode = entry.getKey().hashCode();
-                    int index = hashCode % newSize;
-                    List<Entry<K, V>> entryList = table[index];
-                    if (entryList == null) {
-                        entryList = new LinkedList<>();
-                        table[index] = entryList;
-                    }
-                    entryList.add(entry);
-                });
+            .parallelStream()
+            .forEach(entry -> {
+                int hashCode = entry.getKey().hashCode();
+                int index = hashCode % newSize;
+                List<Entry<K, V>> entryList = table[index];
+                if (entryList == null) {
+                    entryList = new LinkedList<>();
+                    table[index] = entryList;
+                }
+                entryList.add(entry);
+            });
 
         this.tableSize = newSize;
         this.table = table;
@@ -97,9 +97,9 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
             return null;
         }
         Optional<Entry<K, V>> first = entries
-                .parallelStream()
-                .filter(entry -> Objects.equals(entry.getKey(), key))
-                .findFirst();
+            .parallelStream()
+            .filter(entry -> Objects.equals(entry.getKey(), key))
+            .findFirst();
         return first.map(Entry::getValue).orElse(null);
 
     }
@@ -111,7 +111,7 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
             for (List<Entry<K, V>> entryList : table) {
                 if (entryList != null) {
                     entryList.stream().filter(Objects::nonNull)
-                            .forEach(cachedEntries::add);
+                        .forEach(cachedEntries::add);
                 }
             }
         }

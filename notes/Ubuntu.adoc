@@ -18,6 +18,7 @@
 sudo sed -i 's/cn.archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo apt autoremove -y
 ----
+
 == 执行sudo命令不需要密码
 
 [source,bash]
@@ -39,6 +40,7 @@ sudo apt install -y libdvdnav4 libdvdread4 gstreamer1.0-plugins-bad gstreamer1.0
 ----
 
 == 安装SS客户端
+
 [source,bash]
 ----
 # 安装Shadowsocks-qt5客户端,设置SOCKS5代理
@@ -68,6 +70,7 @@ export https_proxy="socks5://127.0.0.1:1080"
 ----
 
 == 美化字体/图标
+
 [source,bash]
 ----
 # 下载字体后安装
@@ -84,6 +87,7 @@ sudo apt install chrome-gnome-shell -y
 ----
 
 == 安装主题
+
 [source,bash]
 ----
 sudo apt install -y autoconf automake inkscape libgdk-pixbuf2.0-dev libglib2.0-dev libsass0 libxml2-utils pkg-config sassc parallel
@@ -120,6 +124,7 @@ include::sh/docker-install.sh[]
 ----
 
 == 安装zsh
+
 [source,bash]
 ----
 sudo apt install zsh -y
@@ -162,8 +167,8 @@ source ~/.zshrc
 # 设置终端字体为 Meslo LG s for Powerline Regular 12
 ----
 
-
 == 安装sdkman
+
 [source,bash]
 ----
 curl -s "https://get.sdkman.io" | zsh
@@ -171,6 +176,7 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 ----
 
 == 屏蔽百度广告
+
 [source,bash]
 ----
 sudo vim /etc/hosts

@@ -12,9 +12,11 @@
 :docinfo: shared
 
 == 文档:
+
 https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-reference.pdf
 
 == 初始化SpringApplication:
+
 . 构造SpringApplication实例:
 .. 确定ApplicationType: None-Web/Servlet/Reactive
 .. 获取META-INF/spring.factories中 `ApplicationContextInitializer` 并设置到成员变量中
@@ -39,57 +41,58 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 . ``SpringApplication#run``
 
 == 获取配置:
+
 . 从META-INF/spring.factories中获取SpringApplicationRunListener(EventPublishRunListener)。
 
 . 发布**ApplicationStartingEvent**:
 
-   * LoggingApplicationListener: 设置log system,默认logback。
-   * BackgroundPreInitializer: 触发内置bean的构造函数。
+* LoggingApplicationListener: 设置log system,默认logback。
+* BackgroundPreInitializer: 触发内置bean的构造函数。
 
 . 创建Environment对象(StandardServletEnvironment):
 
-   * 添加系统属性:
-     ** springApplicationCommandLineArgs(启动命令行参数)
-     ** servletConfigInitParams
-     ** servletContextInitParams
-     ** systemProperties
-     ** systemEnvironment
-     ** defaultProperties(SpringApplication#defaultProperties)
+* 添加系统属性:
+** springApplicationCommandLineArgs(启动命令行参数)
+** servletConfigInitParams
+** servletContextInitParams
+** systemProperties
+** systemEnvironment
+** defaultProperties(SpringApplication#defaultProperties)
 
 
-   - 根据命令行参数设置active profiles
+- 根据命令行参数设置active profiles
 
 . 发布**ApplicationEnvironmentPreparedEvent**:
 
-   * ConfigFileApplicationListener: 调用EnvironmentPostProcessor#postProcessEnvironment。
+* ConfigFileApplicationListener: 调用EnvironmentPostProcessor#postProcessEnvironment。
 
-     ** SystemEnvironmentPropertySourceEnvironmentPostProcessor:
+** SystemEnvironmentPropertySourceEnvironmentPostProcessor:
 
        把systemEnvironment包装成OriginAwareSystemEnvironmentPropertySource.
 
-     ** SpringApplicationJsonEnvironmentPostProcessor:
+** SpringApplicationJsonEnvironmentPostProcessor:
 
        解析spring.application.json中的配置, 比systemProperties优先级高
 
-     ** CloudFoundaryVcapEnvironmentPostProcessor:
+** CloudFoundaryVcapEnvironmentPostProcessor:
 
        设置vcap属性配置.
 
-     ** ConfigFileApplicationListener:
+** ConfigFileApplicationListener:
 
        从META-INF/spring.factories中获取ProperySourceLoader(properties/xml/yaml)并读取配置文件。Environment#propertySources中active profile在前,default profile在最后.
 
-   * AnsiOutputApplicationListener: 设置 `spring.output.ansi.enabled` 和 `spring.output.ansi.console-available`。
+* AnsiOutputApplicationListener: 设置 `spring.output.ansi.enabled` 和 `spring.output.ansi.console-available`。
 
-   * LoggingApplicationListener: 初始化Log properties/system。
+* LoggingApplicationListener: 初始化Log properties/system。
 
-   * ClassPathLoggingApplicationListener: 打印classpath日志。
+* ClassPathLoggingApplicationListener: 打印classpath日志。
 
-   * BackgroundPreinitializer
+* BackgroundPreinitializer
 
-   * DelegatingApplicationListener: 调用 `context.listener.classes` 中listener。
+* DelegatingApplicationListener: 调用 `context.listener.classes` 中listener。
 
-   * FileEncodingApplicationListener。
+* FileEncodingApplicationListener。
 
 . bindToSpringApplication: 包装Environment的propertySources为ConfigurationPropertySourcesPropertySource(名为configurationProperties)。
 
@@ -99,25 +102,25 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 
 . 根据ApplicationType创建对应的context:
 
-   * Servlet: ```AnnotationConfigServletWebServerApplicationContext```
-   * Reactive: ```AnnotationConfigReactiveWebServerApplicationContext```
-   * None-Web: ```AnnotationConfigApplicationContext```
+* Servlet: ```AnnotationConfigServletWebServerApplicationContext```
+* Reactive: ```AnnotationConfigReactiveWebServerApplicationContext```
+* None-Web: ```AnnotationConfigApplicationContext```
 
 . BeanUtils#instantiateClass。
 
 . 初始化AnnotatedBeanDefinitionReader:
 
-   .. 设置BeanFactory属性:
-      * AnnotationAwareOrderComparator
-      * ContextAnnotationAutowireCandidateResolver
-   .. 注册spring内置BeanFactoryPostProcessor:
-      * ConfigurationClassPostProcessor
-      * AutowiredAnnotationBeanPostProcessor
-      * RequiredAnnoationBeanPostProcessor
-      * CommonAnnotationBeanPostProcessor
-      * PersistenceAnnotationBeanPostProcessor
-      * EventListenerMethodProcessor
-      * DefaultEventListenerFactory
+.. 设置BeanFactory属性:
+* AnnotationAwareOrderComparator
+* ContextAnnotationAutowireCandidateResolver
+.. 注册spring内置BeanFactoryPostProcessor:
+* ConfigurationClassPostProcessor
+* AutowiredAnnotationBeanPostProcessor
+* RequiredAnnoationBeanPostProcessor
+* CommonAnnotationBeanPostProcessor
+* PersistenceAnnotationBeanPostProcessor
+* EventListenerMethodProcessor
+* DefaultEventListenerFactory
 
 . 初始化ClassPathBeanDefinitionReader:
 
@@ -125,12 +128,12 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 
 . 调用ApplicationContextInitializer#initialize:
 
-   * DelegatingApplicationContextInitializer: 调用 ```context.initializer.classes```#initialize。
-   * ContextIdApplicationContextInitializer: 设置ApplicationContext的Id为 ```spring.application.name || "application"```。
-   * ConfigurationWarningsApplicationContextInitializer: 注册 ```ConfigurationWarningsPostProcessor.```
-   * ServerPortInfoApplicationContextInitializer: 将自己添加到context的ApplicationListener中。
-   * SharedMetadataReaderFactoryContextInitializer: 注册```CachingMetadataReaderFactoryPostProcessor.```
-   * ConditionEvalutionReportLoggingListener: 添加 ```ConfidtionEvalutionReportListener ```。
+* DelegatingApplicationContextInitializer: 调用 ```context.initializer.classes```#initialize。
+* ContextIdApplicationContextInitializer: 设置ApplicationContext的Id为 ```spring.application.name || "application"```。
+* ConfigurationWarningsApplicationContextInitializer: 注册 ```ConfigurationWarningsPostProcessor.```
+* ServerPortInfoApplicationContextInitializer: 将自己添加到context的ApplicationListener中。
+* SharedMetadataReaderFactoryContextInitializer: 注册```CachingMetadataReaderFactoryPostProcessor.```
+* ConditionEvalutionReportLoggingListener: 添加 ```ConfidtionEvalutionReportListener ```。
 
 . 打印启动日志。
 
@@ -140,35 +143,35 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 
 . 发布**ApplicationPreparedEvent:**
 
-   * ConfigFileApplicationListener: 注册 ```PropertySourceOrderingPostProcessor.```
-   * LoggingApplicationListener: 注册 ```LoggingSystem.```
+* ConfigFileApplicationListener: 注册 ```PropertySourceOrderingPostProcessor.```
+* LoggingApplicationListener: 注册 ```LoggingSystem.```
 
 == Refresh Context:
 
 . prepareRefresh: 清空Scanner缓存。
 . prepareBeanFactory:
 
-   * 设置ClassLoader/SPEL/ResourceEditorRegistrar属性。
-   * 注册```ApplicationContextAwarePostProcessor/ApplicationListenerDetector```。
-   * 注册EnvironmentBean:
-     ** environment
-     ** systemEnvironment
-     ** systemProperties
+* 设置ClassLoader/SPEL/ResourceEditorRegistrar属性。
+* 注册```ApplicationContextAwarePostProcessor/ApplicationListenerDetector```。
+* 注册EnvironmentBean:
+** environment
+** systemEnvironment
+** systemProperties
 . postPrcoessBeanFactory: 注册```WebApplicationContextServletContextAwareProcessor```。
 . invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/noneOrdered顺序调用```BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&&postProcessBeanFactory```, 再按顺序调用```BeanFactoryPostProcessor#postProcessBeanFactory```。
 
-   * ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以org/org.springframework开头。
-   * CachingMetadataReaderFactoryPostProcessor:
-     ** 注册 ```SharedMetadataReaderFactoryBean```。
-     ** 设置ConfigurationClassPostProcessor的metadataReaderFactory为```SharedMetadataReaderFactoryBean```。
-   * ConfigurationClassPostProcessor:
-     ** 扫描并注册BeanDefinition。
-     ** 注册```ImportAwareBeanPostProcessor```。
-     ** 为Configuration类创建CGLIB代理。
-   * PropertySourceOrderingPostProcessor:将defaultProperties优先级调至最低。
-   * ProperttSourcesPlaceHolderConfigurer: 替换${...}。
-   * ConfigurationBeanMetaData: 获取所有的bean method。
-   * PreserverErrorControllerTargetClassPostProcessor: 设置basicErrorController为CGLIB代理。
+* ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以org/org.springframework开头。
+* CachingMetadataReaderFactoryPostProcessor:
+** 注册 ```SharedMetadataReaderFactoryBean```。
+** 设置ConfigurationClassPostProcessor的metadataReaderFactory为```SharedMetadataReaderFactoryBean```。
+* ConfigurationClassPostProcessor:
+** 扫描并注册BeanDefinition。
+** 注册```ImportAwareBeanPostProcessor```。
+** 为Configuration类创建CGLIB代理。
+* PropertySourceOrderingPostProcessor:将defaultProperties优先级调至最低。
+* ProperttSourcesPlaceHolderConfigurer: 替换${...}。
+* ConfigurationBeanMetaData: 获取所有的bean method。
+* PreserverErrorControllerTargetClassPostProcessor: 设置basicErrorController为CGLIB代理。
 . registerBeanPostProcessors: 设置beanPostProcessors属性。
 . initMessageSource: 注册messageSource bean为```DelegatingMessageSource```。
 . initApplicationEventMulticaster: 注册applicationEventMulticaster为 ```SimpleApplicationEventMulticaster```。
@@ -176,11 +179,11 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 . registerListeners: 设置```applicationEventMulticaster``` 的applicationListener(Bean)属性。
 . finishBeanFactoryInitialization: 初始化Singleton的BeanDefinition。
 . finishRefresh:
-    * 注册lifeCycleProcessor bean 为 ```DefaultLifeCycleProcessor```。
-    * 调用实现了SmartLifeCycle接口的bean的start方法。
-    * 发布**ContextRefreshedEvent**。
-    * start webServer。
-    * 发布**ServletWebServerInitializedEvent**。
+* 注册lifeCycleProcessor bean 为 ```DefaultLifeCycleProcessor```。
+* 调用实现了SmartLifeCycle接口的bean的start方法。
+* 发布**ContextRefreshedEvent**。
+* start webServer。
+* 发布**ServletWebServerInitializedEvent**。
 . reset cache。
 
 == 后置处理:
@@ -188,7 +191,6 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 . 发布**ApplicationStartedEvent**。
 . 调用```ApplicationRunner和CommandLineRunner```。
 . 发布**ApplicationReadyEvent**。
-
 
 == 属性配置优先级
 

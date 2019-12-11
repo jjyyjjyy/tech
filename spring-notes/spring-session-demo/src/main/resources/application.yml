@@ -1,11 +1,11 @@
 spring:
-    application:
-        name: session-demo
-    session:
-        store-type: redis
-        redis:
-            cleanup-cron: 0 0/30 * * * ?
+  application:
+    name: session-demo
+  session:
+    store-type: redis
+    redis:
+      cleanup-cron: 0 0/30 * * * ?
 logging:
-    level:
-        org.springframework.session: debug
-        org.springframework.test: debug
+  level:
+    org.springframework.session: debug
+    org.springframework.test: debug

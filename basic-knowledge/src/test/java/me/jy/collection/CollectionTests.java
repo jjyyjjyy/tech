@@ -19,11 +19,11 @@ public class CollectionTests {
     @Test
     public void testListRemove() {
         Iterator<Integer> arrayListItr = Stream.generate(() -> 1)
-                .limit(4 * 1_000_000)
-                .collect(Collectors.toCollection(ArrayList::new)).iterator();
+            .limit(4 * 1_000_000)
+            .collect(Collectors.toCollection(ArrayList::new)).iterator();
         Iterator<Integer> linkedListItr = Stream.generate(() -> 1)
-                .limit(4 * 1_000_000)
-                .collect(Collectors.toCollection(LinkedList::new)).iterator();
+            .limit(4 * 1_000_000)
+            .collect(Collectors.toCollection(LinkedList::new)).iterator();
 
         LocalDateTime start1 = LocalDateTime.now();
         while (arrayListItr.hasNext()) {

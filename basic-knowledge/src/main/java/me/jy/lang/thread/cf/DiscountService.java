@@ -27,9 +27,9 @@ class DiscountService {
     static double getDiscountPrice(Quote quote) {
         delay();
         return BigDecimal
-                .valueOf(quote.getDiscount() * quote.getPrice())
-                .setScale(2, RoundingMode.HALF_DOWN)
-                .doubleValue();
+            .valueOf(quote.getDiscount() * quote.getPrice())
+            .setScale(2, RoundingMode.HALF_DOWN)
+            .doubleValue();
     }
 
     private static void delay() {

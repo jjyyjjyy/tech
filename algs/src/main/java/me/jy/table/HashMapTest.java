@@ -16,14 +16,14 @@ public class HashMapTest {
         ExecutorService pool = Executors.newFixedThreadPool(10);
         for (int i = 0; i < 10; i++) {
             pool
-                    .execute(() -> {
-                        for (int j = 0; j < 200; j++) {
-                            MAP.put(j, j);
-                            if (!MAP.containsKey(0)) {
-                                System.out.println("err!");
-                            }
+                .execute(() -> {
+                    for (int j = 0; j < 200; j++) {
+                        MAP.put(j, j);
+                        if (!MAP.containsKey(0)) {
+                            System.out.println("err!");
                         }
-                    });
+                    }
+                });
         }
 
         pool.shutdown();

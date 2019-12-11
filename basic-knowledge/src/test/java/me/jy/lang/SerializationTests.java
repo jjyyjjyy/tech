@@ -52,7 +52,7 @@ public class SerializationTests implements Serializable {
         }
 
         private void readObject(ObjectInputStream in) throws IOException,
-                ClassNotFoundException {
+            ClassNotFoundException {
             // called when deserialize
 //            throw new InvalidObjectException("readObject - can't deserialize Shaker");
         }

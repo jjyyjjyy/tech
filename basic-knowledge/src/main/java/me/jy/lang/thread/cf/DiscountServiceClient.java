@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 public class DiscountServiceClient {
 
     private static final List<DiscountShop> DISCOUNT_SHOPS = Stream.of("OPPO", "XIAO_MI", "IPHONE", "NOKIA", "HUA_WEI", "CHUI_ZI", "MEI_ZU", "ASUS", "INTEL")
-            .map(DiscountShop::new).collect(Collectors.toList());
+        .map(DiscountShop::new).collect(Collectors.toList());
 
     private static final ExecutorService THREAD_POOL = Executors.newFixedThreadPool(Math.min(DISCOUNT_SHOPS.size(), 20), r -> {
         Thread thread = new Thread(r);
@@ -27,25 +27,25 @@ public class DiscountServiceClient {
 
     private static void getPricesSync() {
         DISCOUNT_SHOPS
-                .stream()
-                .map(DiscountShop::getPrice)
-                .map(Quote::parse)
-                .map(DiscountService::getDiscountPrice)
-                .forEach(System.out::println);
+            .stream()
+            .map(DiscountShop::getPrice)
+            .map(Quote::parse)
+            .map(DiscountService::getDiscountPrice)
+            .forEach(System.out::println);
     }
 
     private static void getPricesCF() {
         List<CompletableFuture<Double>> futureList =
-                DISCOUNT_SHOPS
-                        .stream()
-                        .map(shop -> CompletableFuture.supplyAsync(shop::getPrice, THREAD_POOL))
-                        .map(future -> future.thenApply(Quote::parse))
-                        .map(future -> future.thenCompose(quote -> CompletableFuture.supplyAsync(() -> DiscountService.getDiscountPrice(quote), THREAD_POOL)))
-                        .collect(Collectors.toList());
-        futureList
+            DISCOUNT_SHOPS
                 .stream()
-                .map(CompletableFuture::join)
-                .forEach(System.out::println);
+                .map(shop -> CompletableFuture.supplyAsync(shop::getPrice, THREAD_POOL))
+                .map(future -> future.thenApply(Quote::parse))
+                .map(future -> future.thenCompose(quote -> CompletableFuture.supplyAsync(() -> DiscountService.getDiscountPrice(quote), THREAD_POOL)))
+                .collect(Collectors.toList());
+        futureList
+            .stream()
+            .map(CompletableFuture::join)
+            .forEach(System.out::println);
     }
 
     public static void main(String[] args) {

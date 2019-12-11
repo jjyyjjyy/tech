@@ -27,29 +27,29 @@ public class ThreadDemo2 {
 
     public static void main(String[] args) throws Exception {
         Stream.generate(() -> 1)
-                .limit(20000)
-                .forEach(a -> { //TODO: make race condition
-                    Thread th1 = new Thread(() -> {
-                        value = 22;
-                        flag = true;
-                    });
-                    Thread th2 = new Thread(() -> {
-                        if (flag) {
-                            System.out.println("the value is :" + value);
-                        } else {
-                            System.out.println("flag is false");
-                        }
-                    });
-                    try {
-                        th1.start();
-                        Thread.sleep(10);
-                        th2.start();
-                        th1.join();
-                        th2.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+            .limit(20000)
+            .forEach(a -> { //TODO: make race condition
+                Thread th1 = new Thread(() -> {
+                    value = 22;
+                    flag = true;
+                });
+                Thread th2 = new Thread(() -> {
+                    if (flag) {
+                        System.out.println("the value is :" + value);
+                    } else {
+                        System.out.println("flag is false");
                     }
                 });
+                try {
+                    th1.start();
+                    Thread.sleep(10);
+                    th2.start();
+                    th1.join();
+                    th2.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
 
     }
 

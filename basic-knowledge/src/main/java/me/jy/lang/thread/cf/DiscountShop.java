@@ -16,8 +16,8 @@ public class DiscountShop {
 
     String getPrice() {
         return String.join(":", getName(),
-                "" + getPriceInternal(),
-                "" + DiscountService.Code.values()[ThreadLocalRandom.current().nextInt(5)].getPercentage());
+            "" + getPriceInternal(),
+            "" + DiscountService.Code.values()[ThreadLocalRandom.current().nextInt(5)].getPercentage());
     }
 
     public String getName() {

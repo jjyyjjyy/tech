@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public class ApiClient {
 
     private static final List<Shop> SHOPS = Stream.of("OPPO", "XIAO_MI", "IPHONE", "NOKIA", "HUA_WEI", "CHUI_ZI", "MEI_ZU", "ASUS", "INTEL")
-            .map(Shop::new).collect(Collectors.toList());
+        .map(Shop::new).collect(Collectors.toList());
 
     private static final ExecutorService THREAD_POOL = Executors.newFixedThreadPool(Math.min(SHOPS.size(), 20), r -> {
         Thread thread = new Thread(r);
@@ -29,24 +29,24 @@ public class ApiClient {
 
     private static void getPricesSync() {
         SHOPS
-                .forEach(ApiClient::printPrice);
+            .forEach(ApiClient::printPrice);
     }
 
     private static void getPricesParallel() {
         SHOPS
-                .parallelStream()
-                .forEach(ApiClient::printPrice);
+            .parallelStream()
+            .forEach(ApiClient::printPrice);
     }
 
     private static void getPriceCF() {
         List<CompletableFuture<String>> futures = SHOPS
-                .stream()
-                .map(shop -> CompletableFuture.supplyAsync(() -> String.format("%s shop price is %.2f", shop.getName(), shop.getPrice()), THREAD_POOL))
-                .collect(Collectors.toList());
+            .stream()
+            .map(shop -> CompletableFuture.supplyAsync(() -> String.format("%s shop price is %.2f", shop.getName(), shop.getPrice()), THREAD_POOL))
+            .collect(Collectors.toList());
         futures
-                .stream()
-                .map(CompletableFuture::join)
-                .forEach(System.out::println);
+            .stream()
+            .map(CompletableFuture::join)
+            .forEach(System.out::println);
     }
 
     private static void printPrice(Shop shop) {

@@ -35,14 +35,14 @@ echo "deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main" | 
 sudo apt update && sudo apt install -y kubelet kubectl kubeadm
 kubeadm version
 
-KUBE_VER=`kubeadm version -o short`
+KUBE_VER=$(kubeadm version -o short)
 IMAGE_MIRROR="registry.cn-hangzhou.aliyuncs.com/google_containers"
-kubeadm config images list > /tmp/ki
-images=`tail -n7 /tmp/ki | tr "\/" "\n" | awk '!(NR%2)'`
-for imageName in ${images[@]} ; do
-  docker pull ${IMAGE_MIRROR}/${imageName}
-  docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
-  docker rmi ${IMAGE_MIRROR}/${imageName}
+kubeadm config images list >/tmp/ki
+images=$(tail -n7 /tmp/ki | tr "\/" "\n" | awk '!(NR%2)')
+for imageName in ${images[@]}; do
+    docker pull ${IMAGE_MIRROR}/${imageName}
+    docker tag ${IMAGE_MIRROR}/${imageName} k8s.gcr.io/${imageName}
+    docker rmi ${IMAGE_MIRROR}/${imageName}
 done
 
 sudo reboot now

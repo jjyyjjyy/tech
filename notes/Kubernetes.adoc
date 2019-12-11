@@ -87,6 +87,7 @@ include::k8s/vagrant/kubeadm-init.sh[]
 ----
 
 == 插件安装
+
 === 安装Dashboard
 
 [source,bash]
@@ -98,7 +99,9 @@ openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/das
 kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
 kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
 ----
+
 === 创建登陆ServiceAccount
+
 [source,bash]
 ----
 cat <<EOF > sa-dashboard.yml
@@ -146,6 +149,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 == kubernetes各个组件功能
 
 === Master
+
 集群控制节点,运行以下进程:
 
 * kube-apiserver: 提供Kubernetes所有资源操作的REST服务
@@ -165,6 +169,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 * docker: 负责本机的容器管理
 
 === Pod
+
 每个pod包含pause容器和多个用户容器.
 同一个pod内的容器拥有相同的Network/IPC/UTS[和PID] namespace, 所以它们拥有相同的hostname和network interfaces,但文件系统不同
 
@@ -172,6 +177,7 @@ TIP: api-server属于static pod, 改完配置文件后会自动生效.
 * normal pod: 存储在etcd中,随后会被Master调度到某个node上进行绑定,node上的kubelet进程会实例化一组docker容器运行
 
 === Label Selector
+
 * kube-controller进程通过RC上定义的labelSelector来筛选需要监控的Pod数量.
 * kube-proxy进程通过service的labelSelector来选择对应的pod, 自动建立起每个service到对应pod的请求路由, 从而实现service的负载均衡.
 * kube-scheduler通过node定义的label和pod定义nodeSelector实现pod的定向调度.
@@ -263,6 +269,7 @@ kubectl rollout undo
 . Unknown `无法获取Pod的状态`
 
 === 重启策略
+
 * Always `容器失效时kubelet自动重启容器`
 * OnFailure `容器停止运行且退出码不为0时kubelet自动重启容器`
 * Never `kubelet不会自动重启容器`
@@ -271,6 +278,7 @@ kubectl rollout undo
  Job必须设置为OnFailure或Never
 
 === 健康检查
+
 * livenessProbe (running)
 
  如果探测到容器不健康, 则kubelet将杀掉该容器, 并根据容器的重启策略处理
@@ -279,6 +287,7 @@ kubectl rollout undo
 * HTTPGetAction
 * TCPSocketAction
 * ExecAction
+
 [source,yml]
 ----
   livenessProbe:
@@ -326,12 +335,13 @@ kubectl rollout undo
 
 ==== 升级
 
- * kubectl set image deployment/<deployment-name> <container-name>=<image-name:tag>
- * kubectl edit deployment/<deployment-name>
+* kubectl set image deployment/<deployment-name> <container-name>=<image-name:tag>
+* kubectl edit deployment/<deployment-name>
 
 可以通过spec.strategy.type确定升级方式: RollingUpdate/Recreate
 
 ==== 回滚
+
 [%hardbreaks]
 查看升级状态: `kubectl rollout status deployment/<deployment-name>`
 查看升级历史: `kubectl rollout history deployment/<deployment-name> 创建deployment时加上--record参数`
@@ -365,7 +375,8 @@ spec:
 
 === Pod间访问
 
-* 每一个pod中都会有集群中所有service的host/port环境变量. 如 `KUBERNETES_SERVICE_HOST/KUBERNETES_SERVICE_PORT` 对应名为kubernetes的service
+* 每一个pod中都会有集群中所有service的host/port环境变量.
+如 `KUBERNETES_SERVICE_HOST/KUBERNETES_SERVICE_PORT` 对应名为kubernetes的service
 
 * 直接通过dns访问: SERVICE[.NAMESPACE.svc.cluster.local], 如 `kubia.jy-test.svc.cluster.local`
 
@@ -399,17 +410,16 @@ ports:
 
 == PV
 
-当集群用户需要在其 pod 中使用持久化存储(PV)时, 他们首先创建持久卷声明
-(Persistent VolumeClaim, 简称 PVC) 清单, 指定所需要的最低容量要求和访问模式,
-然后用户将PV提交给Kubernetes apiserver, Kubernetes将找到可匹
-配的PV并将其绑定到PVC。
+当集群用户需要在其 pod 中使用持久化存储(PV)时, 他们首先创建持久卷声明 (Persistent VolumeClaim, 简称 PVC) 清单, 指定所需要的最低容量要求和访问模式, 然后用户将PV提交给Kubernetes apiserver, Kubernetes将找到可匹 配的PV并将其绑定到PVC。
 
 == ConfigMap
 
 === 创建方式
+
 * 命令行直接创建 `kubectl create configmap kubia-config --from-literal=interval=2 --from-literal=foo=bar`
 * 从文件(夹)创建 `kubectl create configmap kubia-config --from-file=config.conf`
 * yaml创建:
+
 [source,yml]
 .demo-cm.yml
 ----

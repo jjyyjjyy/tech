@@ -32,6 +32,7 @@ services:
         network_mode: host
 
 ----
+
 === 安装包安装
 
 [source,bash]
@@ -47,6 +48,7 @@ initdb -D /database/pg/pg_root -E UTF8 --locale=C -U postgres -W
 ----
 
 == 基本命令
+
 [source,bash]
 ----
 # 创建db
@@ -85,16 +87,16 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 ----
 
 * TYPE: 允许连接的方式
-  ** local: Unix domain socket
-  ** host:  TCP/IP, localhost default
-  ** hostssl: OpenSSL restrict
-  ** hostnossl: SSL not permitted
+** local: Unix domain socket
+** host: TCP/IP, localhost default
+** hostssl: OpenSSL restrict
+** hostnossl: SSL not permitted
 * METHOD: 认证方法
-  ** trust
-  ** password: 明文密码
-  ** md5
-  ** reject: 拒绝访问
-  ** scram-sha-256
+** trust
+** password: 明文密码
+** md5
+** reject: 拒绝访问
+** scram-sha-256
 
 === postgresql.conf
 
@@ -273,22 +275,23 @@ select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];
 ----
 
 == 高级特性
+
 * with从句
 * 批量插入: insert into select from / insert into values (),() / COPY
 * upsert:
-  insert into ... on conflict do {NOTHING | update set <colName> = EXCLUDED.colName}
+insert into ... on conflict do {NOTHING | update set <colName> = EXCLUDED.colName}
 * insert/update/delete .. returning *
 * select from <table> TABLESAMPLE {SYSTEM | BERNOULLI}
 * string_agg() / array_agg()
 * 窗口函数
-  ** row_number() : `select row_number() OVER partition by <colName>`,eg: 1,2,3, 1
-  ** rank() : 分组重复则序号相同, 但下一个分组内不同行的序号保持增长,eg: 1,1,3
-  ** dense_rank() : 分组重复则序号相同, 下一个分组内不同行的序号继续增长,eg: 1,1,2
-  ** lag(field,offset,defaultValue): 获取行偏移offset那行某个字段的数据(offset为正向上偏移,为负则相反)
-  ** first_value(field): 取分组第一行数据
-  ** last_value(field): 取分组最后一行数据
-  ** nth_value(field,line): 取分组指定行数据
-  ** 别名: select ...[rank() over NAME] from <table> WINDOW <NAME> AS ()
+** row_number() : `select row_number() OVER partition by <colName>`,eg: 1,2,3, 1
+** rank() : 分组重复则序号相同, 但下一个分组内不同行的序号保持增长,eg: 1,1,3
+** dense_rank() : 分组重复则序号相同, 下一个分组内不同行的序号继续增长,eg: 1,1,2
+** lag(field,offset,defaultValue): 获取行偏移offset那行某个字段的数据(offset为正向上偏移,为负则相反)
+** first_value(field): 取分组第一行数据
+** last_value(field): 取分组最后一行数据
+** nth_value(field,line): 取分组指定行数据
+** 别名: select ...[rank() over NAME] from <table> WINDOW <NAME> AS ()
 
 == 体系结构
 
@@ -298,13 +301,16 @@ select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];
  相同数据库不同schema可以拥有相同名称的table/index/view/sequence/function等
 
 === 物理结构
+
 ==== OID
+
  OID,对象标识符,无符号4字节整数.所有的数据库对象由各自的OID管理
 
 * 数据库对象OID保存在pg_database系统表里.
 * 表/索引/序列等对象OID保存在pg_class系统表里.
 
 ==== 表空间
+
  初始化数据库目录时会自动创建两个表空间: pg_global和pg_default
 
 * pg_global保存在global目录中, 用来保存系统表
@@ -314,6 +320,7 @@ select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];
  杜宇超过1GB大小的表文件则会自动切分为多个文件存储,以OID.<seq> 命名
 
 === 进程结构
+
 * postmaster
 * postgres
 * syslogger
@@ -503,17 +510,21 @@ update tbl_mvcc set ival = 100 where id = 1;
 |===
 
 === 查看全局事务默认隔离级别
+
  select name,setting from pg_settings where name='default_transaction_isolation';
 
 === 修改全局事务默认隔离级别
+
 * 修改postgresql.conf的default_transaction_isolation参数
 * `ALTER SYSTEM SET default_transaction_isolation TO 'REPEATABLE READ';`
 
 === 查看当前会话事务默认隔离级别
+
 * `SHOW transaction_isolation;`
 * `select current_setting('transaction_isolation');`
 
 === 设置当前会话事务默认隔离级别
+
 * `set session characteristics as transaction isolation level REPEATABLE READ`
 * `START|BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ... END`
 
@@ -546,7 +557,6 @@ TIP: 只有当表本身大小超过了物理内存的大小, 分区后才会受�
 
  根据某一列值的hash值分区
 
-
 === SQL
 
 [source,postgresql]
@@ -571,6 +581,7 @@ IMPORTANT: update语句违反了当前分区键的约束会报错
 == 清除WAL日志
 
 文档: https://www.postgresql.org/docs/current/pgarchivecleanup.html
+
 [source,bash]
 ----
 pg_archivecleanup -d <archive_location> <oldest_kept_walfile>

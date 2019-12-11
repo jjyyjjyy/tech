@@ -6,7 +6,7 @@ package me.jy.lang.inner;
  */
 public class MemberClassDemo {
 
-    private int modCount =0;
+    private int modCount = 0;
 
     private class ParentInner {
 

@@ -85,7 +85,7 @@ a|
  一个实体类应该尽量在不修改原有代码的基础上扩展.
 
 .OCP(新增Chart不会修改AbstractChartDisplay类的代码)
-[plantuml, ocp, svg]
+[plantuml,ocp,svg]
 ....
 interface Chart{
 + void display()
@@ -126,7 +126,6 @@ Chart <|.. AbstractChartDisplay
 
  尽量减少对象之间的交互.
 
-
 == 创建型模式
 
 === Simple Factory模式(静态工厂)
@@ -134,12 +133,15 @@ Chart <|.. AbstractChartDisplay
  定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
 
 ==== 使用场景
+
  客户端知道创建对象需要的参数, 不关系对象的创建过程.
 
 ==== 优点
+
 * 将对象的创建和对象的使用分离开, 客户端无需知道具体的创建逻辑, 只需知道对象创建需要的参数.
 
 ==== 缺点
+
 * 工厂类职责过重, 如果工厂类出现问题, 就会影响整个系统.
 * 系统扩展困难, 一旦添加新的产品就要修改工厂逻辑, 违反了开闭原则.
 
@@ -154,7 +156,7 @@ Chart <|.. AbstractChartDisplay
 ==== 结构
 
 .工厂方法模式UML
-[plantuml, factoy-method, svg]
+[plantuml,factoy-method,svg]
 ....
 interface Product{
 }
@@ -189,7 +191,7 @@ ConcreteProduct <- ConcreteProductFactory
 ==== 结构
 
 .抽象工厂模式UML
-[plantuml, abstract-factoy, svg]
+[plantuml,abstract-factoy,svg]
 ....
 interface ProductA{
 }
@@ -237,7 +239,7 @@ ConcreteProductB <- ConcreteProductFactory2
 ==== 结构
 
 .单例模式UML
-[plantuml, singleton, svg]
+[plantuml,singleton,svg]
 ....
 class Singleton {
 - Singleton INSTANCE = new Singleton()
@@ -246,10 +248,12 @@ class Singleton {
 ....
 
 ==== 优点
+
 * 节约系统资源
 * 限制了对实例的访问
 
 ==== 缺点
+
 * 扩展困难
 
 === 原型模式
@@ -263,7 +267,7 @@ class Singleton {
 ==== 结构
 
 .单例模式UML
-[plantuml, prototype, svg]
+[plantuml,prototype,svg]
 ....
 class Prototype{
 + Prototype clone()
@@ -289,7 +293,7 @@ class Prototype{
 ==== 组成
 
 .单例模式UML
-[plantuml, builder, svg]
+[plantuml,builder,svg]
 ....
 class Product{
 }
@@ -319,7 +323,7 @@ class Builder{
 ==== 结构
 
 .对象适配器模式UML
-[plantuml, adapter-obj, svg]
+[plantuml,adapter-obj,svg]
 ....
 interface Target{
 + void call()
@@ -336,7 +340,7 @@ Adapter -> Adaptee
 ....
 
 .类适配器模式UML
-[plantuml, adapter-class, svg]
+[plantuml,adapter-class,svg]
 ....
 interface Target{
 + void call()
@@ -372,7 +376,7 @@ Adaptee <.. Adapter
 ==== 结构
 
 .bridge模式UML
-[plantuml, bridge, svg]
+[plantuml,bridge,svg]
 ....
 class Implementor{
 + void operate()
@@ -411,7 +415,7 @@ Abstraction -> Implementor
 ==== 结构
 
 .composite模式UML
-[plantuml, composite, svg]
+[plantuml,composite,svg]
 ....
 class Component{
 + void operate()
@@ -446,7 +450,7 @@ class Composite extends Component{
 ==== 结构
 
 .Decorator模式UML
-[plantuml, decorator, svg]
+[plantuml,decorator,svg]
 ....
 class Component{
 + void operate()
@@ -487,7 +491,7 @@ Decorator -> ConcreteComponent
 ==== 结构
 
 .Facade模式UML
-[plantuml, facade, svg]
+[plantuml,facade,svg]
 ....
 class SystemA{
 + void actionA()
@@ -523,7 +527,7 @@ SystemC <- Facade
 ==== 结构
 
 .FlyWeight模式UML
-[plantuml, flyWeight, svg]
+[plantuml,flyWeight,svg]
 ....
 class Flyweight{
 + void operate(ExternalState)
@@ -559,7 +563,7 @@ Flyweight <|-- ConcreteFlyweight
 ==== 结构
 
 .Proxy模式UML
-[plantuml, proxy, svg]
+[plantuml,proxy,svg]
 ....
 interface Subject{
 + void request()
@@ -590,7 +594,7 @@ ConcreteSubject <- ProxyObject
 ==== 结构
 
 .Responsibility Of Chain模式UML
-[plantuml, chain-of-responsibility, svg]
+[plantuml,chain-of-responsibility,svg]
 ....
 class Handler{
 - Handler successor;
@@ -625,7 +629,7 @@ Handler <--|> Handler
 ==== 结构
 
 .Command模式UML
-[plantuml, command, svg]
+[plantuml,command,svg]
 ....
 
 class ReceiverA {

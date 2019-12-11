@@ -37,6 +37,6 @@ public class ModelAttributeController {
 
     @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public void getAllAttr(Model model) {
-        model.asMap().forEach((k,v)-> System.out.println(k+":"+v));
+        model.asMap().forEach((k, v) -> System.out.println(k + ":" + v));
     }
 }

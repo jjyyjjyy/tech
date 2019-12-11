@@ -39,7 +39,7 @@ public class SynchronizedBenchmark {
                     if (benchmark.counter == 10000) {
                         latch.countDown();
                         long end = System.nanoTime();
-                        System.out.println(consumer+": " + (end - start));
+                        System.out.println(consumer + ": " + (end - start));
                     }
                 }
             });

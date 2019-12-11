@@ -51,7 +51,7 @@ public class GenericTests<A, B> {
 
         Type[] interfaces = ActualGenericTests.class.getGenericInterfaces();
         assertEquals("java.lang.Integer",
-                ((ParameterizedType) interfaces[0]).getActualTypeArguments()[0].getTypeName());
+            ((ParameterizedType) interfaces[0]).getActualTypeArguments()[0].getTypeName());
     }
 
     private class Banana extends Fruit {

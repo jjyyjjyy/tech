@@ -16,7 +16,7 @@ public class RandomDeviceFileDemo {
     private static final String U_RANDOM = "/dev/urandom";
 
     private static final ExecutorService pool = Executors
-            .newFixedThreadPool(10);
+        .newFixedThreadPool(10);
 
     private static String toHex(byte[] result) {
         StringBuilder sb = new StringBuilder(result.length * 2);

@@ -10,7 +10,7 @@ public interface MyCollection<E> {
 
     boolean remove(int position);
 
-    default boolean isEmpty(){
+    default boolean isEmpty() {
         return size() == 0;
     }
 

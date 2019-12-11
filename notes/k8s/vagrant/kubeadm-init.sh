@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-sudo kubeadm init --kubernetes-version=`kubeadm version -o short` --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+sudo kubeadm init --kubernetes-version=$(kubeadm version -o short) --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config

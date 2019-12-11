@@ -28,6 +28,12 @@ public class RedPacket {
         this.num = num;
     }
 
+    private static double setScale(double val) {
+        return BigDecimal.valueOf(val)
+            .setScale(2, HALF_DOWN)
+            .doubleValue();
+    }
+
     public double nextPacket() {
         if (num == 0) {
             return 0;
@@ -38,16 +44,10 @@ public class RedPacket {
         }
         double max = balance / num * 2;
         double result = Math.min(max,
-                Math.max(0.01, setScale(max * RANDOM.nextDouble())));
+            Math.max(0.01, setScale(max * RANDOM.nextDouble())));
         balance -= result;
         num--;
         return result;
-    }
-
-    private static double setScale(double val) {
-        return BigDecimal.valueOf(val)
-                .setScale(2, HALF_DOWN)
-                .doubleValue();
     }
 
     public static void main(String[] args) {

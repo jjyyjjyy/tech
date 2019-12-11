@@ -23,8 +23,7 @@
 === 找到栈中最小值
 
 维护两个Stack:
-一个dataStack, 负责正常数据压栈出栈,
-一个minStack, 负责在栈顶维护栈的最小值.
+一个dataStack, 负责正常数据压栈出栈, 一个minStack, 负责在栈顶维护栈的最小值.
 
 ==== 算法1
 
@@ -49,8 +48,7 @@ include::{codepath}stack/MinStackImpl2.java[tag="minStack"]
 === 用两个栈实现队列
 
 维护两个Stack:
-一个dataStack, 负责正常数据压栈,
-一个tmpStack, 负责出栈.
+一个dataStack, 负责正常数据压栈, 一个tmpStack, 负责出栈.
 *出栈* 时先将dataStack里的数据push到tmpStack中, 然后弹出tmpStack栈顶元素, 最后把tmpStack元素push到dataStack中.
 
 [source,java]

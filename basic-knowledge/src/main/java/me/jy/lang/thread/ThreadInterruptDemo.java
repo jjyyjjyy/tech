@@ -14,8 +14,8 @@ public class ThreadInterruptDemo {
                 System.out.println(name + (count++));
             }
         };
-        Thread th1 = new Thread(runnable,"r1=");
-        Thread th2 = new Thread(runnable,"r2=");
+        Thread th1 = new Thread(runnable, "r1=");
+        Thread th2 = new Thread(runnable, "r2=");
 
         th1.start();
         th2.start();

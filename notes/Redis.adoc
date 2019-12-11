@@ -99,7 +99,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 ==== 内部编码
 
-* `ziplist` :   当哈希元素个数小于 `hash-max-ziplist-entries(512)` 同时所有值的大小都小于 `hash-max-ziplist-value(64B)` 时, Redis内部使用 `ziplist` 作为hash的实现, 结构紧凑, 节省内存.
+* `ziplist` : 当哈希元素个数小于 `hash-max-ziplist-entries(512)` 同时所有值的大小都小于 `hash-max-ziplist-value(64B)` 时, Redis内部使用 `ziplist` 作为hash的实现, 结构紧凑, 节省内存.
 * `hashtable` : 元素数量过多会导致 `ziplist` 读写效率下降, 此时使用 `hashtable` 作为hash的内部实现.
 
 ==== 使用场景
@@ -262,8 +262,10 @@ WARNING: `migrate` 命令不能在同一Redis实例上执行.
 
 == 慢查询
 
-* `slowlog-log-slower-than(微秒)` : 慢查询执行阈值, 默认10000微秒, 负数时不记录慢查询. *建议设置为1000.*
-* `slowlog-max-len` : 慢查询日志最多存储多少条. *建议设置为1000以上.*
+* `slowlog-log-slower-than(微秒)` : 慢查询执行阈值, 默认10000微秒, 负数时不记录慢查询.
+*建议设置为1000.*
+* `slowlog-max-len` : 慢查询日志最多存储多少条.
+*建议设置为1000以上.*
 * `slowlog get [n]` : 获取前n条慢查询.
 * `slowlog len` : 获取慢查询数量.
 * `slowlog reset` : 重置慢查询.
@@ -358,6 +360,7 @@ $<参数2的字节数> CRLF
 <参数2> CRLF
 ...
 ----
+
 === Response
 
 .Response的第一个字节
@@ -421,7 +424,8 @@ RDB持久化是把当前进程的数据生成快照保存到硬盘里.
 
 === 数据同步方式
 
-* 全量复制: 用于初次复制场景. 把主节点全部数据一次性地发送给从节点.
+* 全量复制: 用于初次复制场景.
+把主节点全部数据一次性地发送给从节点.
 * 部分复制: 补发丢失数据给从节点.
 
 == Sentinel
@@ -518,6 +522,7 @@ appendonly yes
 logfile "master.log"
 dbfilename "dump-master.rdb"
 ----
+
 [source,conf]
 .replica1.conf
 ----
@@ -526,6 +531,7 @@ logfile "replica1.log"
 dbfilename "dump-replica1.rdb"
 replicaof redis-master 6379
 ----
+
 [source,conf]
 .replica2.conf
 ----
@@ -534,6 +540,7 @@ logfile "replica2.log"
 dbfilename "dump-replica2.rdb"
 replicaof redis-master 6379
 ----
+
 [source,conf]
 .sentinel1.conf, sentinel2.conf, sentinel3.conf
 ----

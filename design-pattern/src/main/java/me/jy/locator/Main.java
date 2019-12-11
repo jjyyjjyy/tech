@@ -11,9 +11,9 @@ public class Main {
         ApplicationContext context = new ApplicationContext();
 
         assert new CatService().execute().equals(
-                context.lookup("CatService", CatService.class).execute());
+            context.lookup("CatService", CatService.class).execute());
         assert new HuskyService().execute().equals(
-                context.lookup("HuskyService", Service.class).execute());
+            context.lookup("HuskyService", Service.class).execute());
 
     }
 

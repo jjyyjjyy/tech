@@ -16,7 +16,9 @@
 * https://book.douban.com/subject/26899701[window="_blank"]
 
 == 函数
+
 === 函数定义
+
  函数是将一个对象转化为另一个对象的规则.
  起始对象称为输入, 即定义域.
  返回对象称为输出, 所有可能输出的集合为上域, 所有实际输出的集合为值域. 如 f(x)=x^2, 上域为R, 值域为非负数.
@@ -24,6 +26,7 @@
 形如 stem:[f(x)=mx+a]的函数称为线性函数.
 
 === 区间表示法
+
  [a,b]表示从a端点到b端点的所有实数, 包括a和b, 称为闭区间.
  (a,b)表示从a端点到b端点的所有实数, 但不包括a和b, 称为开区间.
 
@@ -101,11 +104,11 @@ stem:[y=P*e^(kx)] (k>0时指数增长, k<0时指数衰减)
 
 ==== 定义
 
-* stem:[正弦sin(theta)=(对边)/(斜边), 余割csc(x)=1/sin(x) ['kəu'si:kənt]]
+* stem:[正弦sin(theta)=(对边)/(斜边),余割csc(x)=1/sin(x) ['kəu'si:kənt]]
 
-* stem:[余弦cos(theta)=(邻边)/(斜边), 正割sec(x)=1/cos(x) ['si:kənt]]
+* stem:[余弦cos(theta)=(邻边)/(斜边),正割sec(x)=1/cos(x) ['si:kənt]]
 
-* stem:[正切tan(theta)=(对边)/(邻边), 余切cot(x)=1/tan(x)]
+* stem:[正切tan(theta)=(对边)/(邻边),余切cot(x)=1/tan(x)]
 
  对称性: sin/csc/tan/cot为奇函数, cos/sec为偶函数
 
@@ -162,10 +165,10 @@ stem:[cos^2(x)+sin^2(x)=1]
 
 ==== 倍角公式
 
-*  stem:[sin(A+B)=sin(A)cos(B)+cos(A)sin(B)]
-*  stem:[cos(A+B)=cos(A)cos(B)-sin(A)sin(B)]
-*  stem:[sin(2x)=2sin(x)cos(x)]
-*  stem:[cos(2x)=2cos^2(x)-1=1-2sin^2(x)]
+* stem:[sin(A+B)=sin(A)cos(B)+cos(A)sin(B)]
+* stem:[cos(A+B)=cos(A)cos(B)-sin(A)sin(B)]
+* stem:[sin(2x)=2sin(x)cos(x)]
+* stem:[cos(2x)=2cos^2(x)-1=1-2sin^2(x)]
 
 ==== 余弦定理
 
@@ -206,7 +209,7 @@ stem:[a^3-b^3=(a-b)(a^2+ab+b^2)]
 
 === 数学建模
 
-[plantuml, MathModel, svg]
+[plantuml,MathModel,svg]
 ....
 现实问题 --> 模型: 简化
 模型 --> 数学结论: 分析
@@ -233,7 +236,7 @@ stem:[a^3-b^3=(a-b)(a^2+ab+b^2)]
 
 === 极限不存在的情况
 
-* 跳跃间断: 左极限不等于右极限.. 如 stem:[f(x)={(1, x<=0),(0, x>0):}]
+* 跳跃间断: 左极限不等于右极限.. 如 stem:[f(x)={(1,x<=0),(0,x>0):}]
 * 无穷间断: 极限无穷大或无穷小. 如 stem:[f(x)=1/x].
 * 震荡间断: 函数不停振荡,没有极限. 如 stem:[f(x)=sin(1/x)].
 
@@ -256,12 +259,14 @@ WARNING: 当且仅当左右极限存在并相等时极限才存在.
 多项式直接代入算出极限.
 
 ==== stem:[lim_(x->a)(p(x))/(q(x))]
+
 * 将a代入函数, 如果分母不为0, 则代入后计算出的值即为极限值.
 * 因式分解, 尝试消除分母.
 * 乘以共轭不等式,消除公因子.
 * 如果分母为0, 分子不为0时, 在x=a时会有一条垂直渐近线, 根据a左右的符号来计算函数的极限 (stem:[-oo | oo | DNE]).
 
 ==== stem:[lim_(x->oo)(p(x))/(q(x))]
+
 * 如果p的次数等于q的次数, 则该多项式有极限且非零.
 * 如果p的次数大于q的次数, 则极限是 stem:[oo] 或 stem:[-oo]
 * 如果p的次数小于q的次数, 则极限是0.
@@ -272,12 +277,14 @@ WARNING: 当且仅当左右极限存在并相等时极限才存在.
 stem:[lim_(x->a)g(x)=lim_(x->a)h(x)=L], 则 stem:[lim_(x->a)f(x)=L].
 
 ==== 求极限 stem:[lim_(x->oo)sin(x)/x]:
+
 . stem:[-1<=sin(x)<=1]
 . stem:[-1/x<=sin(x)/x<=1/x]
 . stem:[:' lim_(x->oo)(-1/x)=lim_(x->oo)1/x=0]
 . stem:[:. lim_(x->oo)sin(x)/x=0]
 
 ==== 求极限 stem:[lim_(x->0)sin(x)/x]
+
 . stem:[sin(x)<x<tan(x)]
 . 除以sin(x)得: stem:[1<x/sin(x)<1/cos(x)]
 . 取倒数得: stem:[cos(x)<sin(x)/x<1]
@@ -326,8 +333,7 @@ stem:[lim_(x->a)f(x)/g(x)=lim_(x->a)(f'(x))/(g'(x))]
 
 === 区间连续
 
-如果函数f在(a,b)上每一点都连续, stem:[lim_(x->a^+)f(a)=f(a) 且 lim_(x->b^-)f(b)=f(b)],
-则f在 [a,b]这个区间上连续.
+如果函数f在(a,b)上每一点都连续, stem:[lim_(x->a^+)f(a)=f(a) 且 lim_(x->b^-)f(b)=f(b)], 则f在 [a,b]这个区间上连续.
 
 === 介值定理
 
@@ -385,7 +391,8 @@ WARNING: 函数在一点有导数(可微)当且仅当该函数有左侧导数和
 
 . stem:[f(c+h)=f(c) + (f(c+h)-f(c))=f(c)+ (f(c+h)-f(c))/ h * h]
 . stem:[lim_(h->0)f(c+h)=lim_(h->0)f(c)+lim_(h->0)(f(c+h)-f(c))*lim_(h->0)h]
-. stem:[lim_(h->0)f(c+h)=lim_(h->0)f(c)=f(c)]. 得证
+. stem:[lim_(h->0)f(c+h)=lim_(h->0)f(c)=f(c)].
+得证
 
 === 导数的应用
 
@@ -440,8 +447,7 @@ stem:[x_1=x_0-f(x_0)/(f'(x_0))]
 stem:[e=lim_(n->oo)(1+1/n)^n=lim_(h->0)(1+h)^(1/h)]
 
 .证明:
-
-. stem:[n->oo, 令 Deltax = 1/n -> 0]
+. stem:[n->oo,令 Deltax = 1/n -> 0]
 . stem:[ln((1+1/n)^n) = nln(1+1/n)]
 . stem:[lim_(n->oo)nln(1+1/n)=1/Deltaxln(1+Deltax) = d/(dx)lnx|_(x=1) = 1/x|_(x=1) = 1]
 . stem:[lim_(n->oo)ln((1+1/n)^n)=1]
@@ -469,21 +475,21 @@ stem:[e=lim_(n->oo)(1+1/n)^n=lim_(h->0)(1+h)^(1/h)]
 
  通过导数求原函数
 
-stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
+stem:[G(x)=intg(x)dx,(G'(x)=g(x))]
 
 .常用不定积分公式
-* stem:[intx^adx=x^(a+1)/(a+1)+C, (a!=-1)]
+* stem:[intx^adx=x^(a+1)/(a+1)+C,(a!=-1)]
 * stem:[intsinkxdx=-(coskx)/k+C]
 * stem:[intcoskxdx=(sinkx)/k+C]
 * stem:[intsec^2xdx=tanx+C]
 * stem:[intcsc^2xdx=-cotx+C]
 * stem:[intsecxtanxdx=secx+C]
 * stem:[intcscxcotxdx=-cscx+C]
-* stem:[intdx/x=ln|x|+C, (x!=0)]
+* stem:[intdx/x=ln|x|+C,(x!=0)]
 * stem:[intsin^2xdx=int(1-cos2x)/2dx=1/2int(1-cos2x)dx=x/2-(sin2x)/4+C]
 * stem:[intcos^2xdx=int(1+cos2x)/2dx=x/2+(sin2x)/4+C]
 
-> 如果两个函数的导数相同: stem:[F'(x)=G'(x), 则 F(x)=G(x)+C].
+> 如果两个函数的导数相同: stem:[F'(x)=G'(x),则 F(x)=G(x)+C].
 
 === 不定积分法则
 
@@ -493,7 +499,7 @@ stem:[G(x)=intg(x)dx, (G'(x)=g(x))]
 
 === 求积分方法
 
-* 换元法: stem:[t=f(x), dt=f'(x)dx]
+* 换元法: stem:[t=f(x),dt=f'(x)dx]
 * 分部积分: stem:[int_a^buv'dx=uv|_(b-a) - int_a^bu'vdx]
 * 部分分式
 * 三角替换
@@ -513,11 +519,11 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 .定积分的性质
 * stem:[int_a^bf(x)dx=-int_b^af(x)dx].
 * stem:[int_a^af(x)dx=0].
-* stem:[int_a^cf(x)dx=int_a^bf(x)dx+int_b^cf(x)dx, a<b<c].
+* stem:[int_a^cf(x)dx=int_a^bf(x)dx+int_b^cf(x)dx,a<b<c].
 * stem:[int_a^bCf(x)dx=Cint_a^bf(x)dx].
 * stem:[int_a^b(f(x)+g(x))dx=int_a^bf(x)dx+int_a^bg(x)dx].
-* stem:[若 f(x)<=g(x), 则 int_a^bf(x)dx <= int_a^bg(x)dx].
-* stem:[int_(u_1)^(u_2)f(u)du=int_(x_1)^(x_2)g(u(x))u'(x)dx, du=u'(x)dx, u_1=u(x_1), u_2=u(x_2)]. `当且仅当 u'(x) 没有改变符号的时候才成立.`
+* stem:[若 f(x)<=g(x),则 int_a^bf(x)dx <= int_a^bg(x)dx].
+* stem:[int_(u_1)^(u_2)f(u)du=int_(x_1)^(x_2)g(u(x))u'(x)dx,du=u'(x)dx,u_1=u(x_1),u_2=u(x_2)]. `当且仅当 u'(x) 没有改变符号的时候才成立.`
 
 === 定积分的中值定理
 
@@ -525,12 +531,12 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 
 === 微积分基本定理
 
-. 若函数f在闭区间[a,b]上连续, stem:[F(x)=int_a^xf(t)dt, x in [a,b]], 则 F(x)在开区间(a,b)是可导函数, 且F'(x)=f(x), 记为 stem:[d/dxint_a^xf(t)dt=f(x)]
+. 若函数f在闭区间[a,b]上连续, stem:[F(x)=int_a^xf(t)dt,x in [a,b]], 则 F(x)在开区间(a,b)是可导函数, 且F'(x)=f(x), 记为 stem:[d/dxint_a^xf(t)dt=f(x)]
 . 若函数f在闭区间[a,b]上连续, stem:[F'(x)=f(x)], 则 stem:[int_a^bf(x)dx=F(x)|_(b-a)].
 
 .应用
 * stem:[y=int_1^(x^2)costdt]
-. stem:[令u=x^2, du=2xdx]
+. stem:[令u=x^2,du=2xdx]
 . stem:[dy/dx=(dy)/(du)*(du)/(dx)=int_1^ucost * 2x=cosudu=2xcos(x^2)]
 * stem:[求 int_-1^3(x^3+1)dx]
 . stem:[int(x^3+1)dx=x^4/4+x]
@@ -542,7 +548,8 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 
 > 如果函数f在闭区间[a,b]是无界的(有垂直渐近线),或 a为 stem:[-oo],或b为 stem:[oo], 则积分 stem:[int_a^bf(x)dx]为反常积分.
 
-> 如果反常积分能满足 stem:[int_a^bf(x)dx=lim_(epsilon->0+)int_(a+epsilon)^bf(x)dx], 则该积分是收敛的, 否则是发散的. 非反常积分自然收敛于常数L.
+> 如果反常积分能满足 stem:[int_a^bf(x)dx=lim_(epsilon->0+)int_(a+epsilon)^bf(x)dx], 则该积分是收敛的, 否则是发散的.
+非反常积分自然收敛于常数L.
 
 === 性质
 
@@ -560,7 +567,8 @@ stem:[sum_(j=a)^b(f(j)-(f-1))=f(b)-f(a-1)]
 
 === 数列
 
-> 一组有序的数称为数列, 无穷项的数列称为无穷数列. 当n趋近于stem:[oo]时, 数列的极限记为 stem:[lim_(n->oo)a_n]. 若存在极限值L, 则称该数列收敛于L, 否则该数列是发散的.
+> 一组有序的数称为数列, 无穷项的数列称为无穷数列. 当n趋近于stem:[oo]时, 数列的极限记为 stem:[lim_(n->oo)a_n].
+若存在极限值L, 则称该数列收敛于L, 否则该数列是发散的.
 
 === 级数
 
@@ -576,7 +584,7 @@ stem:[S=1+1/2+1/3+...+1/n = int_1^oo1/xdx = lnx|_1^oo=oo]
 
 stem:[1+r+r^2+r^3+...+r^n=sum_(n=0)^oor^n=(1-r^(n+1))/(1-r)]
 
-无穷几何级数: 若 stem:[-1<r<1, r_1+r_2+r_3+...=r_1/(1-r)], 否则级数发散.
+无穷几何级数: 若 stem:[-1<r<1,r_1+r_2+r_3+...=r_1/(1-r)], 否则级数发散.
 
 === 判断级数发散还是收敛
 
@@ -588,15 +596,17 @@ WARNING: `第n项判别法` 不能作为级数收敛的判断.
 
 * 比式判别法
 
-> 若级数中包含阶乘或指数, 可以使用比式判别法: 令 stem:[L=lim_(n->oo)|a_(n+1)/a_n|], 若L>1,则该级数发散, 若L<1, 该级数收敛. 但当L=1或极限不存在时, 比式判别法无效.
+> 若级数中包含阶乘或指数, 可以使用比式判别法: 令 stem:[L=lim_(n->oo)|a_(n+1)/a_n|], 若L>1,则该级数发散, 若L<1, 该级数收敛.
+但当L=1或极限不存在时, 比式判别法无效.
 
 * 根式判别法
 
-> 令 stem:[L=lim_(n->oo)|a_n|^(1/n)], 若L<1时该级数收敛, L>1时该级数发散. 若L=1或极限不存在, 根式判别法无效.
+> 令 stem:[L=lim_(n->oo)|a_n|^(1/n)], 若L<1时该级数收敛, L>1时该级数发散.
+若L=1或极限不存在, 根式判别法无效.
 
 * 积分判别法
 
-> 当级数含有stem:[1/n和ln(n)]时, 可以应用积分判别法: 对于连续递减函数 stem:[f(n)=a_n, 则sum_(n=N)^ooa_n与 int_N^oof(x)dx] 同时收敛或同时发散.
+> 当级数含有stem:[1/n和ln(n)]时, 可以应用积分判别法: 对于连续递减函数 stem:[f(n)=a_n,则sum_(n=N)^ooa_n与 int_N^oof(x)dx] 同时收敛或同时发散.
 
 * p判别法
 
