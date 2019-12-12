@@ -42,10 +42,8 @@ public class EnumTests {
 
         EnumMap<Gender, Integer> enumMap = new EnumMap<>(Gender.class);
 
-        enumMap.forEach((g, i) -> enumMap.put(g, g.value)); // enumMap#entrySet -> empty
         enumMap.put(MALE, 1);
-
-        assertEquals(1, (int) enumMap.get(MALE));
+        assertEquals(1, enumMap.get(MALE));
     }
 
     @Test

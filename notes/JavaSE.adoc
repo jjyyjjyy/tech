@@ -157,6 +157,68 @@ E=1-Bias, M=frac.
 [.lead]
 `exp` 部分全为1, `frac` 部分不等于0.
 
+== 面向对象
+
+=== 可见性
+
+private << default << protected << public
+
+* `private` : 只能在类的内部访问.
+* `default` : 只能被同一个包中其他类访问.
+(子包也不能访问)
+* `protected` : 可以被子类或同一个包中其他类访问.
+* `public` : 可以被任意类访问.
+
+=== 重载
+
+重载指同一个类内方法名称相同, 但方法签名(参数数量/类型)不同.
+
+* 方法返回值必须一致.
+
+=== 重写
+
+重写指子类重写父类相同参数签名的方法.
+
+* 子类可以提升方法的可见性.
+* 子类抛出的checked异常必须与父类相同, 或是父类抛出checked异常的子类.
+* 参数类型必须相同.
+* 子类方法的返回值可以是父类返回值类型的子类.
+
+=== 接口default方法判定
+
+* Class优先.
+* 子接口优先.
+* 无法确定需用 `类名.super` 显式调用.
+
+NOTE: Class#getDeclaredMethods不包含从父类继承过来的方法.
+
+=== 内部类
+
+==== 静态内部类
+
+静态内部类可以访问外部类的private静态变量和方法, 但不可以访问外部类的实例变量或方法.
+
+==== 成员内部类
+
+* 成员内部类可以访问外部类的实例变量和方法.
+* 成员内部类不可以自己定义静态变量和方法.
+
+==== 匿名内部类
+
+匿名内部类方法参数属于final, 不能修改值/引用.
+
+== 异常
+
+=== Checked Exception
+
+继承Exception但不是RuntimeException的异常类.
+需要程序手动处理.
+
+=== Unchecked Exception
+
+继承RuntimeException/Error的异常类.
+程序可以选择捕获处理, 也可以不处理.
+
 == 注解
 
 === 重复注解
@@ -183,7 +245,8 @@ E=1-Bias, M=frac.
 | √
 |===
 
-. Target
+=== Target
+
 * Type: 类、接口、注解、枚举
 * Field: 字段
 * Method: 方法
@@ -197,40 +260,34 @@ E=1-Bias, M=frac.
 
 == 枚举
 
-. API
-.. values() 返回所有枚举常量
-.. valueOf(String) 返回名字对应的枚举常量
-.. name() 返回枚举常量名字
-.. oridinal() 返回枚举常量的序号
-.. compareTo() 比较枚举常量的序号
-. EnumMap, EnumSet
-.. EnumSet.allOf(Enum.class) 返回包含所有枚举常量的集合
-.. EnumSet.rangOf(EnumA,EnumB) 返回A与B之间所有的枚举常量, 包括边界
-.. EnumMap#entrySet 为空,forearch用不了, 只能手动put ==to fix==
+=== 枚举类方法
+
+* values() 返回所有枚举常量
+* valueOf(String) 返回名字对应的枚举常量
+* name() 返回枚举常量名字
+* oridinal() 返回枚举常量的序号
+* compareTo() 比较枚举常量的序号
+
+=== EnumSet
+
+* EnumSet.allOf(Enum.class) 返回包含所有枚举常量的集合
+* EnumSet.rangOf(EnumA,EnumB) 返回A与B之间所有的枚举常量, 包括边界
+
+=== EnumMap
+
+* EnumMap#entrySet 为空,forearch用不了, 只能手动put ==to fix==
 
 == 序列化
 
-. 序列化时会调用readObject方法,反序列化时会调用writeObject方法
 . serialVersionUID标识类的序列化的版本号,如果反序列化时当前类的版本号与序列化的二进制流对象的版本号不一致则会抛出异常
+. 序列化时会调用readObject方法,反序列化时会调用writeObject方法
 . 序列化再反序列化后静态成员变量值为最新的
-
-== 接口
-
-. default方法继承判定
-* Class优先
-* 子接口优先
-* 无法确定需用 类名.super 显示调用
-. Class#getDeclaredMethods不计算继承的方法
 
 == 泛型
 
 . 上界通配符只能get
 . 下界通配符get出Object,add时不能add声明的泛型边界的父类
 . 取不到一个类定义的泛型类型(T),只能取其子类或父类具体的泛型类型(Long,String...)
-
-== 反射
-
-. getMethod获取所有public方法(包括父类),getDeclaredMethod获取所有方法(不包括父类)
 
 == 线程
 
@@ -477,14 +534,6 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/MCSLock.java[]
 [qanda]
 `|` 和 `||` 的区别?::
 `||` 是短路操作, 如果左边是true, 则右边不会执行. `|` 左右两边都会执行.
-Java异常分类?::
-* Checked Exception:
-继承Exception但不是RuntimeException的异常类.
-需要程序手动处理.
-* Unchecked Exception:
-继承RuntimeException/Error的异常类.
-程序可以选择捕获处理, 也可以不处理.
-//Java异常处理流程?::
 `ClassLoader.loadClass()` 和 `Class.forName()` 有什么区别?::
 `Class.forName()` 会初始化类的static代码块和static参数, `ClassLoader.loadClass()` 不会.
 `ClassNotFoundException` 和 `NoClassDefFoundError` 有什么区别?::
