@@ -43,7 +43,7 @@ kubectl apply -f https://cloud.weave.works/k8s/v1.10/net.yaml
 source <(kubectl completion bash)
 
 # kube单机 (Optional)
-kubectl taint nodes --all node-role.kubernetes.io/master-
+# kubectl taint nodes --all node-role.kubernetes.io/master-
 
 # check finally
 kubectl get nodes
@@ -53,8 +53,8 @@ kubectl get pods --all-namespaces
 # kubectl -n kube-system describe TYPE NAME
 
 # 清除安装:
-sudo kubeadm reset -f
-rm -rf ~/.kube
+# sudo kubeadm reset -f
+# rm -rf ~/.kube
 
 # sh helper:
 alias kn='kubectl get nodes -o wide'
