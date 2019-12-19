@@ -1,0 +1,17 @@
+replicaCount: 1
+metatdata:
+    name: nginx-demo
+    namespace: default
+    app: nginx
+    env: alpine
+
+image:
+    repository: nginx-stable
+    pullPolicy: IfNotPresent
+    imagePullSecrets: 07harbor
+
+service:
+    type: ClusterIP
+    port: 80
+    nodePort: 32001
+    targetPort: 80

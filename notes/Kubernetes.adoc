@@ -94,43 +94,9 @@ include::k8s/vagrant/kubeadm-init.sh[]
 ----
 mkdir certs
 openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"
-Generating a 2048 bit RSA private key
 openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
-kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
 kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
-----
-
-=== 创建登陆ServiceAccount
-
-[source,bash]
-----
-cat <<EOF > sa-dashboard.yml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-    name: admin-user
-    namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-    name: admin-user
-roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: ClusterRole
-    name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kube-system
-EOF
-
-kubectl create -f sa-dashboard.yml
-# 获取登陆token
-kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
-
-# 浏览器访问
-# https://ip:30001
+kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
 ----
 
 === 启用api-server的swagger ui
@@ -145,6 +111,14 @@ sudo vim /etc/kubernetes/manifests/kube-apiserver.yaml
 ----
 
 TIP: api-server属于static pod, 改完配置文件后会自动生效.
+
+=== helm安装
+
+[source,bash]
+----
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+helm repo add stable http://mirror.azure.cn/kubernetes/charts/
+----
 
 == kubernetes各个组件功能
 

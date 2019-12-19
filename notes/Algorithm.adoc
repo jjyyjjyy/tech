@@ -12,49 +12,29 @@
 :toc-title: 目录
 :tabsize: 4
 :docinfo: shared
-:codepath: ../algs/src/main/java/me/jy/
 
 .Resource
 * https://book.douban.com/subject/19952400[window="_blank"]
-* https://book.douban.com/subject/30422021[window="_blank"]
 
-== 栈和队列
+== 算法分析
 
-=== 找到栈中最小值
+* 最坏情况分析: 记T(n)为输入规模为n时的最长运行时间.
+* 平均情况分析: 记T(n)为输入规模为n时的所有可能运行时间根据概率加权平均.
+* 最好情况分析: 记T(n)为输入规模为n时的最短运行时间.
+* 渐近分析: 忽略掉依赖于机器的常量, 检查程序运行的增量, 而不是具体的运行时间.
 
-维护两个Stack:
-一个dataStack, 负责正常数据压栈出栈, 一个minStack, 负责在栈顶维护栈的最小值.
+=== stem:[theta]符号
 
-==== 算法1
+写一个公式, 忽略掉低阶项和最高项系数.
 
-* *压栈时:* 如果minStack为空或者要压入的元素小于等于最小值, 则将这个元素压入minStack.
-* *出栈时:* 如果出栈的元素小于等于最小值, 则minStack出栈.
+eg: stem:[3n^3+90n^2-5n+4096=theta(n^3)]
 
-[source,java]
-----
-include::{codepath}stack/MinStackImpl1.java[tag="minStack"]
-----
+== Q&A
 
-==== 算法2
+=== 算法基础
 
-* *压栈时:* 如果minStack为空或者要压入的元素小于等于最小值, 则将这个元素压入minStack, 否则, 压入最小值.
-* *出栈时:* minStack直接弹出.
-
-[source,java]
-----
-include::{codepath}stack/MinStackImpl2.java[tag="minStack"]
-----
-
-=== 用两个栈实现队列
-
-维护两个Stack:
-一个dataStack, 负责正常数据压栈, 一个tmpStack, 负责出栈.
-*出栈* 时先将dataStack里的数据push到tmpStack中, 然后弹出tmpStack栈顶元素, 最后把tmpStack元素push到dataStack中.
-
-[source,java]
-----
-include::{codepath}stack/TwoStackQueue.java[tag="twoStackQueue"]
-----
-
-=== 栈转置
+. 对于规模为n的输入, 插入排序运行stem:[8n^2]步, 归并排序运行stem:[64nlgn]步,何时插入排序优于归并排序?
+stem:[1<n<=43]
+. 常见复杂度比较:
+stem:[lgn < sqrtn < n < nlgn < n^2 < n^3 < 2^n < n!]
 
