@@ -44,14 +44,22 @@ services:
 ** mset a 1 b 2 c 3
 * `mget key [key1 key2 key3 ...]`
 ** mget a b c `批量get.`
-* `incr key`
-** incr a
-* `append key chars` `在key后面追加字符串.`
-** append a world
+* `msetnx key1 value1 [key2 value2 ...]` `批量set, 但是只有所有key不存在时才能设置.`
+** msetnx a 1 b 2
 * `strlen key` `返回key的长度.`
 ** strlen a
+* `append key chars` `在key后面追加字符串.`
+** append a world
 * `getset key value` `设置并返回值.`
 ** getset a 1
+* `getrange key start end` `截取key从start到end的字符串, 闭区间.`
+** getrange demo 0 -1
+* `setrange key start substitute` `key从start位置开始替换值.`
+** setrange demo 5 Redis `Hello World -> HelloRedisd`
+* `incr key` `将key的值加1`
+** incr a
+* `incrbyfloat key increment` `加上浮点数. 最多保留小数后17位.`
+** incrbyfloat demo 1.23
 
 ==== 内部编码
 
@@ -63,23 +71,29 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 ==== 使用场景
 
-* 缓存 `set, get`
+* 缓存 `setex, get`
 * 计数 `incr`
-* session共享 `set, get`
-* 限速 `setnx, incr`
+* session共享 `setex, get`
+* 限速 `setnx, decr`
 
 === hash
 
 ==== 命令
 
-* `hset key field value`
+* `hset key field value` `为hash的指定field设置值.`
 ** hset k a 1
-* `hget key field`
+* `hsetnx key field value` `当field不存在时为field设置值.`
+** hsetnx k a 1
+* `hget key field` `获取hash的指定field的值.`
 ** hget k a
-* `hdel key field [field ...]` `删除hash内字段`
-** hdel k a b c
+* `hincrby key field increment` `给指定field增加值`
+** hincrby k a 111
+* `hstrlen key field` `获取field值的长度`
+** hstrlen k a
 * `hlen key` `获取hash字段数量`
 ** hlen k
+* `hdel key field [field ...]` `删除hash内字段.`
+** hdel k a b c
 * `hmset key value [key1 value1 ...]` `批量设置hash field的值`
 ** hmset k a 1 b 2 c 3
 * `hmget key [key1 key2 ...]` `批量获取hash field的值`
@@ -92,10 +106,6 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 ** hvals k
 * `hgetall key` `获取hash内所有的field-value`
 ** hgetall k
-* `hincrby key field increment` `给指定field增加值`
-** hincrby k a 111
-* `hstrlen key field` `获取field长度`
-** hstrlen k a
 
 ==== 内部编码
 
@@ -105,6 +115,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 ==== 使用场景
 
 * 缓存 `hmset, hgetall`
+* 存储稀疏图 `hset, hgetall`
 
 === list
 
@@ -115,12 +126,16 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 ** lpush k 1 2 3
 * `rpush key value [value1 value2 ...]` `从右向左push.`
 ** rpush k 3 2 1
+* `lpushx key value` `当key存在时才后插入值, 一次只能插入一个值`
+** lpushx dummy val
 * `linsert key before|after pivot value` `插入值到指定元素前/后.`
 ** linsert k before 1 0
 
 .删
 * `lpop key` `从左边取出第一个值.`
 * `rpop key` `从右边取出第一个值.`
+* `rpoplpush source target` `从source右端弹出元素, 并将其推入target左端. 如果source为空则执行失败.`
+** `rpoplpush l1 l2`
 * `lrem key count value` `删除值为value的元素.`
 ** lrem k 0 1 `删除所有值为1的元素.`
 ** lrem k 1 1 `从左向右删除1个值为1的元素.`
@@ -136,7 +151,7 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 .查
 * `lrange key start end` `取出列表中从left到end的元素(左右都是闭区间). list从左到右索引下标为0到N-1, 从右向左索引下标为-1到-N.`
-** lrange k 0 -1
+** lrange k 0 -1 `取出列表所有元素.`
 * `lindex key index` `查看index处的值.`
 ** lindex k 3
 * `llen key` `获取列表长度.`
@@ -161,11 +176,12 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 * `sadd key value [value1 value2 ...]`
 * `srem key value [value1 value2 ...]` `删除set中元素.`
 * `scard key` `获取set元素个数.`
+* `smove source target value` `将value从source移动到target.`
 * `sismember key value` `set中是否存在该元素.`
 ** sismember k 1
 * `srandmember key [count]` `随机获取set中元素.`
 ** srandmember k 10
-* `spop key` `随机弹出set中元素.`
+* `spop key [count]` `随机弹出set中元素.`
 * `sinter key [key1 key2 ...]` `取多个set的交集.`
 ** sinter a b c
 * `sunion key [key1 key2 ...]` `取多个set的并集.`
@@ -184,21 +200,24 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 * 打tag `sinter`
 * 抽奖 `spop, srandmember`
+* 社交关系 `sadd, spop, srem, smembers`
+* 共同关注 `sinter`
 
 === zset
 
 ==== 命令
 
-* `zadd key [NX|XX|INCR] score member [score1 member1 ...]`
+* `zadd key [NX|XX|INCR|CH] score member [score1 member1 ...]`
 ** zadd k 1 a 2 b
 ** zadd k NX 1 a 2 b `NX表示member不存在才添加.`
 ** zadd k XX 11 a 2 c `XX表示member存在才更新.`
 ** zadd k INCR 123 a `INCR表示加分数.`
+** zadd k CH 123 a 1000 b `CH表示修改的成员数量.`
 * `zcard key` : `获取member数量.`
+* `zrem key member` : `删除某个member.`
 * `zscore key member` : `获取member的分数.`
 * `zrank key member` : `分数从低到高获取member名次.`
 * `zrevrank key member` : `分数从高到低获取member名次.`
-* `zrem key member` : `删除某个member.`
 * `zincrby key increment member` : `给某个member加score.`
 ** zincrby k 10 a
 * `zrange|zrevrange key start end [withscores]` `从低到高/从高到低获取排行start到end的member[和它的分数].`
@@ -215,6 +234,11 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 * `zremrangebyscore key min max` `删除分数从min到max的member.`
 * `zinterstore|zunionstore destination numKeys key [key1 ...] [weights weight] [aggregate SUM|MIN|MAX]` `将numKeys个zset成员乘以按照各自的权重进行SUM/MIN/MAX操作, 存放到destination中.`
 ** zinterstore dest 2 k1 k2 weights 1 0.5 aggregate sum
+* `zrangebylex key min max` `按照字典顺序过滤成员.`
+* `zlexcount key min max` `按照字典顺序过滤成员, 再获取数量.`
+* `zremrangebylex key min max` `删除字典顺序内成员.`
+* `zpopmax` `移除分最高的成员.`
+* `zpopmin` `移除分最低的成员.`
 
 ==== 内部编码
 
@@ -224,6 +248,10 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 ==== 使用场景
 
 * 排行榜
+
+=== HyperLogLog
+
+==== 命令
 
 == key管理
 

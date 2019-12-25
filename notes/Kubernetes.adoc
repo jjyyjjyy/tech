@@ -88,6 +88,36 @@ include::k8s/vagrant/kubeadm-init.sh[]
 
 == 插件安装
 
+=== helm
+
+==== 基本概念
+
+* Chart: chart用于描述一个安装包
+* Repository: 存放chart的database
+* Release: chart在Kubernetes集群中部署后的一个实例
+
+==== 安装
+
+[source,bash]
+----
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+helm repo add stable http://mirror.azure.cn/kubernetes/charts/
+----
+
+==== 常用命令
+
+https://docs.helm.sh/developing_charts/#charts
+
+ helm search <chart>
+ helm inspect [values] <chart>
+ helm ls
+ helm install {CHART|TAR|URL} [--name <name>]
+ helm delete <chart>
+ helm repo list
+ helm repo add dev https://example.com/dev-charts
+ helm create <new_chart>
+ helm package <chart>
+
 === 安装Dashboard
 
 [source,bash]
@@ -97,27 +127,8 @@ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashb
 openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
 kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
 kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
-----
-
-=== 启用api-server的swagger ui
-
-[source,bash]
-----
-sudo vim /etc/kubernetes/manifests/kube-apiserver.yaml
-# command 加上
-- --enable-swagger-ui=true
-- --insecure-bind-address=0.0.0.0
-- --insecure-port=8080
-----
-
-TIP: api-server属于static pod, 改完配置文件后会自动生效.
-
-=== helm安装
-
-[source,bash]
-----
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-helm repo add stable http://mirror.azure.cn/kubernetes/charts/
+# 安装metrics-server监控
+helm install metrics-server stable/metrics-server --namespace kubernetes-dashboard --set args={"--kubelet-insecure-tls=true,--kubelet-preferred-address-types=InternalIP\,Hostname\,ExternalIP"} --set image.repository=registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64
 ----
 
 == kubernetes各个组件功能
@@ -414,68 +425,6 @@ envFrom:
   - configMapRef:
       name: kubia-cm
     prefix: log
-----
-
-== Helm
-
- Kubernetes 包管理工具
-
-=== 基本概念
-
-* Chart: chart用于描述一个安装包
-* Repository: 存放chart的database
-* Release: chart在Kubernetes集群中部署后的一个实例
-* Tiller: Helm的服务端, 用于接收Helm的请求, 根据Chart生成Kubernetes的manifest文件后再部署应用.
-
-=== 安装
-
-[source,bash]
-----
-sudo wget https://soft-1252259164.cos.ap-shanghai.myqcloud.com/helm -O /usr/local/bin/helm
-sudo chmod +x /usr/local/bin/helm
-kubectl -n kube-system create sa tiller
-kubectl -n kube-system create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-helm init --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.14.0 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts --service-account tiller
-----
-
-=== 常用命令
-
-https://docs.helm.sh/developing_charts/#charts
-
- helm search <chart>
- helm inspect [values] <chart>
- helm ls
- helm install {CHART|TAR|URL} [--name <name>]
- helm delete <chart>
- helm repo list
- helm repo add dev https://example.com/dev-charts
- helm create <new_chart>
- helm package <chart>
-
-== Istio
-
-=== 核心功能
-
- ServiceMesh解决方案
-
-* Envoy: 调节服务流量
-* Mixer: 执行访问控制和使用策略, 并从Envoy代理和其他服务收集数据
-* Pilot: 为Envoy提供服务发现功能
-* Citadel: 身份认证
-
-image::https://istio.io/docs/concepts/what-is-istio/arch.svg[]
-
-=== 安装
-
-[source,bash]
-----
-curl -L https://git.io/getLatestIstio | sh -
-mv istio-* istio/
-# bash修改PATH环境变量: export PATH=$HOME/istio/bin:$PATH
-cd istio/
-kubectl create namespace istio-system
-helm template install/kubernetes/helm/istio --name istio --namespace istio-system > $HOME/istio.yaml
-kubectl create -f $HOME/istio.yaml
 ----
 
 == 技能图谱
