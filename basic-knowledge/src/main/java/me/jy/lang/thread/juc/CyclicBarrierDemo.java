@@ -1,40 +1,54 @@
 package me.jy.lang.thread.juc;
 
-import java.util.concurrent.CyclicBarrier;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
+ * 栅栏锁
+ * 作用: 可以设置线程执行完后的回调.
+ *
  * @author jy
- * @date 2017/12/03
  */
+@Slf4j
 public class CyclicBarrierDemo {
 
+    private static final int THREAD_COUNT = 5;
+
+    private static final ExecutorService THREAD_POOL = Executors.newFixedThreadPool(THREAD_COUNT);
+
+    private static final List<Player> PLAYERS = new CopyOnWriteArrayList<>();
+
     public static void main(String[] args) {
-        CyclicBarrier cyclicBarrier = new CyclicBarrier(5);
-        for (int i = 0; i < 5; i++) {
-            new Runner(cyclicBarrier).start();
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(THREAD_COUNT, () -> {
+            System.out.println("====== Result ======");
+            PLAYERS.stream()
+                .sorted(Comparator.comparingLong(a -> a.finishedAt))
+                .forEach(System.out::println);
+            THREAD_POOL.shutdownNow();
+        });
+        for (int i = 1; i <= THREAD_COUNT; i++) {
+            int tmp = i;
+            THREAD_POOL.execute(() -> {
+                try {
+                    log.info(" is running!");
+                    TimeUnit.SECONDS.sleep(tmp);
+                    PLAYERS.add(new Player().setName(Thread.currentThread().getName()).setFinishedAt(Instant.now().getEpochSecond()));
+                    cyclicBarrier.await();
+                } catch (Exception ignored) {
+                }
+            });
         }
     }
 
-
-    private static class Runner extends Thread {
-
-        private final CyclicBarrier cyclicBarrier;
-
-        private Runner(CyclicBarrier cyclicBarrier) {
-            this.cyclicBarrier = cyclicBarrier;
-        }
-
-        @Override
-        public void run() {
-            System.out.println(Thread.currentThread().getName() + " is running...");
-            try {
-                Thread.sleep(2000);
-                this.cyclicBarrier.await();
-                // everyone can drink diff wine, different with CountDownLatch
-                System.out.println(Thread.currentThread().getName() + " drink wine...");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    @Data
+    private static class Player {
+        private String name;
+        private long finishedAt;
     }
+
 }

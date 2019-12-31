@@ -14,7 +14,7 @@ sudo docker version
 sudo mkdir -p /etc/docker
 sudo tee /etc/docker/daemon.json <<-'EOF'
 {
-  "registry-mirrors": ["http://3itj1ym2.mirror.aliyuncs.com"]
+  "registry-mirrors": ["http://docker.mirrors.ustc.edu.cn"]
 }
 EOF
 # expose endpoint for external services, eg: portainer.

@@ -253,6 +253,28 @@ TIP: 可以使用 `object encoding KEY` 查看内部编码方式.
 
 ==== 命令
 
+* `pfadd key element [element ...]` `添加元素.`
+* `pfcount key [key2 key3 ...]` `获取集合的近似基数.`
+* `pfmerge destKey sourceKey1 [sourceKey2 ...]` `将其他HyperLogLog合并到destKey.`
+
+==== 使用场景
+
+* 统计uv
+
+=== bitmap
+
+==== 命令
+
+* `setbit key index value` `设置指定位置上的值`
+* `getbit key index` `获取指定位置上的值.`
+* `bitcount key [start, end]` `统计从start到end的1. (字节为单位偏移量, 1字节等于8位.)`
+* `bitpos key {0|1} [start, end]` `获取第一个指定值的位置.`
+** 在一个全为0的位图里找1, 返回-1
+** 在一个全为1的位图里找0, 返回下一个位置的索引
+* `bitop [AND|OR|XOR|NOT] result_key bitmap1 [bitmap2 ...]` `对多个bitmap进行算术操作.`
+** 处理不同长度的bitmap时, 空的位置会视作0.
+* `bitfield key [SET|GET|INCRBY|OVERFLOW] type offset value` ``
+
 == key管理
 
 * `rename/renamenx key newKey` `重命名/newKey不存在时才重命名成功.`
