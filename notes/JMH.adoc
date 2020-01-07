@@ -109,7 +109,7 @@ public class StringBenchmark {
 .Mode.java
 ----
 Throughput("thrpt", "Throughput, ops/time"), // <1>
-AverageTime("avgt", "Average time, time/op"), // <5>
+AverageTime("avgt", "Average time, time/op"), // <2>
 SampleTime("sample", "Sampling time"), // <3>
 SingleShotTime("ss", "Single shot invocation time"), // <4>
 All("all", "All benchmark modes"); // <5>

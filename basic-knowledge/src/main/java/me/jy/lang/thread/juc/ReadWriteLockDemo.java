@@ -1,4 +1,4 @@
-package me.jy.juc;
+package me.jy.lang.thread.juc;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author jy
  * @date 2018/02/25
  */
-public class ReadWriteLockTest {
+public class ReadWriteLockDemo {
 
     private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
@@ -36,7 +36,7 @@ public class ReadWriteLockTest {
     }
 
     public static void main(String[] args) {
-        ReadWriteLockTest test = new ReadWriteLockTest();
+        ReadWriteLockDemo test = new ReadWriteLockDemo();
         new Thread(test::r).start();
         new Thread(test::w).start();
         new Thread(test::r).start();

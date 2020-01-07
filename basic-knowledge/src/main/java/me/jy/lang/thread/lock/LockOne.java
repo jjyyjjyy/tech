@@ -1,4 +1,4 @@
-package me.jy.lock;
+package me.jy.lang.thread.lock;
 
 /**
  * @author jy

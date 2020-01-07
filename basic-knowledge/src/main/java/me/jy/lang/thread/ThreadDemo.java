@@ -1,4 +1,4 @@
-package me.jy.juc;
+package me.jy.lang.thread;
 
 /**
  * @author jy

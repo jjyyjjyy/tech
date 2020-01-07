@@ -13,9 +13,8 @@
 
     <properties>
         <!-- plugins -->
-        <asciidoctor.version>1.5.7.1</asciidoctor.version>
-        <asciidoctorj-diagram>1.5.11</asciidoctorj-diagram>
-        <spring-asciidoctor-extensions>0.1.3.RELEASE</spring-asciidoctor-extensions>
+        <asciidoctor.version>2.0.0-RC.1</asciidoctor.version>
+        <asciidoctorj-diagram>2.0.0</asciidoctorj-diagram>
     </properties>
 
     <build>
@@ -37,9 +36,11 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>io.spring.asciidoctor</groupId>
-                        <artifactId>spring-asciidoctor-extensions</artifactId>
-                        <version>${spring-asciidoctor-extensions}</version>
+                        <groupId>io.github.jjyy</groupId>
+                        <artifactId>asciidoctor-block-switch</artifactId>
+                        <version>1.0.0</version>
+                        <systemPath>${project.basedir}/lib/asciidoctor-block-switch-1.0.0.jar</systemPath>
+                        <scope>system</scope>
                     </dependency>
                     <dependency>
                         <groupId>org.asciidoctor</groupId>

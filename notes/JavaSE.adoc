@@ -411,7 +411,7 @@ Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属
 [source,java]
 .Lock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/Lock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/Lock.java[]
 ----
 
 ==== 双线程实现互斥
@@ -419,19 +419,19 @@ include::../basic-knowledge/src/test/java/me/jy/lock/Lock.java[]
 [source,java]
 .LockOne.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/LockOne.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/LockOne.java[]
 ----
 
 [source,java]
 .LockTwo.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/LockTwo.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/LockTwo.java[]
 ----
 
 [source,java]
 .PetersonLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/PetersonLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/PetersonLock.java[]
 ----
 
 ==== 多线程实现互斥
@@ -439,13 +439,13 @@ include::../basic-knowledge/src/test/java/me/jy/lock/PetersonLock.java[]
 [source,java]
 .FilterLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/FilterLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/FilterLock.java[]
 ----
 
 [source,java]
 .BakeryLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/BakeryLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/BakeryLock.java[]
 ----
 
 === 内存访问
@@ -470,7 +470,7 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/BakeryLock.java[]
 [source,java]
 .TASLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/TASLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TASLock.java[]
 ----
 
 .TAS缺点:
@@ -482,7 +482,7 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/TASLock.java[]
 [source,java]
 .TTASLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/TTASLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TTASLock.java[]
 ----
 
 .TTAS改进:
@@ -493,13 +493,13 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/TTASLock.java[]
 [source,java]
 .Backoff.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/Backoff.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/Backoff.java[]
 ----
 
 [source,java]
 .TTASBackoffLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/TTASBackoffLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TTASBackoffLock.java[]
 ----
 
 .TTASBackoffLock改进:
@@ -510,7 +510,7 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/TTASBackoffLock.java[]
 [source,java]
 .ArrayLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/ArrayLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/ArrayLock.java[]
 ----
 
 ==== 队列锁(CLH)
@@ -518,7 +518,7 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/ArrayLock.java[]
 [source,java]
 .CLHLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/CLHLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/CLHLock.java[]
 ----
 
 ==== 队列锁(MCS)
@@ -526,7 +526,7 @@ include::../basic-knowledge/src/test/java/me/jy/lock/spin/CLHLock.java[]
 [source,java]
 .MCSLock.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lock/spin/MCSLock.java[]
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/MCSLock.java[]
 ----
 
 == QA

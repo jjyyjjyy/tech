@@ -1,4 +1,4 @@
-package me.jy.lock;
+package me.jy.lang.thread.lock;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;

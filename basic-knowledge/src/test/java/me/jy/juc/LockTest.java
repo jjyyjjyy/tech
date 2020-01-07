@@ -1,6 +1,8 @@
-package me.jy.lock;
+package me.jy.juc;
 
-import me.jy.lock.spin.*;
+import me.jy.lang.thread.lock.Lock;
+import me.jy.lang.thread.lock.PetersonLock;
+import me.jy.lang.thread.lock.spin.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;

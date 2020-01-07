@@ -16,6 +16,6 @@
 [source,java]
 .MockitoScratches.java
 ----
-include::../basic-knowledge/src/test/java/me/jy/lang/mockito/MockitoScratches.java[tags=demo]
+include::../basic-knowledge/src/test/java/me/jy/mockito/MockitoScratches.java[tags=demo]
 ----
 

@@ -1,6 +1,6 @@
-package me.jy.lock.spin;
+package me.jy.lang.thread.lock.spin;
 
-import me.jy.lock.Lock;
+import me.jy.lang.thread.lock.Lock;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

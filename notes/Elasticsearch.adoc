@@ -32,7 +32,93 @@ sudo chmod 777 ~/volumes/es/ -R
 [source,yaml]
 .docker-compose.yml
 ----
-include::https://raw.githubusercontent.com/jjyyjjyy/docker-compose-scratches/master/elk/docker-compose.yml[]
+version: '3'
+services:
+  es01:
+    image: elasticsearch:7.4.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data01:/usr/share/elasticsearch/data
+    ports:
+      - 19200:9200
+    networks:
+      - esnet
+  es02:
+    image: elasticsearch:7.4.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data02:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+  es03:
+    image: elasticsearch:7.4.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data03:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+  kibana:
+    container_name: kibana
+    image: kibana:7.4.2
+    environment:
+      - xpack.security.enabled=true
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=sonic333
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
+      - SERVER_HOST=0.0.0.0
+      - LOGGING_TIMEZONE=Asia/Shanghai
+      - TZ=Asia/Shanghai
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+networks:
+  esnet:
 ----
 
 == 基本概念
@@ -965,5 +1051,5 @@ GET /page_view_info/_search
       }
     }
   }
-}
+= }
 ----
