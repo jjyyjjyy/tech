@@ -178,5 +178,6 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 <6> 如果新旧首尾都不同, 则在oldChildren中根据新首的key寻找相同的VNode.
 <7> 如果找不到, 则将新首插入到旧首前.
 <8> 如果找到, 并且是同类VNode, 则patch该VNode, 并将patch后的VNode插入到旧首的前面. 原旧节点位置元素置为undefined.
-<9> 如果找到, 但不是同类VNode, 则相当于没找到, 同步骤7. <10> 如果oldChildren先遍历完, 则说明newChildren中有新VNode加入, 则将newChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode插入到旧尾.
+<9> 如果找到, 但不是同类VNode, 则相当于没找到, 同步骤7.
+<10> 如果oldChildren先遍历完, 则说明newChildren中有新VNode加入, 则将newChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode插入到旧尾.
 <11> 如果newChildren先遍历完, 则说明newChildren中有VNode被删除, 则将oldChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode删除.

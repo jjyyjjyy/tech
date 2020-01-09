@@ -2,6 +2,7 @@
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
+:hardbreaks:
 :sectlinks:
 :sectnums:
 :stem:
@@ -10,6 +11,10 @@
 :toc-title: 目录
 :tabsize: 4
 :docinfo: shared
+
+.Resources
+* https://book.douban.com/subject/34907497[, window="blank"]
+* https://book.douban.com/subject/26740520[, window="blank"]
 
 == JVM概述
 
@@ -20,7 +25,11 @@ Java字节码无法直接执行, JVM需要将其翻译成机器码.
 * 解释执行: 逐条将字节码翻译成机器码.
 * 即时编译执行: 将一个方法中所有的字节码翻译成机器码后再执行.
 
-HotSpot内置多种编译器: C1(启动块,编译时间短)/C2(编译时间比较长,但执行效率高)
+HotSpot内置多种编译器:
+
+* `C1` 启动块,编译时间短
+* `C2` 编译时间比较长,但执行效率高
+* `graal`
 
 == JVM数据类型
 
@@ -84,31 +93,74 @@ HotSpot内置多种编译器: C1(启动块,编译时间短)/C2(编译时间比�
 
 == JDK常用工具
 
-* jps
+=== jcmd
 
- 查看系统运行的所有Java进程的pid
+打印Java进程所涉及的基本类, 线程和VM信息
 
-* jinfo [option] <pid>
+`jcmd <pid> <command> [args]`
 
- 查看指定Java进程信息. 如: jinfo -flags 1 查看pid为1的进程的所有启动参数. jinfo -flag <FLAG_NAME> 1 查看1进程指定flag的值
+* `jcmd 9914 VM.system_properties` 查看JVM进程properties
+* `jcmd 9914 VM.uptime` 查看JVM进程运行时间
+* `jcmd 9914 VM.version` 查看JVM版本
+* `jcmd 9914 VM.command_line` 查看JVM启动命令
+* `jcmd 9914 VM.flags` 查看JVM启动参数
+* `jcmd 9914 Thread.print` 查看JVM线程栈信息
 
-* jstack <pid>
+=== jps
 
- 查看指定Java进程中每个线程栈信息
+查看系统运行的所有Java进程的pid
 
-* jstat [option] <pid> [interval]
+`jps -l`
 
- 查看指定进程的内存概况. 如: jstat -gcutil 1 1000 每隔1秒输出1进程的概况
+=== jinfo
 
-* javap <class file>
-** -c: 反编译class
-** -p: 显示 `private` 方法和字段
-** -v: 显示详细信息
-** -s: 显示类型签名
-** -l: 输出行号和本地变量表
-** -sysinfo: 显示类的系统信息
+查看指定Java进程信息
 
-== JVM参数概述
+`jinfo [option] <pid>`
+
+* `jinfo -flags 1` 查看pid为1的进程的所有启动参数
+* `jinfo -flag UseCompressedOops 9914` 查看指定参数
+
+=== jstack
+
+查看指定Java进程中每个线程栈信息
+
+`jstack <pid>`
+
+=== jstat
+
+查看指定进程的内存概况. 如: jstat -gcutil 1 1000 每隔1秒输出1进程的概况
+
+`jstat [option] <pid> [interval]`
+
+.各列含义
+* `S0` 第一个survivor区容量
+* `S1` 第二个survivor区容量
+* `E` Eden区容量
+* `O` Old区容量
+* `M` Metaspace区容量
+* `YGC` young gc次数
+* `YGCT` young gc总耗时
+* `FGC` full gc次数
+* `FGCT` full gc总耗时
+* `GCT` gc总耗时
+
+=== javap
+
+查看class字节码文件
+
+`javap <class file>`
+
+* -c: 反编译class
+* -p: 显示 `private` 方法和字段
+* -v: 显示详细信息
+* -s: 显示类型签名
+* -l: 输出行号和本地变量表
+* -sysinfo: 显示类的系统信息
+
+== JVM参数
+
+=== 参数分类
 
 JVM主要接受两类标志: boolean类和赋值类参数.
 
@@ -119,53 +171,46 @@ JVM主要接受两类标志: boolean类和赋值类参数.
 * 赋值类: `-XX:+FLAG_NAME=VALUE`.
 如 `-XX:AutoBoxCacheMax=20000`.
 
-查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
+TIP: 查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
 
-== 常用启动参数
+=== 常用启动参数
 
--XX:+PrintGCDetails
+* 开启gc日志 `-XX:+PrintGCDetails`
+* gc日志写入指定文件 `-Xloggc:<FILENAME>`
+* 启用gc日志文件切割 `-XX:+UseGCLogfileRotation -XX:NumberOfGCLogfiles=N -XX:GCLogfileSize=N`
 
- 开启gc日志
+== 垃圾收集算法
 
--Xloggc:FILENAME
+=== 复制
 
- gc日志写入指定文件
+=== 标记清除
 
--XX:+UseGCLogfileRotation
+=== 标记整理
 
- 启用gc日志文件切割
-
--XX:NumberOfGCLogfiles=N
-
--XX:GCLogfileSize=N
-
-== 查看JVM CPU占用高的原因方法:
-
-. `jps` 查看JVM进程 `PID`.
-. `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.
-. `printf '%x\n' TID` 将线程id转成16进制数.
-. `jstack PID | grep TID -A 10` 查看该线程所在堆栈, 检查堆栈所在代码上的错误.
-
-== 垃圾收集器(Garbage Collector)
+== 垃圾收集器
 
 [.lead]
-垃圾收集分两步: 查找不再使用的对象, 然后释放这些对象所在的内存.
+垃圾收集分两步: 在为对象分配内存时遇到内存不足, 查找不再使用的对象, 然后释放这些对象所在的内存.
 
-[%hardbreaks]
-[.lead]
 由于对象的生存时间不同, 所有的垃圾收集器都采用分代收集的方式.
-堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation),新生代又被分为一个Eden区和两个Survivor区.
-对象首先在新生代Eden区分配, *Eden区填满时*, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代. 这一过程称为 *Minor GC*. 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
-对象不断移动到老年代, 等到 *老年代空间占满*, JVM会回收整个堆. 这一过程称为 *Full GC*.
-所有的垃圾收集器在Minor GC时都会产生STW. 但FULL GC时不一定会产生STW,
+堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation), 默认空间占比 1:2.
+新生代又被分为一个Eden区和两个Survivor区. 默认空间占比 8:1:1.
 
-* Serial垃圾收集器
+对象首先在新生代Eden区分配, *Eden区填满时*, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代. 这一过程称为 *Minor GC*. 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
+单独回收老年代的过程称为 *Major GC*. (CMS)
+回收新生代和一部分老年代的过程称为 *Mixed GC*.(G1)
+对象不断移动到老年代, 等到 *老年代空间占满*, JVM会回收整个堆. 这一过程称为 *Full GC*.
+
+.参考:
+* https://www.zhihu.com/question/41922036/answer/93079526[, window="_blank"]
+
+=== Serial
 
 [.lead]
 Serial垃圾收集器使用单线程回收内存, 垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseSerialGC` 启用Serial垃圾收集器.
 
-* Parallel垃圾收集器
+=== Parallel
 
 TIP: JDK8默认收集器
 
@@ -173,7 +218,7 @@ TIP: JDK8默认收集器
 Parallel垃圾收集器使用多线程回收内存, 垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseParallelGC` 启用Parallel垃圾收集器.
 
-* CMS收集器
+=== CMS
 
 [.lead]
 CMS回收新生代时会暂停所有应用线程, 使用多线程回收.
@@ -181,15 +226,13 @@ CMS回收新生代时会暂停所有应用线程, 使用多线程回收.
 但是当堆变得碎片化, CMS会退化成Serial收集器使用单线程回收内存并整理老年代, 之后再恢复成多线程收集.
 使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
 
-* G1收集器
+=== G1
 
 TIP: JDK9默认收集器
 
 使用 `-XX:+UseG1GC` 启动G1收集器
 
-* ZGC收集器
-
-WARNING: JDK11新增收集器
+=== ZGC
 
 使用 `-XX:+UseZGC` 启动ZGC收集器
 
@@ -285,11 +328,17 @@ Heap after GC invocations=4 (full 2):
 
 === CMS垃圾收集器
 
-=== Interview
+== QA
 
-* 创建对象方式:
-** new
-** Object.clone()
-** Class#newInstance()
-** 反序列化
-** Unsafe.allocateInstance
+[qanda]
+创建对象方式?::
+* new
+* Object.clone()
+* Class#newInstance()
+* 反序列化
+* Unsafe.allocateInstance
+如何找到JVM CPU占用高的原因?::
+. `jps` 查看JVM进程 `PID`.
+. `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.
+. `printf '%x\n' TID` 将线程id转成16进制数.
+. `jstack PID | grep TID -A 10` 查看该线程所在堆栈, 检查堆栈所在代码上的错误.
