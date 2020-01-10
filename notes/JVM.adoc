@@ -175,9 +175,11 @@ TIP: 查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
 
 === 常用启动参数
 
-* 开启gc日志 `-XX:+PrintGCDetails`
-* gc日志写入指定文件 `-Xloggc:<FILENAME>`
-* 启用gc日志文件切割 `-XX:+UseGCLogfileRotation -XX:NumberOfGCLogfiles=N -XX:GCLogfileSize=N`
+* `-XX:+PrintGCDetails` 开启gc日志
+* `-Xloggc:<FILENAME>` gc日志写入指定文件
+* `-XX:+UseGCLogfileRotation -XX:NumberOfGCLogfiles=N -XX:GCLogfileSize=N` 启用gc日志文件切割
+* `-XX:MaxGCPauseMillis=N` 设定应用可承受的最大停顿时间.一般设置为200, 如果设置的值过小, 会导致老年代非常小, 从而频繁进行FULL GC.
+* `-XX:GCTimeRatio=N` 设置应用运行时间占比: stem:["Throughput"="GCTimeRatio"/(1+"GCTimeRatio")]
 
 == 垃圾收集算法
 
@@ -263,70 +265,65 @@ TIP: JDK9默认收集器
 
 [source,txt]
 ----
-{Heap before GC invocations=5 (full 2):
- PSYoungGen      total 1450496K, used 1284666K [0x0000000595580000, 0x0000000621980000, 0x00000007c0000000)
-  eden space 1424384K, 90% used [0x0000000595580000,0x00000005e3c0e8b8,0x00000005ec480000)
-  from space 26112K, 0% used [0x0000000620000000,0x0000000620000000,0x0000000621980000)
-  to   space 174592K, 0% used [0x000000060c480000,0x000000060c480000,0x0000000616f00000)
- ParOldGen       total 2796544K, used 30083K [0x0000000140000000, 0x00000001eab00000, 0x0000000595580000)
-  object space 2796544K, 1% used [0x0000000140000000,0x0000000141d60f58,0x00000001eab00000)
- Metaspace       used 56984K, capacity 58972K, committed 59136K, reserved 1099776K
-  class space    used 7427K, capacity 7846K, committed 7936K, reserved 1048576K
 2018-07-25T10:15:43.831+0000: 7.861: [GC (Metadata GC Threshold)
 Desired survivor size 178782208 bytes, new threshold 7 (max 15)
-[PSYoungGen: 1284666K->30929K(1958400K)] // <1>
- 1314750K->61020K(4754944K), // <2>
-  0.0605807 secs] [Times: user=0.31 sys=0.02, real=0.06 secs] // <3>
-Heap after GC invocations=5 (full 2):
- PSYoungGen      total 1958400K, used 30929K [0x0000000595580000, 0x0000000620480000, 0x00000007c0000000)
-  eden space 1927168K, 0% used [0x0000000595580000,0x0000000595580000,0x000000060af80000)
-  from space 31232K, 99% used [0x000000060c480000,0x000000060e2b4420,0x000000060e300000)
-  to   space 174592K, 0% used [0x0000000615a00000,0x0000000615a00000,0x0000000620480000)
- ParOldGen       total 2796544K, used 30091K [0x0000000140000000, 0x00000001eab00000, 0x0000000595580000)
-  object space 2796544K, 1% used [0x0000000140000000,0x0000000141d62f58,0x00000001eab00000)
- Metaspace       used 56984K, capacity 58972K, committed 59136K, reserved 1099776K
-  class space    used 7427K, capacity 7846K, committed 7936K, reserved 1048576K
-}
+[PSYoungGen: 1284666K->30929K(1958400K)] <1>
+ 1314750K->61020K(4754944K), <2>
+  0.0605807 secs] [Times: user=0.31 sys=0.02, real=0.06 secs] <3>
 ----
-<1> 新生代的空间使用从1284MB降到30MB, 此时整个新生代大小为1958MB
-<2> 整个堆的空间使用从1314MB降到61MB
-<3> 本次gc花费0.06秒(并行回收)
+<1> 新生代的空间使用从1284MB降到30MB, 此时整个新生代大小为1958MB.
+<2> 整个堆的空间使用从1314MB降到61MB.
+<3> 本次gc花费0.06秒(并行回收), 总共消耗CPU的时间为0.31秒.
 
 ==== Parallel Full GC
 
 [source,txt]
 ----
-{Heap before GC invocations=4 (full 2):
- PSYoungGen      total 1450496K, used 25798K [0x0000000595580000, 0x0000000621980000, 0x00000007c0000000)
-  eden space 1424384K, 0% used [0x0000000595580000,0x0000000595580000,0x00000005ec480000)
-  from space 26112K, 98% used [0x0000000620000000,0x0000000621931828,0x0000000621980000)
-  to   space 174592K, 0% used [0x000000060c480000,0x000000060c480000,0x0000000616f00000)
- ParOldGen       total 2796544K, used 12907K [0x0000000140000000, 0x00000001eab00000, 0x0000000595580000)
-  object space 2796544K, 0% used [0x0000000140000000,0x0000000140c9afb8,0x00000001eab00000)
- Metaspace       used 33973K, capacity 35428K, committed 35496K, reserved 1081344K
-  class space    used 4333K, capacity 4600K, committed 4608K, reserved 1048576K
 2018-07-25T10:15:39.817+0000: 3.847: [Full GC (Metadata GC Threshold)
-[PSYoungGen: 25798K->0K(1450496K)] // <1>
-[ParOldGen: 12907K->30083K(2796544K)] // <2>
-38705K->30083K(4247040K), // <3>
-[Metaspace: 33973K->33973K(1081344K)], 0.0771380 secs]
-[Times: user=0.40 sys=0.01, real=0.07 secs]
-Heap after GC invocations=4 (full 2):
- PSYoungGen      total 1450496K, used 0K [0x0000000595580000, 0x0000000621980000, 0x00000007c0000000)
-  eden space 1424384K, 0% used [0x0000000595580000,0x0000000595580000,0x00000005ec480000)
-  from space 26112K, 0% used [0x0000000620000000,0x0000000620000000,0x0000000621980000)
-  to   space 174592K, 0% used [0x000000060c480000,0x000000060c480000,0x0000000616f00000)
- ParOldGen       total 2796544K, used 30083K [0x0000000140000000, 0x00000001eab00000, 0x0000000595580000)
-  object space 2796544K, 1% used [0x0000000140000000,0x0000000141d60f58,0x00000001eab00000)
- Metaspace       used 33973K, capacity 35428K, committed 35496K, reserved 1081344K
-  class space    used 4333K, capacity 4600K, committed 4608K, reserved 1048576K
-}
+[PSYoungGen: 25798K->0K(1450496K)] <1>
+[ParOldGen: 12907K->30083K(2796544K)] <2>
+38705K->30083K(4247040K), <3>
+[Metaspace: 33973K->33973K(1081344K)], 0.0771380 secs] <4>
+[Times: user=0.40 sys=0.01, real=0.07 secs] <5>
 ----
-<1> 新生代的占用空间从25MB降到0, 此时整个新生代大小为1450MB
-<2> 老年代的占用空间从12MB升到30MB, 此时整个老年代大小为2796MB (此时老年代经过了压缩整理)
-<3> 整个堆的空间占用从38MB降到30MB, 此时整个堆的大小为4247MB
+<1> 新生代的占用空间从25MB降到0, 此时整个新生代大小为1450MB.
+<2> 老年代的占用空间从12MB升到30MB, 此时整个老年代大小为2796MB (此时老年代经过了压缩整理).
+<3> 整个堆的空间占用从38MB降到30MB, 此时整个堆的大小为4247MB.
+<4> Metaspace没有回收.
+<5> 本次回收用时.0.7秒, 总消耗CPU时间0.4秒.
 
 === CMS垃圾收集器
+
+[source,java]
+----
+// -Xmx20M -Xms20M -Xmn10M -verbose:gc -XX:+PrintGCDetails -XX:+UseConcMarkSweepGC
+public class MemoryTest {
+
+    private static final int MB = 1024 * 1024;
+
+    public static void main(String[] args){
+        byte[] b1 = new byte[MB];
+        byte[] b2 = new byte[2 * MB];
+        byte[] b3 = new byte[3 * MB];
+        byte[] b4 = new byte[4 * MB];
+        byte[] b6 = new byte[2 * MB];
+        byte[] b7 = new byte[3 * MB];
+    }
+}
+----
+
+==== ParNew Minor GC
+
+[source,text]
+----
+[GC (Allocation Failure) [ParNew: 7819K->518K(9216K), 0.0044298 secs] <1>
+7819K->6664K(19456K), 0.0044645 secs] <2>
+[Times: user=0.02 sys=0.00, real=0.00 secs] <3>
+----
+<1> 新生代的占用空间从78MB降到5MB, 此时整个新生代大小为92MB.
+<2> 整个堆的空间占用从78MB降到66MB, 此时整个堆的大小为20MB.
+<3> 本次GC用时0.001秒, 总消耗CPU时间0.02秒.
+
 
 == QA
 

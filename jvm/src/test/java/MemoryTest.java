@@ -1,8 +1,5 @@
-package scratches;
-
 /**
  * @author jy
- * @date 2018/02/25
  */
 public class MemoryTest {
 
@@ -35,11 +32,12 @@ public class MemoryTest {
         System.runFinalization();
         System.out.println(map.get(1));*/
 
-        //-Xmx20M -Xms20M -Xmn10M -verbose:gc -XX:+PrintGCDetails
+        // -Xmx20M -Xms20M -Xmn10M -verbose:gc -XX:+PrintGCDetails
         byte[] b1 = new byte[MB];
         byte[] b2 = new byte[2 * MB];
         byte[] b3 = new byte[3 * MB];
         byte[] b4 = new byte[4 * MB];
+        byte[] b6 = new byte[2 * MB];
     }
 
     private static class Obj {
