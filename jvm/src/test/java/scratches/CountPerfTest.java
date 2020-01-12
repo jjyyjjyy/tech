@@ -1,6 +1,6 @@
 package scratches;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author jy
  */
-public class CountPerfTest {
+class CountPerfTest {
 
     private static final int MAX = 500_000_000;
     private static final ExecutorService THREAD_POOL = Executors.newFixedThreadPool(2);
@@ -18,7 +18,7 @@ public class CountPerfTest {
     private volatile int counter = 0;
 
     @Test
-    public void testWithTimer() {
+    void testWithTimer() {
         long start = System.currentTimeMillis();
 
 //        testSingleThread(); // 3000ms
