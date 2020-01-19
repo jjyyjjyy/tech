@@ -181,3 +181,60 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 <9> 如果找到, 但不是同类VNode, 则相当于没找到, 同步骤7.
 <10> 如果oldChildren先遍历完, 则说明newChildren中有新VNode加入, 则将newChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode插入到旧尾.
 <11> 如果newChildren先遍历完, 则说明newChildren中有VNode被删除, 则将oldChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode删除.
+
+== 调试环境搭建
+
+=== 下载代码
+
+[source,bash]
+----
+git clone git@github.com:vuejs/vue.git
+cd vue
+
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+yarn config set sass_binary_site https://npm.taobao.org/mirrors/node-sass
+yarn config set phantomjs_cdnurl https://npm.taobao.org/mirrors/phantomjs
+yarn
+----
+
+=== 修改配置
+
+`package.json` 里 `dev` 后加上 `--sourcemap` .
+
+=== 打包vue
+
+[source,bash]
+----
+yarn dev
+----
+
+=== 测试页面
+
+[source,html]
+.examples/HelloWorld.html
+----
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+<div id="demo">
+  {{message}}
+</div>
+<script>
+  new Vue({
+    el: '#demo',
+    data() {
+      return{
+        message: "Hello World!"
+      }
+    }
+  })
+</script>
+</body>
+</html>
+----
+
+debug这个页面即可.
