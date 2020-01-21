@@ -569,6 +569,83 @@ HotSpot内置多种编译器:
 * methods
 * attributes
 
+=== 类加载器
+
+==== 获取类加载器的方法
+
+* `Class::getClassLoader()`
+* `Thread.currentThread().getContextClassLoader()`
+* `ClassLoader.getSystemClassLoader()`
+
+==== BootstrapClassLoader
+
+启动类加载器. 本身使用C/C++实现, 没有父加载器.
+通过 `sun.misc.Launcher.getBootstrapClassPath().getURLs()` 获取加载类的路径.
+
+==== ExtClassLoader
+
+加载jre/lib/ext子目录下的类库, 父加载器为BootstrapClassLoader.
+通过 `System.getProperty("java.ext.dirs")` 获取加载类的路径.
+
+==== AppClassLoader
+
+加载classpath/java.class.path路径下的类库, 是应用程序默认的类加载器. 父加载器为ExtClassLoader.
+
+==== 用户自定义类加载器
+
+.为什么要自定义类加载器?
+* 修改类加载的方式.
+* 隔离加载类.
+* 扩展加载源.
+* 防止源码泄露.
+
+.实现自定义类加载器的方式
+* 继承 `ClassLoader` 类, 覆盖 `findClass()` 方法.
+* 继承 `URLClassLoader` 类.
+
+==== 双亲委派机制
+
+[.lead]
+加载某个类的class文件时, 把请求委托给父加载器处理. 如果父加载器无法加载, 则子加载器才会自己去加载.
+
+.优点
+* 避免类的重复加载.
+* 防止jdk核心类的篡改.
+
+=== 类加载的过程
+
+==== 加载
+
+. 通过一个类的全限定名获取定义此类的二进制字节流.
+. 将这个字节流所代表的的静态存储结构转化为方法区的运行时数据结构.
+. 在内存中生成一个代表这个类的 `java.lang.Class` 对象, 作为方法区这个类的各种数据的访问入口.
+
+==== 链接
+
+链接分为 _验证, 准备, 解析_ 三个阶段.
+
+.验证
+确保字节流符合当前虚拟机要求, 保证类加载的正确性. 验证文件格式/元数据/字节码/符号引用.
+
+.准备
+为静态变量分配零值(null/0). 常量设置初始值.
+
+.解析
+解析符号引用为直接引用.
+
+==== 初始化
+
+执行类构造器方法 `clinit()` , 该方法是由javac编译器自动收集类中的所有类变量的赋值动作和静态代码块中的语句合并而来.
+
+.触发类初始化的条件
+* 创建类的实例.
+* 访问类的静态变量, 或者对该变量赋值.
+* 调用类的静态方法.
+* 反射. `Class.forName("FQCN")`
+* 加载一个类的子类.
+* JVM启动时作为启动入口的类.
+* 通过MethodHandler解析的类.
+
 === JDK常用工具
 
 ==== jcmd
