@@ -18,30 +18,29 @@ public class OOMDemo {
         }
     }
 
+    // tag::StackOverflow[]
     // java.lang.StackOverflowError
-    private static void stackOverFlow() {
-        stackOverFlow();
+    private static void stackOverflow() {
+        stackOverflow();
     }
+    // end::StackOverflow[]
 
+    // tag::StackOOM[]
     // java.lang.OutOfMemoryError: unable to create new native thread
     private static void createInfiniteThread() {
         while (true) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        TimeUnit.SECONDS.sleep(100L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            new Thread(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(100L);
+                } catch (InterruptedException ignored) {
                 }
             }).start();
         }
     }
+    // end::StackOOM[]
 
     // -Xmx10m
-    // jdk7: java.lang.OutOfMemoryError: GC overhead limit exceeded
-    // above jdk8: java.lang.OutOfMemoryError: Java heap space
+    // java.lang.OutOfMemoryError: Java heap space
     private static void testUTF8ConstantPoolOOM() {
         List<String> list = new ArrayList<>(1000);
         while (true) {

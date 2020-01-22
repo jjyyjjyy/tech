@@ -646,6 +646,63 @@ HotSpot内置多种编译器:
 * JVM启动时作为启动入口的类.
 * 通过MethodHandler解析的类.
 
+=== JVM内存布局
+
+[plantuml, jvm-memory, svg]
+....
+@startuml
+package "JVM内存布局" {
+  [方法区] #Red
+  [程序计数器] #Gray
+  [本地方法栈] #Gray
+  [堆] #Red
+  [虚拟机栈] #Gray
+}
+@enduml
+....
+
+红色代表线程共享, 灰色代表线程私有.
+
+==== PC
+
+存储下一条要执行的指令的地址.
+如果在执行的是native方法, 则值为undefined.
+
+==== 虚拟机栈
+
+每个线程在创建时都会创建一个虚拟机栈, 栈中的数据以栈帧的格式存在. 在这个线程上执行的每个方法都各自对应一个栈帧.
+栈顶的栈帧对应的就是当前正在执行的方法, 如果该方法调用了其他方法, 则创建出一个新的栈帧并入栈. 方法执行完或抛出异常时当前栈帧会出栈.
+
+.栈帧组成
+* 局部变量表(方法内部局部变量字节码行号和变量名的映射关系.)
+* 操作数栈(在方法执行过程中保存计算结果的临时存储空间. 操作数栈的大小 `max_stack` 在编译时就会确定好, 保存在方法的Code属性中.)
+* 动态链接(指向运行时常量池的方法引用.)
+* 方法返回地址(存放调用该方法的pc寄存器的值.)
+* ...
+
+线程请求分配的栈容量超过JVM允许的最大容量, JVM会抛出 `StackOverflowError` .
+如果Java虚拟机栈在尝试扩展的时候申请不到足够的内存, 或者创建新的线程时没有足够的内存去创建对应的虚拟机栈, JVM会抛出 `OutOfMemoryError` .
+
+[source,java]
+.StackOverflowError
+----
+include::../jvm/src/test/java/OOMDemo.java[tag=StackOverflow]
+----
+
+[source,java]
+.OutOfMemoryError
+----
+include::../jvm/src/test/java/OOMDemo.java[tag=StackOOM]
+----
+
+==== 本地方法栈
+
+管理本地方法的调用.
+
+==== 方法区
+
+==== 堆
+
 === JDK常用工具
 
 ==== jcmd
