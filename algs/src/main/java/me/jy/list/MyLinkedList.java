@@ -6,7 +6,6 @@ import java.util.Objects;
 
 /**
  * @author jy
- * @date 2017/11/14
  */
 public class MyLinkedList<E> implements MyCollection<E> {
 
@@ -18,6 +17,18 @@ public class MyLinkedList<E> implements MyCollection<E> {
 
     public MyLinkedList() {
         clear();
+    }
+
+    @SafeVarargs
+    public static <T> MyLinkedList<T> of(T... elements) {
+        if (Objects.isNull(elements) || elements.length == 0) {
+            return new MyLinkedList<>();
+        }
+        MyLinkedList<T> list = new MyLinkedList<>();
+        for (T element : elements) {
+            list.add(element);
+        }
+        return list;
     }
 
     @Override
@@ -60,18 +71,6 @@ public class MyLinkedList<E> implements MyCollection<E> {
     @Override
     public E get(int index) {
         return getNode(index).element;
-    }
-
-    @SafeVarargs
-    public static <T> MyLinkedList<T> of(T... elements) {
-        if (Objects.isNull(elements) || elements.length == 0) {
-            return new MyLinkedList<>();
-        }
-        MyLinkedList<T> list = new MyLinkedList<>();
-        for (T element : elements) {
-            list.add(element);
-        }
-        return list;
     }
 
     private Node<E> getNode(int index) {

@@ -1,11 +1,33 @@
 package me.jy.sort;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 /**
  * @author jy
  */
 public final class Sorts {
+
+    // tag::bubble-sort[]
+
+    /**
+     * 冒泡排序
+     * 两两比较, 如果左边的元素比右边的大, 则交换位置.
+     * O(n^2)
+     */
+    public static class BubbleSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            for (int i = arr.length - 1; i > 0; i--) {
+                for (int j = 0; j < i; j++) {
+                    if (less(arr[j + 1], arr[j])) {
+                        exchange(arr, j, j + 1);
+                    }
+                }
+            }
+        }
+    }
+    // end::bubble-sort[]
+
+    // tag::select-sort[]
 
     /**
      * 选择排序
@@ -27,6 +49,9 @@ public final class Sorts {
             }
         }
     }
+    // end::select-sort[]
+
+    // tag::insert-sort[]
 
     /**
      * 插入排序
@@ -41,33 +66,49 @@ public final class Sorts {
                 for (int j = i; j > 0; j--) {
                     if (less(arr[j], arr[j - 1])) {
                         exchange(arr, j, j - 1);
+                    } else {
+                        break;
                     }
                 }
             }
         }
     }
+    // end::insert-sort[]
+
+    // tag::shell-sort[]
 
     /**
      * 希尔排序(优化过的插入排序)
+     * <p>
+     * 步骤:
+     * 1. 选定一个增长量, 对元素进行分组.
+     * 2. 对每组元素进行插入排序.
+     * 3. 减小增长量直至1, 重复步骤2.
      */
     public static class ShellSort implements SortTemplate {
 
         @Override
         public void sort(int[] arr) {
-            int n = arr.length;
-
-            for (int gap = n / 2; gap > 0; gap /= 2) {
-                for (int i = gap; i < n; i++) {
-                    int j = i;
-                    while (j - gap >= 0 && arr[j] < arr[j - gap]) {
-                        exchange(arr, j, j - gap);
-                        j -= gap;
+            int gap = 1;
+            while (gap < arr.length / 2) {
+                gap = gap * 2 + 1;
+            }
+            for (; gap > 0; gap /= 2) {
+                for (int i = gap; i < arr.length; i++) {
+                    for (int j = i; j >= gap; j -= gap) {
+                        if (less(arr[j], arr[j - gap])) {
+                            exchange(arr, j, j - gap);
+                        } else {
+                            break; // 如果左边比j小, 则不需要继续向左比较了.
+                        }
                     }
-
                 }
             }
         }
     }
+    // end::shell-sort[]
+
+    // tag::merge-sort[]
 
     /**
      * 归并排序
@@ -77,53 +118,59 @@ public final class Sorts {
 
         @Override
         public void sort(int[] arr) {
-//            sort(arr, 0, arr.length - 1);
-            sort2(arr);
+            sort(arr, 0, arr.length - 1);
         }
 
         private void sort(int[] arr, int lo, int hi) {
-            if (hi <= lo) {
+            if (lo >= hi) {
                 return;
             }
-            int mid = (lo + hi) / 2;
+            int mid = lo + (hi - lo) / 2;
             sort(arr, lo, mid);
             sort(arr, mid + 1, hi);
             merge(arr, lo, mid, hi);
         }
 
-        private void sort2(int[] arr) {
+        /*private void sort2(int[] arr) {
             int n = arr.length;
             for (int i = 1; i < n; i += i) {
                 for (int lo = 0; lo < n - i; lo += i * 2) { // 每次处理i*2个元素再合并
                     merge(arr, lo, lo + i - 1, Math.min(n - 1, lo + i * 2 - 1));
                 }
             }
-        }
+        }*/
 
         private void merge(int[] arr, int lo, int mid, int hi) {
-            int[] copiedArr = new int[arr.length];
-            if (hi + 1 - lo >= 0) System.arraycopy(arr, lo, copiedArr, lo, hi + 1 - lo);
-            int leftStart = lo, rightStart = mid + 1;
-            for (int i = lo; i <= hi; i++) {
-                if (leftStart > mid) { // 左侧合并完成
-                    arr[i] = copiedArr[rightStart++];
-                    continue;
+
+            int[] tmpArr = new int[arr.length];
+
+            int i = 0, p1 = lo, p2 = mid + 1;
+            while (p1 <= mid && p2 <= hi) {
+                if (less(arr[p1], arr[p2])) {
+                    tmpArr[i++] = arr[p1++];
+                } else {
+                    tmpArr[i++] = arr[p2++];
                 }
-                if (rightStart > hi) { // 右侧合并完成
-                    arr[i] = copiedArr[leftStart++];
-                    continue;
-                }
-                if (less(arr[leftStart], arr[rightStart])) { // 较小值放入arr数组中
-                    arr[i] = arr[leftStart++];
-                } else arr[i] = arr[rightStart++];
             }
+            while (p1 <= mid) {
+                tmpArr[i++] = arr[p1++];
+            }
+            while (p2 <= hi) {
+                tmpArr[i++] = arr[p2++];
+            }
+            System.arraycopy(tmpArr, 0, arr, 0, tmpArr.length);
         }
 
     }
+    // end::merge-sort[]
+
+    // tag::quick-sort[]
 
     /**
      * 快速排序
      * 保证某一元素左边值比该元素值小且有序, 右边值比该元素值大且有序, 则该数组有序.
+     * 1. 找到1个分界值, 把比分界值小的放左边, 把比分界值大的放右边.
+     * 2. 重复步骤1将分界值左右两边分别排序.
      */
     public static class QuickSort implements SortTemplate {
 
@@ -133,6 +180,28 @@ public final class Sorts {
         }
 
         private void sort(int[] arr, int lo, int hi) {
+            if (lo >= hi) {
+                return;
+            }
+            int partitionIndex = partition(arr, lo, hi);
+            sort(arr, lo, partitionIndex - 1);
+            sort(arr, partitionIndex + 1, hi);
+        }
+
+        private int partition(int[] arr, int lo, int hi) {
+            int left = lo;
+            int partitionValue = arr[hi];
+
+            for (int i = left; i < hi; i++) {
+                if (arr[i] < partitionValue) {
+                    exchange(arr, i, left++);
+                }
+            }
+            exchange(arr, left, hi);
+            return left;
+        }
+
+        /*private void sort2(int[] arr, int lo, int hi) {
             if (hi <= lo) {
                 return;
             }
@@ -160,8 +229,9 @@ public final class Sorts {
             }
             exchange(arr, more, hi);
             return new int[]{less, more};
-        }
+        }*/
     }
+    // end::quick-sort[]
 
     /**
      * 堆排序

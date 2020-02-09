@@ -8,18 +8,24 @@ import java.util.stream.Stream;
 
 /**
  * @author jy
- * @date 2017/11/13
  */
 @SuppressWarnings("unchecked")
 public class MyArrayList<E> implements MyCollection<E> {
 
     private static final int DEFAULT_CAPACITY = 10;
 
-    private static final String DEFAULT_ERROR_MESSAGE = "Array index out of bounds ";
+    private static final String IOF_ERROR_MESSAGE = "Array index out of bounds ";
 
     private Object[] elements = new Object[DEFAULT_CAPACITY];
 
     private int size;
+
+    public static <T> MyArrayList<T> of(T... elements) {
+        MyArrayList<T> newInstance = new MyArrayList<>();
+        newInstance.elements = elements;
+        newInstance.size = elements.length;
+        return newInstance;
+    }
 
     @Override
     public void add(E e) {
@@ -33,22 +39,25 @@ public class MyArrayList<E> implements MyCollection<E> {
         }
 
         if (this.size == elements.length) {
-            grow(size * 3 / 2 + 1);
+            resize(size * 3 / 2 + 1);
         }
     }
 
-    private void grow(int i) {
+    private void resize(int i) {
         Object[] newElements = new Object[i];
-        System.arraycopy(elements, 0, newElements, 0, elements.length);
+        System.arraycopy(elements, 0, newElements, 0, size);
         this.elements = newElements;
     }
 
     @Override
     public boolean remove(int position) {
         if (position < 0 || position >= size--) {
-            throw new IllegalArgumentException(DEFAULT_ERROR_MESSAGE + position);
+            throw new IllegalArgumentException(IOF_ERROR_MESSAGE + position);
         }
         System.arraycopy(elements, position + 1, elements, position, elements.length - position - 1);
+        if (this.size < elements.length / 4) {
+            resize(elements.length / 2);
+        }
         return true;
     }
 
@@ -65,7 +74,7 @@ public class MyArrayList<E> implements MyCollection<E> {
     @Override
     public E get(int index) {
         if (index < 0 || index > this.size - 1)
-            throw new IllegalArgumentException(DEFAULT_ERROR_MESSAGE + index);
+            throw new IllegalArgumentException(IOF_ERROR_MESSAGE + index);
         return (E) elements[index];
     }
 
@@ -88,14 +97,6 @@ public class MyArrayList<E> implements MyCollection<E> {
         return Arrays.copyOf(elements, size);
     }
 
-    public static <T> MyArrayList<T> of(T... elements) {
-        MyArrayList<T> newInstance = new MyArrayList<>();
-        // can use constructor with T[] arguments, against waste memory of original elements
-        newInstance.elements = elements;
-        newInstance.size = elements.length;
-        return newInstance;
-    }
-
     public Stream<E> stream() {
         return Arrays.stream((E[]) elements);
     }
@@ -107,7 +108,7 @@ public class MyArrayList<E> implements MyCollection<E> {
         @Override
         public E next() {
             if (this.position >= size) {
-                throw new IllegalStateException(DEFAULT_ERROR_MESSAGE);
+                throw new IllegalStateException(IOF_ERROR_MESSAGE);
             }
             return (E) elements[position];
         }
