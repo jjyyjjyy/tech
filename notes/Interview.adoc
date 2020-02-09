@@ -1,0 +1,219 @@
+= Interview
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+[plantuml, interview, svg]
+....
+@startmindmap
+
+* Origin
+
+left
+
+** Java
+*** 集合
+****_ HashMap添加一个键值对的过程是怎么样的?
+****_ HashMap与HashTable, ConcurrentHashMap的区别是什么?
+****_ HashMap遍历时删除元素的有哪些实现方法?
+****_ HashMap扩容是怎样扩容的, 为什么都是2的N次幂的大小?
+****_ HashMap扩容后是否需要rehash?
+****_ HashSet和HashMap的区别?
+****_ ConcurrentHashMap添加一个键值对的过程是怎么样的?
+****_ ConcurrentHashMap是怎么记录元素个数size的?
+****_ 为什么ConcurrentHashMap, HashTable不支持key, value为null?
+*** JVM
+*** JUC
+
+** 设计模式
+*** 特性
+**** 重用性
+**** 可读性
+**** 可扩展型
+**** 可靠性
+**** 高内聚低耦合
+*** 原则
+**** 单一职责原则
+**** 接口隔离原则
+**** 依赖倒置原则
+**** 里氏替换原则
+**** 开闭原则
+**** 迪米特原则
+**** 合成复用原则
+*** 创建型
+**** 单例模式
+**** 简单工厂模式
+**** 抽象工厂模式
+**** 原型模式
+**** 建造者模式
+*** 结构型
+**** 适配器模式
+**** 桥接模式
+**** 装饰模式
+**** 组合模式
+**** 外观模式
+**** 享元模式
+**** 代理模式
+*** 行为型
+**** 模板方法模式
+**** 命令模式
+**** 访问者模式
+**** 迭代器模式
+**** 观察者模式
+**** 中介者模式
+**** 备忘录模式
+**** 解释器模式
+**** 状态模式
+**** 策略模式
+**** 责任链模式
+
+** 数据结构
+*** 表
+**** 线性表
+**** 链表
+**** 哈希表
+*** 队列
+*** 栈
+*** 树
+*** 图
+
+** 算法
+*** 排序
+**** 冒泡排序
+**** 选择排序
+**** 插入排序
+**** 希尔排序
+**** 归并排序
+**** 快速排序
+**** 堆排序
+*** 查找
+**** 二分查找
+
+right
+
+** 构建工具
+*** Maven
+
+** 框架
+*** Spring IoC
+*** Spring AOP
+*** Spring MVC
+*** Spring TX
+*** Spring Boot
+*** Spring Cloud
+**** Spring Cloud Sleuth
+
+** 数据库
+*** PostgreSQL
+*** Redis
+
+** 消息队列
+** RabbitMQ
+
+** DevOps
+*** Shell
+*** Docker
+*** Kubernetes
+
+@endmindmap
+....
+
+== JVM
+
+[qanda]
+内存溢出和内存泄漏的区别?::
+* 内存泄漏: 内存一直占用但不释放.
+* 内存溢出: 申请内存时, 没有足够的内存使用.
+
+== Maven
+
+[qanda]
+Maven的生命周期?::
+Clean -> Default -> Site
+Maven的坐标?::
+* group-id: 组织名称
+* artifact-id: 项目名称
+* version: 项目版本
+Maven依赖的范围?::
+* compile: 默认范围. 编译测试运行时都有效.
+* provided: 编译和测试时都有效.
+* runtime: 测试和运行时都有效.
+* test: 测试时有效.
+* system: 编译测试时都有效, jar包从本地读取.
+* import: 当前项目里的依赖会被导入的pom替代.
+Maven依赖传递?::
+* compile范围的依赖才可被传递.
+* 路径最短者优先.
+* 路径相同时先声明者优先.
+
+== Redis
+
+[qanda]
+Redis的特点有哪些?::
+Redis支持的数据类型?::
+Redis常用数据结构以及底层数据结构实现?::
+一个字符串类型的值能存储最大容量是多少?::
+Redis的链表数据结构的特征有哪些?::
+请介绍一下Redis的String类型底层实现?::
+Redis的String类型使用SSD方式实现的好处?::
+Redis适用场景有哪些?::
+Redis为什么设计成单线程的?::
+为什么Redis需要把所有数据放到内存中?::
+Redis持久化机制有哪些? 区别是什么?::
+请介绍一下RDB, AOF两种持久化机制的优缺点?::
+如何解决Redis的并发竞争Key的问题?::
+如何保证缓存与数据库双写时的数据一致性?::
+Redis各个数据类型最大存储量分别是多少?::
+什么是缓存穿透? 怎么解决?::
+什么是缓存雪崩? 怎么解决?::
+缓存的更新策略有几种? 分别有什么注意事项?::
+什么是分布式锁? 有什么作用?::
+分布式锁可以通过什么来实现?::
+介绍一下分布式锁实现需要注意的事项?::
+Redis怎么实现分布式锁?::
+常见的淘汰算法有哪些?::
+Redis淘汰策略有哪些?::
+Redis缓存失效策略有哪些?::
+Redis的持久化机制有几种方式?::
+Redis通讯协议是什么? 有什么特点?::
+请介绍一下Redis的数据类型 SortedSet(zset) 以及底层实现机制?::
+请介绍一下Redis集群实现方案?::
+Redis集群最大节点个数是多少?::
+Redis集群的主从复制模型是怎样的?::
+Redis如何做内存优化?::
+Redis事务相关命令有哪些? 什么是Redis事务? 原理是什么?::
+Redis事务的注意点有哪些?::
+Redis为什么不支持回滚?::
+请介绍一下Redis常见的业务使用场景?::
+Redis集群会有写操作丢失吗? 为什么?::
+请介绍一下Redis的Pipeline以及使用场景?::
+请说明一下Redis的批量命令与Pipeline有什么不同?::
+Redis慢查询是什么? 通过什么配置?::
+Redis的慢查询修复经验有哪些? 怎么修复的?::
+请介绍一下Redis的发布订阅功能?::
+请介绍几个可能导致Redis阻塞的原因?::
+怎么去发现Redis阻塞异常情况?::
+Redis的内存消耗分类有哪些? 内存统计使用什么命令?::
+简单介绍一下Redis的内存管理方式有哪些?::
+如何设置Redis的内存上限? 有什么作用?::
+什么是 bigkey? 有什么影响? 怎么发现bigkey?::
+冷热数据表示什么意思?::
+缓存命中率表示什么? 怎么提高缓存命中率?::
+如何优化Redis服务的性能?::
+如何实现本地缓存? 请描述一下你知道的方式?::
+请介绍一下Spring注解缓存?::
+如果AOF文件的数据出现异常, Redis服务怎么处理?::
+Redis的主从复制模式有什么优缺点?::
+Redis sentinel (哨兵) 模式优缺点有哪些?::
+Redis集群架构模式有哪几种?::
+如何设置Redis的最大连接数? 查看Redis的最大连接数? 查看Redis的当前连接数?::
+设计一下在交易网站首页展示当天最热门售卖商品的前五十名商品列表?::

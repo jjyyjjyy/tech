@@ -10,214 +10,333 @@
 :toc-title: 目录
 :tabsize: 4
 :docinfo: shared
+:code-path: ../design-pattern/src/main/java/me/jy/
 
-== 定义
+== 设计模式概述
+
+=== 定义
 
 > 对在特定场景下解决设计问题的类或对象的描述.
 
-.模式4个要素
+=== 特性
+
+* 代码重用性: 相同功能的代码不用多次编写.
+* 可读性: 代码规范性, 便于其他程序员的阅读和理解.
+* 可扩展性: 便于增加新的功能.
+* 可靠性: 当增加新的功能后, 对原有的功能没有影响.
+* 高内聚低耦合: 每个功能模块内部关系紧密, 但是模块之间不会相互影响.
+
+=== 要素
+
 * 名称
 * 使用场景
 * 模式的组成和设计
 * 效果(优缺点)
 
-== 类别
+=== 原则
 
-|===
-| | | 创建型 | 结构型 | 行为型
+==== 单一职责原则
 
-| 范围
-| 类
-| Factory Method
-| Adapter(类)
-a|
-* Interpreter
-* Template Method
+一个类/方法应该只负责一项职责.
+降低类/方法的复杂度, 从而降低改动造成的风险.
 
-|
-| 对象
-a|
-* Abstract Factory
-* Builder
-* Prototype
-* Singleton
-a|
-* Adapter(对象)
-* Bridge
-* Composite
-* Decorator
-* Facade
-* Flyweight
-* Proxy
-a|
-* Chain of Responsibility
-* Command
-* Iterator
-* Mediator
-* Memento
-* Observer
-* State
-* Strategy
-* Visitor
+==== 接口隔离原则
 
-|===
+使用方不应该依赖它不需要的接口.
+一个类对另一个类的依赖应该建立在最小的接口上. 可以将一个接口分成几个小接口.
 
-== 作用
+==== 依赖倒转原则
 
-* 创建型:
-** 类: 将对象的部分创建工作延迟到子类
-** 对象: 将对象的部分创建工作延迟到另一个对象中
-* 结构型:
-** 类: 使用继承机制来组合类
-** 对象: 描述了对象的组装方法
-* 行为型:
-** 类: 使用继承描述算法和控制流
-** 对象: 描述一组对象协作来完成单个对象无法完成的任务
+底层模块尽量要有抽象类和接口. 而高层模块不应该直接依赖底层模块的具体实现类, 而应该依赖其抽象.
+尽量面向接口编程.
 
-== 面向对象设计原则
+==== 里氏替换原则
 
-* Single Responsibility Principle: 单一职责原则
+所有引用父类的地方必须能够透明地使用其子类的对象.
+在子类中尽量不要重写父类的方法, 或者使用聚合/组合/依赖来解决问题.
 
- 一个类只负责一个功能领域的相应职责.如常用的代码分层: xxRepository负责db/xxService负责逻辑处理
+==== 开闭原则
 
-* Open-Closed Principle: 开闭原则
+对功能提供者开放扩展, 对使用方关闭修改.
+尽量在原有类上新增功能.
 
- 一个实体类应该尽量在不修改原有代码的基础上扩展.
+==== 迪米特原则
 
-.OCP(新增Chart不会修改AbstractChartDisplay类的代码)
-[plantuml,ocp,svg]
+尽量减少类之间的交互. 一个类对自己依赖的类知道的越少越好.
+尽量避免在局部变量中直接使用其他类.
+
+==== 合成复用原则
+
+尽量使用聚合/组合/依赖的方式使用与自己不相关的类的功能, 而不是使用继承.
+
+== UML
+
+> 用来描述系统中的类/对象本身的组成和类和类之间的各种静态关系.
+
+=== 类之间的关系
+
+* 依赖: 一个类用到了另外一个类, 则两个类之间存在依赖关系. (成员属性/返回类型/方法参数类型/局部变量类型)
+* 关联: 1对1/1对多/多对多的关系.
+* 泛化: 继承一个类.
+* 实现: 实现一个接口.
+* 聚合: 表示整体和部分的关系. 整体和部分可以分别运行. (通过set方法设置依赖类的对象)
+* 组合: 表示整体和部分的关系. 整体和部分不可以分开. (实例化时就初始化依赖的类)
+
+== 设计模式分类
+
+* 创建型: 将对象的部分创建工作延迟到具体实现类.
+* 结构型: 描述了对象的依赖方法.
+* 行为型: 描述一组对象协作来完成单个对象无法完成的任务.
+
+[plantuml, design-patterns, svg]
 ....
-interface Chart{
-+ void display()
-}
-class AbstractChartDisplay{
-- chart: Chart
-+ void setChart(Chart chart)
-}
-class FooChart{
-}
-class BarChart{
-}
+@startmindmap
 
-Chart <|.. FooChart
-Chart <|.. BarChart
-Chart <|.. AbstractChartDisplay
+!include charts/global/stylesheet.iuml
+
+* 设计模式
+
+left
+
+** 创建型
+*** 单例模式
+*** 简单工厂模式
+*** 工厂方法模式
+*** 抽象工厂模式
+*** 原型模式
+*** 建造者模式
+** 结构型
+*** 适配器模式
+*** 桥接模式
+*** 装饰模式
+*** 组合模式
+*** 外观模式
+*** 享元模式
+*** 代理模式
+
+right
+
+** 行为型
+*** 模板方法模式
+*** 命令模式
+*** 访问者模式
+*** 迭代器模式
+*** 观察者模式
+*** 中介者模式
+*** 备忘录模式
+*** 解释器模式
+*** 状态模式
+*** 策略模式
+*** 责任链模式
+
+@endmindmap
 ....
-
-* Liskov Substitution Principle: 里氏替换原则
-
- 在程序定义时尽量使用父类类型, 在运行时再去确定子类类型.
- 在类设计时, 尽量把子类的方法抽到父类里面.
-
-* Dependency Inversion Principle: 依赖倒转原则
-
- 针对接口编程, 而不是实现类.
-
-* Interface Segregation Principle: 接口隔离原则
-
- 使用多个专门的接口, 而不是单一的接口.
-
-* Composite Reuse Principle: 合成复用原则
-
- 尽量使用对象组合, 而不是继承来达到复用的目的.
- Has-a 使用组合, Is-a 使用继承
-
-* LeastKnowledge Principle: 最小知识原则
-
- 尽量减少对象之间的交互.
 
 == 创建型模式
 
-=== Simple Factory模式(静态工厂)
+[#singleton]
+=== Singleton模式
 
- 定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
+采取一定的方法保证整个软件系统中对某个类只能存在一个对象实例, 并且该类只提供一个取得其对象实例的方法.
+内部提供一个静态的工厂方法, 获取单个实例.
 
 ==== 使用场景
 
- 客户端知道创建对象需要的参数, 不关系对象的创建过程.
+* 系统中该类不需要多个实例.
+* 重量级对象.
+* 工具类.
+
+==== 结构
+
+[plantuml,singleton,svg]
+.单例模式UML
+....
+
+!include charts/global/stylesheet.iuml
+
+class Singleton {
+  - Singleton INSTANCE
+  + Singleton getInstance()
+}
+
+Singleton o-- Singleton
+....
 
 ==== 优点
 
-* 将对象的创建和对象的使用分离开, 客户端无需知道具体的创建逻辑, 只需知道对象创建需要的参数.
+* 节约系统资源.
+* 限制了对实例的访问.
+
+==== 缺点
+
+* 扩展困难
+
+==== 单例模式写法
+
+[source,java]
+.饿汉式 - 静态常量
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-lazy-1"]
+----
+
+[source,java]
+.饿汉式 - 静态代码块
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-lazy-2"]
+----
+
+[source,java]
+.懒汉式 - 同步方法
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-eager-1"]
+----
+
+[source,java]
+.懒汉式 - 同步代码块双重检查锁
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-eager-2"]
+----
+
+[source,java]
+.静态内部类
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-inner-static-class"]
+----
+
+[source,java]
+.枚举
+----
+include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-enum"]
+----
+
+[#simple-factory]
+=== 简单工厂模式
+
+定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
+
+==== 使用场景
+
+调用方知道创建对象需要的参数, 不关心对象的创建过程.
+
+==== 结构
+
+[plantuml,simple-factory,svg]
+.简单工厂模式UML
+....
+
+!include charts/global/stylesheet.iuml
+
+abstract class Product
+class ConcreteProductA
+class ConcreteProductB
+class ProductFactory {
+  + Product getProduct(String type)
+}
+
+Product <.. ConcreteProductA
+Product <.. ConcreteProductB
+ProductFactory -> Product
+
+....
+
+==== 优点
+
+* 将对象的创建和对象的使用分离开, 客户端无需知道具体的创建逻辑.
 
 ==== 缺点
 
 * 工厂类职责过重, 如果工厂类出现问题, 就会影响整个系统.
 * 系统扩展困难, 一旦添加新的产品就要修改工厂逻辑, 违反了开闭原则.
 
+[#factoy-method]
 === Factory Method模式
 
- 定义一个创建对象的接口, 让子类决定将哪个类实例化.
+定义一个创建对象的接口, 让子类决定将哪个类实例化.
 
 ==== 使用场景
 
- 客户端不知道它需要的对象的类型
+调用方不知道它需要的对象的类型.
 
 ==== 结构
 
 .工厂方法模式UML
 [plantuml,factoy-method,svg]
 ....
-interface Product{
+
+!include charts/global/stylesheet.iuml
+
+abstract class Product
+class ConcreteProductA
+class ConcreteProductB
+interface ProductFactory {
+  + Product create()
 }
-class ConcreteProduct{
+class ConcreteProductAFactory {
+  + ConcreteProductA create()
 }
-interface ProductFactory{
-+ Product create()
+class ConcreteProductBFactory {
+  + ConcreteProductB create()
 }
-class ConcreteProductFactory{
-}
-Product <|.. ConcreteProduct
-ProductFactory <|.. ConcreteProductFactory
-ConcreteProduct <- ConcreteProductFactory
+Product <|-- ConcreteProductA
+Product <|-- ConcreteProductB
+ProductFactory <.. ConcreteProductAFactory
+ProductFactory <.. ConcreteProductBFactory
+ConcreteProductA <-- ConcreteProductAFactory
+ConcreteProductB <-- ConcreteProductBFactory
 ....
 
 ==== 优点
 
-* 客户端只需要关心创建产品需要的工厂, 无需关心创建细节
+* 客户端只需要关心创建产品需要的工厂, 无需关心创建细节.
 
 ==== 缺点
 
 * 系统文件个数增加
 
+[#abstract-factory]
 === Abstract Factory模式
-
- 提供一个创建一系列相关对象的接口
 
 ==== 使用场景
 
- 生产的多个对象可以规约为多种类型
+需要多种类型的多种对象, 且每次只使用同一类型的对象.
 
 ==== 结构
 
 .抽象工厂模式UML
 [plantuml,abstract-factoy,svg]
 ....
-interface ProductA{
-}
-interface ProductB{
-}
-class ConcreteProductA{
-}
-class ConcreteProductB{
-}
-interface ProductFactory{
-+ ProductA createA()
-+ ProductB createB()
-}
-class ConcreteProductFactory1{
-}
-class ConcreteProductFactory2{
-}
-ProductA <|.. ConcreteProductA
-ProductB <|.. ConcreteProductB
-ProductFactory <|.. ConcreteProductFactory1
-ProductFactory <|.. ConcreteProductFactory2
 
-ConcreteProductA <- ConcreteProductFactory1
-ConcreteProductB <- ConcreteProductFactory1
-ConcreteProductA <- ConcreteProductFactory2
-ConcreteProductB <- ConcreteProductFactory2
+!include charts/global/stylesheet.iuml
+
+interface ProductA
+interface ProductB
+class ConcreteProductA1
+class ConcreteProductA2
+class ConcreteProductB1
+class ConcreteProductB2
+interface ProductFactory {
+  + ProductA createA()
+  + ProductB createB()
+}
+class ConcreteProductFactory1 {
+  + ConcreteProductA1 createA()
+  + ConcreteProductB1 createB()
+}
+class ConcreteProductFactory2 {
+  + ConcreteProductA2 createA()
+  + ConcreteProductB2 createB()
+}
+ProductA <.. ConcreteProductA1
+ProductA <.. ConcreteProductA2
+ProductB <.. ConcreteProductB1
+ProductB <.. ConcreteProductB2
+ProductFactory <.. ConcreteProductFactory1
+ProductFactory <.. ConcreteProductFactory2
+
+ConcreteProductA1 <-- ConcreteProductFactory1
+ConcreteProductB1 <-- ConcreteProductFactory1
+ConcreteProductA2 <-- ConcreteProductFactory2
+ConcreteProductB2 <-- ConcreteProductFactory2
 ....
 
 ==== 优点
@@ -228,50 +347,28 @@ ConcreteProductB <- ConcreteProductFactory2
 
 * 增加一个产品需要修改所有的工厂类.
 
-=== Singleton模式
-
- 内部提供一个静态的工厂方法, 获取单个实例
-
-==== 使用场景
-
- 系统中不需要多个实例
-
-==== 结构
-
-.单例模式UML
-[plantuml,singleton,svg]
-....
-class Singleton {
-- Singleton INSTANCE = new Singleton()
-+ Singleton getInstance()
-}
-....
-
-==== 优点
-
-* 节约系统资源
-* 限制了对实例的访问
-
-==== 缺点
-
-* 扩展困难
-
+[#prototype]
 === 原型模式
 
- 使用原型实例指定创建对象的种类, 并且通过拷贝这些原型创建新的对象.
+使用原型实例指定创建对象的种类, 并且通过拷贝这些原型创建新的对象.
 
 ==== 使用场景
 
- 创建大量内容相同的对象.
+创建大量内容相同的对象.
 
 ==== 结构
 
-.单例模式UML
+.原型模式UML
 [plantuml,prototype,svg]
 ....
-class Prototype{
-+ Prototype clone()
+
+!include charts/global/stylesheet.iuml
+
+class Prototype {
+  + Prototype clone()
 }
+
+Prototype <--Prototype
 ....
 
 ==== 优点
@@ -284,34 +381,48 @@ class Prototype{
 
 === Builder模式
 
- 提供Builder类组装对象
+提供Builder类组装对象
 
 ==== 使用场景
 
- 组装的类属性很多, 创建过程复杂, 可以引入builder简化客户端调用.
+组装的类属性很多, 创建过程复杂, 可以引入builder简化客户端调用.
 
 ==== 组成
 
-.单例模式UML
+.建造者模式UML
 [plantuml,builder,svg]
 ....
-class Product{
+
+!include charts/global/stylesheet.iuml
+
+class Product
+abstract class Builder {
+  # Builder a()
+  # Builder b()
+  # Builder c()
+  # Product build()
 }
-class Builder{
-- Product product
-+ Builder a()
-+ Builder b()
-+ Builder c()
-+ Product build()
+class ConcreteBuilder {
+  + ConcreteBuilder a()
+  + ConcreteBuilder b()
+  + ConcreteBuilder c()
+  + Product build()
 }
+Builder <|-- ConcreteBuilder
+Product <- ConcreteBuilder
 ....
 
 ==== 优点
 
 * 隔离复杂对象的创建和使用, 并使得相同的创建过程可以创建不同的对象.
 
+==== 缺点
+
+* 如果产品内部变化复杂, 则会导致需要定义很多具体的建造者来实现这些变化, 导致系统臃肿.
+
 == 结构型模式
 
+[#adapter]
 === Adapter模式
 
  继承Target类, 使用另外的Adaptee类重写Target类方法
