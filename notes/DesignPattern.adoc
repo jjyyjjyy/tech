@@ -43,11 +43,13 @@
 ==== 接口隔离原则
 
 使用方不应该依赖它不需要的接口.
-一个类对另一个类的依赖应该建立在最小的接口上. 可以将一个接口分成几个小接口.
+一个类对另一个类的依赖应该建立在最小的接口上.
+可以将一个接口分成几个小接口.
 
 ==== 依赖倒转原则
 
-底层模块尽量要有抽象类和接口. 而高层模块不应该直接依赖底层模块的具体实现类, 而应该依赖其抽象.
+底层模块尽量要有抽象类和接口.
+而高层模块不应该直接依赖底层模块的具体实现类, 而应该依赖其抽象.
 尽量面向接口编程.
 
 ==== 里氏替换原则
@@ -62,7 +64,8 @@
 
 ==== 迪米特原则
 
-尽量减少类之间的交互. 一个类对自己依赖的类知道的越少越好.
+尽量减少类之间的交互.
+一个类对自己依赖的类知道的越少越好.
 尽量避免在局部变量中直接使用其他类.
 
 ==== 合成复用原则
@@ -75,12 +78,15 @@
 
 === 类之间的关系
 
-* 依赖: 一个类用到了另外一个类, 则两个类之间存在依赖关系. (成员属性/返回类型/方法参数类型/局部变量类型)
+* 依赖: 一个类用到了另外一个类, 则两个类之间存在依赖关系.
+(成员属性/返回类型/方法参数类型/局部变量类型)
 * 关联: 1对1/1对多/多对多的关系.
 * 泛化: 继承一个类.
 * 实现: 实现一个接口.
 * 聚合: 表示整体和部分的关系. 整体和部分可以分别运行. (通过set方法设置依赖类的对象)
-* 组合: 表示整体和部分的关系. 整体和部分不可以分开. (实例化时就初始化依赖的类)
+* 组合: 表示整体和部分的关系.
+整体和部分不可以分开.
+(实例化时就初始化依赖的类)
 
 == 设计模式分类
 
@@ -88,7 +94,7 @@
 * 结构型: 描述了对象的依赖方法.
 * 行为型: 描述一组对象协作来完成单个对象无法完成的任务.
 
-[plantuml, design-patterns, svg]
+[plantuml,design-patterns,svg]
 ....
 @startmindmap
 
@@ -151,6 +157,7 @@ right
 [plantuml,singleton,svg]
 .单例模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -160,6 +167,8 @@ class Singleton {
 }
 
 Singleton o-- Singleton
+
+@enduml
 ....
 
 ==== 优点
@@ -176,43 +185,44 @@ Singleton o-- Singleton
 [source,java]
 .饿汉式 - 静态常量
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-lazy-1"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-lazy-1"]
 ----
 
 [source,java]
 .饿汉式 - 静态代码块
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-lazy-2"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-lazy-2"]
 ----
 
 [source,java]
 .懒汉式 - 同步方法
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-eager-1"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-eager-1"]
 ----
 
 [source,java]
 .懒汉式 - 同步代码块双重检查锁
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-eager-2"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-eager-2"]
 ----
 
 [source,java]
 .静态内部类
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-inner-static-class"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-inner-static-class"]
 ----
 
 [source,java]
 .枚举
 ----
-include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-enum"]
+include::{code-path}/_1_singleton/SingletonProduct.java[tag="singleton-enum"]
 ----
 
 [#simple-factory]
 === 简单工厂模式
 
-定义一个工厂类, 根据不同的参数返回不同的类型. 被创建的对象类型通常具有共同的父类.
+定义一个工厂类, 根据不同的参数返回不同的类型.
+被创建的对象类型通常具有共同的父类.
 
 ==== 使用场景
 
@@ -223,6 +233,7 @@ include::{code-path}/_4_singleton/SingletonProduct.java[tag="singleton-enum"]
 [plantuml,simple-factory,svg]
 .简单工厂模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -237,6 +248,7 @@ Product <.. ConcreteProductA
 Product <.. ConcreteProductB
 ProductFactory -> Product
 
+@enduml
 ....
 
 ==== 优点
@@ -259,9 +271,10 @@ ProductFactory -> Product
 
 ==== 结构
 
-.工厂方法模式UML
 [plantuml,factoy-method,svg]
+.工厂方法模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -283,6 +296,8 @@ ProductFactory <.. ConcreteProductAFactory
 ProductFactory <.. ConcreteProductBFactory
 ConcreteProductA <-- ConcreteProductAFactory
 ConcreteProductB <-- ConcreteProductBFactory
+
+@enduml
 ....
 
 ==== 优点
@@ -302,9 +317,10 @@ ConcreteProductB <-- ConcreteProductBFactory
 
 ==== 结构
 
-.抽象工厂模式UML
 [plantuml,abstract-factoy,svg]
+.抽象工厂模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -337,6 +353,8 @@ ConcreteProductA1 <-- ConcreteProductFactory1
 ConcreteProductB1 <-- ConcreteProductFactory1
 ConcreteProductA2 <-- ConcreteProductFactory2
 ConcreteProductB2 <-- ConcreteProductFactory2
+
+@enduml
 ....
 
 ==== 优点
@@ -358,9 +376,10 @@ ConcreteProductB2 <-- ConcreteProductFactory2
 
 ==== 结构
 
-.原型模式UML
 [plantuml,prototype,svg]
+.原型模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -369,6 +388,8 @@ class Prototype {
 }
 
 Prototype <--Prototype
+
+@enduml
 ....
 
 ==== 优点
@@ -389,9 +410,10 @@ Prototype <--Prototype
 
 ==== 组成
 
-.建造者模式UML
 [plantuml,builder,svg]
+.建造者模式UML
 ....
+@startuml
 
 !include charts/global/stylesheet.iuml
 
@@ -410,6 +432,8 @@ class ConcreteBuilder {
 }
 Builder <|-- ConcreteBuilder
 Product <- ConcreteBuilder
+
+@enduml
 ....
 
 ==== 优点
@@ -425,17 +449,35 @@ Product <- ConcreteBuilder
 [#adapter]
 === Adapter模式
 
- 继承Target类, 使用另外的Adaptee类重写Target类方法
-
 ==== 使用场景
 
- 没有Target类的代码(需要框架使用者去扩展) / 重用Adaptee类代码
+现有的类提供的接口不是调用方所期望的.
 
 ==== 结构
 
+[plantuml,adapter,svg]
 .对象适配器模式UML
-[plantuml,adapter-obj,svg]
 ....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+namespace 对象适配器 {
+interface Target{
+  + void call()
+}
+class Adaptee{
+  + void anotherCall()
+}
+class Adapter{
+  - Adaptee adaptee
+  + void call()
+}
+Target <.. Adapter
+Adapter -* Adaptee
+}
+
+namespace 类适配器 {
 interface Target{
 + void call()
 }
@@ -443,29 +485,13 @@ class Adaptee{
 + void anotherCall()
 }
 class Adapter{
-- Adaptee adaptee
 + void call()
 }
 Target <.. Adapter
-Adapter -> Adaptee
-....
-
-.类适配器模式UML
-[plantuml,adapter-class,svg]
-....
-interface Target{
-+ void call()
+Adaptee <|-- Adapter
 }
-class Adaptee{
-+ void call()
-}
-class Adapter{
-+ void call()
-}
-Target <.. Adapter
-Adaptee <.. Adapter
 ....
-
+@enduml
 ==== 优点
 
 * 将目标类和实现解耦
@@ -476,35 +502,45 @@ Adaptee <.. Adapter
 
 * 如果Target不是接口, 则最多只能继承一个Target.
 
+[#bridge]
 === Bridge模式
-
- 将复杂系统拆成多个维度(把继承转化为组合)
 
 ==== 使用场景
 
- 系统中某个类存在多个维度, 可以将各个模式拆分出来, 使其可以单独扩展.
+可以将复杂系统按照抽象和实现两个维度拆分.
 
 ==== 结构
 
-.bridge模式UML
 [plantuml,bridge,svg]
+.bridge模式UML
 ....
-class Implementor{
-+ void operate()
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+interface Implementor {
+  + void operateImpl()
+}
+class ConcreteImplementorA
+class ConcreteImplementorB
+
+Implementor <.. ConcreteImplementorA
+Implementor <.. ConcreteImplementorB
+
+abstract class Abstraction {
+  - Implementor impl
+  + void setImplementor(Implementor)
+  + abstract void operate()
 }
 
-class Abstraction{
-- Implementor impl
-+ void setImplementor(Implementor)
-+ abstract void call()
+class RefinedAbstraction {
+  + void operate()
 }
 
-class AbstractionA{
-+ void call()
-}
+Abstraction <|-- RefinedAbstraction
+Abstraction -o Implementor
 
-Abstraction <|-- AbstractionA
-Abstraction -> Implementor
+@enduml
 ....
 
 ==== 优点
@@ -515,54 +551,22 @@ Abstraction -> Implementor
 
 * 难以分离维度
 
-=== Composite模式
-
- 定义一个抽象结构类, 包含所有的组件方法, 组合所有子组件和容器组件.
-
-==== 使用场景
-
- 希望忽略整体和部分的差异, 让客户端一致地对待他们
-
-==== 结构
-
-.composite模式UML
-[plantuml,composite,svg]
-....
-class Component{
-+ void operate()
-}
-
-class Leaf extends Component{
-+ void operate()
-}
-
-class Composite extends Component{
-+ void add(Component)
-+ void remove(Component)
-+ void operate()
-}
-
-....
-
-==== 优点
-
-* 可以清楚地定义分层次的复杂对象.
-* 方便增加组件
-* 客户端可以无需关心子组件的层次结构, 统一处理.
-
+[#decorator]
 === Decorator模式
 
- 在不改变原有类的基础上, 通过继承扩展现有的功能
-
 ==== 使用场景
 
- 给单个对象扩展功能
+在不改变原有类的基础上, 扩展现有的功能.
 
 ==== 结构
 
-.Decorator模式UML
 [plantuml,decorator,svg]
+.Decorator模式UML
 ....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
 class Component{
 + void operate()
 }
@@ -579,7 +583,9 @@ class ConcreteDecoratorB extends Decorator{
 + void operate()
 }
 
-Decorator -> ConcreteComponent
+Decorator -* ConcreteComponent
+
+@enduml
 ....
 
 ==== 优点
@@ -591,19 +597,67 @@ Decorator -> ConcreteComponent
 
 * 产生较多的对象
 
-=== Facade模式
+[#composite]
+=== Composite模式
 
- 为子系统提供统一的入口
+定义一个结构类, 包含所有的组件方法, 组合所有子组件和容器组件.
 
 ==== 使用场景
 
- 客户端程序与子系统有很大的关联性.
+希望忽略整体和部分的差异, 让客户端一致地对待他们
 
 ==== 结构
 
-.Facade模式UML
-[plantuml,facade,svg]
+[plantuml,composite,svg]
+.Composite模式UML
 ....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Component{
+  + void operate()
+}
+
+class Leaf extends Component{
+  + void operate()
+}
+
+class Composite {
+  + void operate()
+  + void add(Component)
+  + void remove(Component)
+}
+
+Composite "1" o-|> "*" Component
+
+@enduml
+....
+
+==== 优点
+
+* 可以清楚地定义分层次的复杂对象.
+* 方便增加组件
+* 客户端可以无需关心子组件的层次结构, 统一处理.
+
+[#facade]
+=== Facade模式
+
+为子系统提供统一的入口
+
+==== 使用场景
+
+客户端程序与子系统有很大的关联性. 但不需要关系子系统的内部实现细节.
+
+==== 结构
+
+[plantuml,facade,svg]
+.Facade模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
 class SystemA{
 + void actionA()
 }
@@ -617,9 +671,11 @@ class Facade{
 + void operate()
 }
 
-SystemA <- Facade
-SystemB <- Facade
-SystemC <- Facade
+SystemA *-- Facade
+SystemB *-- Facade
+SystemC *-- Facade
+
+@enduml
 ....
 
 ==== 优点
@@ -627,31 +683,41 @@ SystemC <- Facade
 * 降低客户端与子系统的耦合度.
 * 一个子系统的修改与其他系统没有影响
 
+[#fly-weight]
 === FlyWeight模式
 
- 实现多个细粒度对象的复用. 使用工厂获取对象.
+实现多个细粒度对象的复用. 使用工厂获取对象.
 
 ==== 使用场景
 
- 对象数量较多但对象内部状态统一.
+对象需要的数量较多但对象内部状态统一.
+
+* 内部状态是存储在享元对象内部并且不会随环境改变而改变的状态, 因此内部状态可以共享.
+* 外部状态是随环境改变而改变的、不可以共享的状态. 享元对象的外部状态必须由客户端保存, 并在享元对象被创建之后, 在需要使用的时候再传入到享元对象内部。一个外部状态与另一个外部状态之间是相互独立的.
 
 ==== 结构
 
+[plantuml,fly-weight,svg]
 .FlyWeight模式UML
-[plantuml,flyWeight,svg]
 ....
-class Flyweight{
-+ void operate(ExternalState)
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Flyweight {
+  + void operate(ExternalState)
 }
-class ConcreteFlyweight{
-+ void operate(ExternalState)
+class ConcreteFlyweight extends Flyweight {
+  + void operate(ExternalState)
 }
 class FlyweightFactory{
-- Map flyWeights
-+ Flyweight get(InternalState)
+  - Map flyWeights
+  + Flyweight get(InternalState)
 }
 
-Flyweight <|-- ConcreteFlyweight
+FlyweightFactory -o Flyweight
+
+@enduml
 ....
 
 ==== 优点
@@ -663,31 +729,40 @@ Flyweight <|-- ConcreteFlyweight
 
 * 分离内外部状态, 使系统更复杂.
 
+[#proxy]
 === Proxy模式
 
- 给某一个对象提供一个代理对象, 由他控制对原对象的访问.
+给某一个对象提供一个代理对象, 由他控制对原对象的访问.
 
 ==== 使用场景
 
- 无法直接访问某个对象, 或者访问困难.
+无法直接访问某个对象, 或者访问困难.
 
 ==== 结构
 
-.Proxy模式UML
 [plantuml,proxy,svg]
+.Proxy模式UML
 ....
-interface Subject{
-+ void request()
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+interface Subject {
+  + void request()
 }
-class ConcreteSubject{
-+ void request()
+class ConcreteSubject {
+  + void request()
 }
-class ProxyObject{
-+ void customRequest()
+class Proxy {
+  + void beforeRequest()
+  + void afterRequest()
+  + void request()
 }
-Subject <|.. ConcreteSubject
-Subject <|.. ProxyObject
-ConcreteSubject <- ProxyObject
+Subject <.. ConcreteSubject
+Subject <.. Proxy
+ConcreteSubject o- Proxy
+
+@enduml
 ....
 
 ==== 优点
@@ -696,7 +771,471 @@ ConcreteSubject <- ProxyObject
 
 == 行为型模式
 
-=== Responsibility Of Chain模式
+[#template-method]
+=== Template Method模式
+
+==== 使用场景
+
+描述算法大致的流程, 具体细节交给子类去实现.
+
+==== 结构
+
+[plantuml, template-method, svg]
+.TemplateMethod模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+abstract class AbstractClass {
+  + void operate()
+  # {abstract} void internalOperate()
+}
+
+class ConcreteClass extends AbstractClass {
+  # void interalOperate()
+}
+
+@enduml
+....
+
+==== 优点
+
+* 把公用的行为搬到父类去, 去除子类的重复代码.
+
+==== 缺点
+
+* 子类执行的结果影响到了父类.
+
+[#command]
+=== Command模式
+
+==== 使用场景
+
+向对象发送请求, 但不需要知道谁接收并处理请求.
+
+==== 结构
+
+.Command模式UML
+[plantuml,command,svg]
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Receiver {
+  + void actionA()
+  + void actionB()
+}
+
+abstract class Command {
+  + void execute()
+}
+
+class ConcreteCommandA extends Command {
+  + void execute()
+}
+
+class ConcreteCommandB extends Command {
+  + void execute()
+}
+
+class Invoker {
+ + void actionA()
+ + void actionB()
+}
+
+Invoker --* ConcreteCommandA
+Invoker --* ConcreteCommandB
+Receiver <-- ConcreteCommandA
+Receiver <-- ConcreteCommandB
+
+@enduml
+....
+
+==== 优点
+
+* 调用者和接收者解耦.
+
+==== 缺点
+
+* 系统需要大量的命令类.
+
+[#visitor]
+=== Visitor模式
+
+==== 使用场景
+
+封装作用于各种对象的不同操作.
+在被访问的类里加一个对外提供接待访问者的方法.
+
+==== 结构
+
+[plantuml, visitor, svg]
+.Visitor模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+interface Element {
+  + void accept(Visitor)
+}
+class ConcreteElementA {
+  + void accept(Visitor)
+}
+class ConcreteElementB {
+  + void accept(Visitor)
+}
+
+interface Visitor {
+  + void visit(ConcreteElementA)
+  + void visit(ConcreteElementB)
+}
+
+interface ConcreteVisitor
+
+class ObjectStructure {
+  - Element element
+}
+
+ConcreteElementA ..> Element
+ConcreteElementB ..> Element
+ConcreteVisitor ..> Visitor
+
+Element -> Visitor
+ObjectStructure -o Element
+
+@enduml
+....
+
+==== 优点
+
+* 将某一类型的行为统一管理.
+
+==== 缺点
+
+* 如果新增一个Element, 那么所有的Visitor都要改动.
+
+[#iterator]
+=== Iterator模式
+
+==== 使用场景
+
+用一致的接口遍历元素, 而不需要数组元素的底层存储方式.
+
+==== 结构
+
+[plantuml, iterator, svg]
+.Iterator模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+interface Iterator {
+  + boolean hasNext()
+  + Element next()
+  + void remove()
+}
+
+class ConcreteIterator
+
+Interface Aggregate {
+  + Iterator iterator()
+}
+
+class ConcreteAggregate {
+  Element[] elements
+}
+ConcreteIterator ..> Iterator
+ConcreteAggregate ..> Aggregate
+ConcreteAggregate -> ConcreteIterator
+
+@enduml
+....
+
+==== 优点
+
+* 调用方不需要关系聚合类型的数据组织形式.
+
+==== 缺点
+
+* 每个聚合对象都需要一个迭代器.
+
+[#observer]
+=== Observer模式
+
+==== 使用场景
+
+一个对象的变更需要通知其他对象.
+
+==== 结构
+
+[plantuml, observer, svg]
+.Observer模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+interface Observer {
+  + void listen(Event)
+}
+
+class ConcreteObserverA extends Observer
+class ConcreteObserverB extends Observer
+
+class Subject {
+  - List<Observer> observers
+  + void addObserver(Observer)
+  + notify()
+}
+
+Subject -o Observer
+
+@enduml
+....
+
+==== 优点
+
+* 将表示层和逻辑层分离
+
+==== 缺点
+
+* 观察者只能知道数据发生变化, 而不知道变化的来源和过程.
+
+[#mediator]
+=== Mediator模式
+
+==== 使用场景
+
+* 通过一个中间类来封装多个类的行为.
+
+==== 结构
+[plantuml, mediator, svg]
+.Mediator模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Mediator {
+  + void contact(String, Colleague)
+}
+
+class ConcreteMediator extends Mediator
+
+class Colleague
+
+class ConcreteColleagueA extends Colleague {
+  + void operateA()
+}
+
+class ConcreteColleagueB extends Colleague {
+  + void operateB()
+}
+
+Colleague -* Mediator
+
+ConcreteMediator -o ConcreteColleagueA
+ConcreteMediator -o ConcreteColleagueB
+
+@enduml
+....
+
+==== 优点
+
+* 简化对象之间的交互.
+* 简化行为的实现.
+
+==== 缺点
+
+* 中介者逻辑复杂.
+
+[#memento]
+=== Memento模式
+
+==== 使用场景
+
+在不破坏封装性的前提下, 需要暂时在对象之外保存它的状态. 等待恢复到这个状态.
+
+==== 结构
+
+[plantuml, memento, svg]
+.Memento模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Originator {
+  - String state
+  + String getState()
+  + Memento saveToMemento()
+}
+
+class Memento {
+  - String state
+  + String getState()
+}
+
+class CareTaker {
+  - List<Memento> mementos
+  + void addMemento(Memento)
+  + Memento get(int)
+}
+
+CareTaker --o Memento
+Originator -> Memento
+
+@enduml
+....
+
+==== 优点
+
+* 调用方不需要关心状态保存的细节.
+
+==== 缺点
+
+* 如果类的成员变量过多, 则会占用较多的资源.
+
+[#interpreter]
+=== Interpreter模式
+
+==== 使用场景
+
+解析一定语义的表达式得到结果.
+
+==== 结构
+
+[plantuml, interpreter, svg]
+.Interpreter模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Context
+
+abstract class Expression {
+  + void interpret()
+}
+
+class TerminalExpression extends Expression
+
+class NonTerminalExpression extends Expression
+
+Expression -o Context
+
+note bottom of TerminalExpression: 终结符表达式, 实现文法中的终结符相关的解释操作.
+note bottom of NonTerminalExpression: 非终结符表达式, 实现文法中的非终结符相关的解释操作.
+@enduml
+....
+
+==== 优点
+
+* 易于改变和扩展文法.
+* 增加新的解释表达式比较容易.
+
+==== 缺点
+
+* 对于复杂文法难以维护.
+
+[#state]
+=== State模式
+
+==== 使用场景
+
+解决对象在不同状态转换时, 需要对外输出不同行为的问题.
+
+==== 结构
+
+[plantuml, state, svg]
+.State模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+abstract class State {
+  + void operate1(Context)
+  + void operate2(Context)
+  + void operate3(Context)
+}
+
+class ConcreteStateA extends State
+class ConcreteStateB extends State
+
+class Context {
+  - State currentState
+  + State getState()
+  + void operate1()
+  + void operate2()
+  + void operate3()
+}
+
+Context -* "*" State
+
+@enduml
+....
+
+==== 优点
+
+* 代码可读性强.
+* 方便维护, 减少if-else.
+* 符合开闭原则, 容易增删状态.
+
+==== 缺点
+
+* 如果状态较多, 则会产生很多状态类.
+
+[#strategy]
+=== Strategy模式
+
+==== 使用场景
+
+定义一些算法, 封装起来, 这些算法可以互相替换.
+
+==== 结构
+
+[plantuml, strategy, svg]
+.Strategy模式UML
+....
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+
+interface Strategy {
+  + void algorithm()
+}
+
+class ConcreteStrategyA
+class ConcreteStrategyB
+
+class Context {
+  + void algorithm(Strategy)
+}
+
+Context -> Strategy
+
+Strategy <.. ConcreteStrategyA
+Strategy <.. ConcreteStrategyB
+
+@enduml
+....
+
+==== 优点
+
+* 将责任和具体算法分离, 便于替换.
+
+==== 缺点
+
+* 调用方需要知道所有具体的策略, 以便使用合适的算法.
+
+[#chain-of-responsibility]
+=== Chain of Responsibility模式
 
 ==== 使用场景
 
@@ -707,69 +1246,33 @@ ConcreteSubject <- ProxyObject
 .Responsibility Of Chain模式UML
 [plantuml,chain-of-responsibility,svg]
 ....
-class Handler{
-- Handler successor;
-+ void request()
+@startuml
+
+!include charts/global/stylesheet.iuml
+
+class Handler {
+  - Handler successor
+  + void request()
 }
-class ConcreteHandlerA{
-+ void request()
+class ConcreteHandlerA {
+  + void request()
 }
-class ConcreteHandlerB{
-+ void request()
+class ConcreteHandlerB {
+  + void request()
 }
 Handler <|-- ConcreteHandlerA
 Handler <|-- ConcreteHandlerB
-Handler <--|> Handler
+
+Handler --o Handler
+
+@enduml
 ....
 
 ==== 优点
 
-* 职责链中的对象无需关心链的结构
+* 职责链中的对象无需关心链的结构.
 * 新增或者删除handler的时候只需要修改客户端类.
 
 ==== 缺点
 
-* 客户端任重而道远.
-
-=== Command模式
-
-==== 使用场景
-
- 向对象发送请求, 但不知道谁接收并处理请求.
-
-==== 结构
-
-.Command模式UML
-[plantuml,command,svg]
-....
-
-class ReceiverA {
-+ void action()
-}
-class ReceiverB {
-+ void action()
-}
-
-abstract class Command {
-+ void execute()
-}
-
-class ConcreteCommandA {
-}
-
-class ConcreteCommandB {
-}
-
-Command <|-- ConcreteCommandA
-Command <|-- ConcreteCommandB
-ReceiverA <- ConcreteCommandA
-ConcreteCommandB -> ReceiverB
-....
-
-==== 优点
-
-* 调用者和接收者解耦.
-
-==== 缺点
-
-* 系统需要大量的命令类.
+* 客户端责任较重.

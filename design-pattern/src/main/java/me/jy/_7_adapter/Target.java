@@ -3,8 +3,7 @@ package me.jy._7_adapter;
 /**
  * @author jy
  */
-public class Target {
+public interface Target {
 
-    public void call() {
-    }
+    void call();
 }

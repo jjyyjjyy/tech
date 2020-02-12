@@ -5,7 +5,7 @@ package me.jy._7_adapter;
  */
 public class Adaptee {
 
-    public void call() {
+    public void anotherCall() {
 
     }
 }

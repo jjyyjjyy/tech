@@ -12,8 +12,14 @@ public class ProxyObject implements Subject {
 
     @Override
     public void request() {
-        // pre
+        beforeRequest();
         subject.request();
-        // post
+        afterRequest();
+    }
+
+    private void beforeRequest() {
+    }
+
+    private void afterRequest() {
     }
 }

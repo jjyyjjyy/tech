@@ -5,7 +5,7 @@ import java.time.Instant;
 /**
  * @author jy
  */
-public class Product {
+class Product {
 
     private Long id;
     private String name;

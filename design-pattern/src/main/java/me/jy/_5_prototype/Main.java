@@ -3,7 +3,7 @@ package me.jy._5_prototype;
 /**
  * @author jy
  */
-public class Main {
+class Main {
 
     public static void main(String[] args) {
         WeeklyReport weeklyReport = new WeeklyReport();

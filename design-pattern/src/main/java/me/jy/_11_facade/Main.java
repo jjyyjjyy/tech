@@ -3,7 +3,7 @@ package me.jy._11_facade;
 /**
  * @author jy
  */
-public class Main {
+class Main {
 
     public static void main(String[] args) {
         SubSystemFacade facade = new SubSystemFacade();
