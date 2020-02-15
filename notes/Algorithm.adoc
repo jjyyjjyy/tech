@@ -12,7 +12,8 @@
 :toc-title: 目录
 :tabsize: 4
 :docinfo: shared
-:sorts: ../algs/src/main/java/me/jy/sort/Sorts.java
+:code-path: ../algs/src/main/java/me/jy
+:sorts: {code-path}/sort/Sorts.java
 
 .Resource
 * https://book.douban.com/subject/19952400[window="_blank"]
@@ -58,8 +59,95 @@
 eg: stem:[3n^3+90n^2-5n+4096=O(n^3)]
 
 .常见复杂度比较:
-
 stem:[1 < lgn < sqrtn < n < nlgn < n^2 < n^3 < 2^n < n!]
+
+[#list]
+== 表
+
+[#array-list]
+=== 线性表
+
+通过数组存储元素, 可以通过数组索引直接获取元素.
+
+[source,java]
+----
+include::{code-path}/list/ArrayList.java[]
+----
+
+==== 时间复杂度
+
+* get: stem:[O(1)]
+* add: stem:[O(n)]
+* remove: stem:[O(n)]
+
+[#linked-list]
+=== 链表
+
+每个元素包含一个指针指向下一个元素.
+
+[source,java]
+----
+include::{code-path}/list/LinkedList.java[]
+----
+
+==== 时间复杂度
+
+* get: stem:[O(n)]
+* add: stem:[O(1)]
+* remove: stem:[O(n)]
+
+==== ArrayList和LinkedList比较
+
+* ArrayList的实现基于数组, LinkedList的实现基于双向链表.
+* 对于随机访问, ArrayList优于LinkedList.
+对于新增元素, LinkedList优于ArrayList.
+* LinkedList比ArrayList更占内存.
+因为LinkedList要维护前驱和后继节点的指针.
+
+==== 翻转单链表
+
+[source,java]
+----
+include::{code-path}/list/LinkedList.java[tag="reverse-list"]
+----
+
+[#queue]
+=== 队列
+
+先进先出.
+
+==== 数组实现队列
+
+[source,java]
+----
+include::{code-path}/list/ArrayQueue.java[]
+----
+
+==== 链表实现队列
+
+[source,java]
+----
+include::{code-path}/list/LinkedQueue.java[]
+----
+
+[#stack]
+=== 栈
+
+先进后出.
+
+==== 数组实现栈
+
+[source,java]
+----
+include::{code-path}/list/ArrayStack.java[]
+----
+
+==== 双向链表实现栈
+
+[source,java]
+----
+include::{code-path}/list/LinkedStack.java[]
+----
 
 [#sort]
 == 排序
@@ -140,20 +228,3 @@ include::{sorts}[tag="quick-sort"]
 
 * 归并排序将子数组切分后有 *归并* 的动作, 快速排序将子数组排完序后整个数组就自然而然的有序了.
 * 归并排序每次切分数组都是等分.
-
-[#list]
-== 表
-
-=== 线性表
-
-通过数组存储元素, 可以通过数组索引直接获取元素.
-
-==== 时间复杂度
-
-* get: stem:[O(1)]
-* insert: stem:[O(n)]
-* remove: stem:[O(n)]
-
-=== 链表
-
-每个元素包含一个指针指向下一个元素.

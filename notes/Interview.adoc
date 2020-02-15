@@ -12,9 +12,11 @@
 :tabsize: 4
 :docinfo: shared
 
-[plantuml, interview, svg]
+[plantuml,interview,svg]
 ....
 @startmindmap
+
+!include charts/global/stylesheet.iuml
 
 * Origin
 
@@ -77,12 +79,12 @@ left
 **** 责任链模式
 
 ** 数据结构
-*** 表
-**** 线性表
-**** 链表
-**** 哈希表
-*** 队列
-*** 栈
+*** 线性表
+**** 数组
+**** 队列
+**** 栈
+*** 链表
+*** 哈希表
 *** 树
 *** 图
 

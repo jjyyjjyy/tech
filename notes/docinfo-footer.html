@@ -56,53 +56,118 @@
     }
 </style>
 
+<style>
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .75em;
+        text-transform: uppercase;
+        font-weight: 500;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
 <script src="https://cdn.bootcss.com/tocbot/4.4.2/tocbot.min.js"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
 <script>
-    var oldtoc = document.getElementById('toctitle').nextElementSibling;
-    var newtoc = document.createElement('div');
-    newtoc.setAttribute('id', 'tocbot');
-    newtoc.setAttribute('class', 'js-toc');
-    oldtoc.parentNode.replaceChild(newtoc, oldtoc);
-    tocbot.init({
-        contentSelector: '#content',
-        headingSelector: 'h1, h2, h3, h4, h5',
-        smoothScroll: false,
-        orderedList: false
-    });
-    var handleTocOnResize = function () {
-        var width = window.innerWidth
-            || document.documentElement.clientWidth
-            || document.body.clientWidth;
-        if (width < 768) {
-            tocbot.refresh({
-                contentSelector: '#content',
-                headingSelector: 'h1, h2, h3, h4, h5',
-                collapseDepth: 6,
-                activeLinkClass: 'ignoreactive',
-                throttleTimeout: 1000,
-                smoothScroll: false,
-                orderedList: false
-            });
-        } else {
-            tocbot.refresh({
-                contentSelector: '#content',
-                headingSelector: 'h1, h2, h3, h4, h5',
-                smoothScroll: false,
-                orderedList: false
-            });
+
+    initTOC();
+    initClipBoard();
+
+    function initClipBoard() {
+        var pre = document.getElementsByTagName('pre');
+        for (var i = 0; i < pre.length; i++) {
+            var b = document.createElement('button');
+            b.className = 'clipboard';
+            b.textContent = 'Copy';
+            if (pre[i].childNodes.length === 1 && pre[i].childNodes[0].nodeType === 3) {
+                var div = document.createElement('div');
+                div.textContent = pre[i].textContent;
+                pre[i].textContent = '';
+                pre[i].appendChild(div);
+            }
+            pre[i].appendChild(b);
         }
-    };
-    window.addEventListener('resize', handleTocOnResize);
-    handleTocOnResize();
+        const clipboard = new ClipboardJS('.clipboard', {
+            target: function (b) {
+                return b.parentNode.querySelector("code");
+            }
+        });
+        clipboard.on('success', function (e) {
+            console.log(e);
+            e.clearSelection();
+            e.trigger.textContent = 'Copied';
+            setTimeout(function () {
+                e.trigger.textContent = 'Copy';
+            }, 1000);
+        });
 
+    }
 
-    var link = document.createElement("a");
-    link.setAttribute("href", "index.html");
-    link.innerHTML = "<i class=\"fa fa-chevron-left\" aria-hidden=\"true\"></i>&nbsp;&nbsp;Back to index";
-    var p = document.createElement("p");
-    p.appendChild(link);
-    var toc = document.getElementById('toc')
-    var next = document.getElementById('toctitle').nextElementSibling;
-    toc.insertBefore(p, next);
+    function initTOC() {
+        var oldtoc = document.getElementById('toctitle').nextElementSibling;
+        var newtoc = document.createElement('div');
+        newtoc.setAttribute('id', 'tocbot');
+        newtoc.setAttribute('class', 'js-toc');
+        oldtoc.parentNode.replaceChild(newtoc, oldtoc);
+        tocbot.init({
+            contentSelector: '#content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            smoothScroll: false,
+            orderedList: false
+        });
+        var handleTocOnResize = function () {
+            var width = window.innerWidth
+                || document.documentElement.clientWidth
+                || document.body.clientWidth;
+            if (width < 768) {
+                tocbot.refresh({
+                    contentSelector: '#content',
+                    headingSelector: 'h1, h2, h3, h4, h5',
+                    collapseDepth: 6,
+                    activeLinkClass: 'ignoreactive',
+                    throttleTimeout: 1000,
+                    smoothScroll: false,
+                    orderedList: false
+                });
+            } else {
+                tocbot.refresh({
+                    contentSelector: '#content',
+                    headingSelector: 'h1, h2, h3, h4, h5',
+                    smoothScroll: false,
+                    orderedList: false
+                });
+            }
+        };
+        window.addEventListener('resize', handleTocOnResize);
+        handleTocOnResize();
+
+        var link = document.createElement("a");
+        link.setAttribute("href", "index.html");
+        link.innerHTML = "<i class=\"fa fa-chevron-left\" aria-hidden=\"true\"></i>&nbsp;&nbsp;Back to index";
+        var p = document.createElement("p");
+        p.appendChild(link);
+        var toc = document.getElementById('toc')
+        var next = document.getElementById('toctitle').nextElementSibling;
+        toc.insertBefore(p, next);
+    }
 
 </script>
