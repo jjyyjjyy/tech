@@ -11,7 +11,7 @@ cd ${TMP_DIR}
 git init
 git remote add origin ${ORIGIN_ADDRESS}
 git add .
-git commit -m ":memo: Update"
+git commit -m ":rocket: Update"
 git checkout -b ${ORIGIN_BRANCH}
 git checkout -b tmp
 git branch -D ${ORIGIN_BRANCH}
