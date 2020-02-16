@@ -240,6 +240,7 @@ public final class Sorts {
     }
     // end::quick-sort[]
 
+    // tag::heap-sort[]
     /**
      * 堆排序
      * 先将数组转成最大堆的形式, 再将第一项放到最后. 逐步重复1..n-1项
@@ -281,6 +282,7 @@ public final class Sorts {
             }
         }
     }
+    // end::heap-sort[]
 
     // tag::bucket-sort[]
 

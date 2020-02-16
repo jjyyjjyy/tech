@@ -160,6 +160,7 @@ include::{code-path}/list/LinkedStack.java[]
 * 二次散列: 哈希冲突后第二次计算hash值.
 * 链地址法: 使用链表存储冲突的元素.
 
+[#tree]
 == 树
 
 === 术语
@@ -207,6 +208,22 @@ include::{code-path}/tree/BinarySearchTree.java[]
 ----
 include::{code-path}/tree/AVLTree.java[]
 ----
+
+[#graph]
+== 图
+
+=== 表示方法
+
+* 邻接矩阵
+* 邻接表
+
+=== 遍历
+
+[#bfs]
+=== 广度优先算法
+
+[#dfs]
+=== 深度优先算法
 
 [#sort]
 == 排序
@@ -288,6 +305,18 @@ include::{sorts}[tag="quick-sort"]
 * 归并排序将子数组切分后有 *归并* 的动作, 快速排序将子数组排完序后整个数组就自然而然的有序了.
 * 归并排序每次切分数组都是等分.
 
+=== 堆排序
+
+[source,java]
+----
+include::{sorts}[tag="heap-sort"]
+----
+
+==== 时间复杂度
+
+* 建堆: stem:[O(logn)]
+* 总: stem:[O(nlogn)]
+
 === 桶排序
 
 [source,java]
@@ -310,6 +339,7 @@ include::{sorts}[tag="counting-sort"]
 
 * 总: stem:[O(n)]
 
+[#search]
 == 查找
 
 === 二分查找

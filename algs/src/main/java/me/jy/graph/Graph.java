@@ -114,19 +114,49 @@ public class Graph {
         if (!adj.containsKey(p)) {
             return;
         }
-        boolean[] bitmap = new boolean[v];
-        dfs(pointConsumer, p, bitmap);
+        boolean[] visited = new boolean[v];
+        dfs(pointConsumer, p, visited);
     }
 
-    public void dfs(Consumer<Integer> pointConsumer, int p, boolean[] bitmap) {
-        if (bitmap[p]) {
+    public void dfs(Consumer<Integer> pointConsumer, int p, boolean[] visited) {
+        if (visited[p]) {
             return;
         }
-        bitmap[p] = true;
+        visited[p] = true;
         pointConsumer.accept(p);
         for (Integer item : adj.get(p)) {
-            dfs(pointConsumer, item, bitmap);
+            dfs(pointConsumer, item, visited);
         }
+    }
+
+    public void bfs(Consumer<Integer> pointConsumer, int p) {
+        if (!adj.containsKey(p)) {
+            return;
+        }
+        boolean[] visited = new boolean[v];
+        bfs(pointConsumer, p, visited);
+    }
+
+    private void bfs(Consumer<Integer> pointConsumer, int p, boolean[] visited) {
+        if (visited[p]) {
+            return;
+        }
+        pointConsumer.accept(p);
+        visited[p] = true;
+
+        Queue<Integer> todo = new LinkedList<>(adj.get(p));
+
+        while (!todo.isEmpty()) {
+            Integer next = todo.remove();
+            if (visited[next]) {
+                continue;
+            }
+            pointConsumer.accept(next);
+            visited[next] = true;
+
+            todo.addAll(adj.get(next));
+        }
+
     }
 
     public List<Integer> dfsPath(int end) {
