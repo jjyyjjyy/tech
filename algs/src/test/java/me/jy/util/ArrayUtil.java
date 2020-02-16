@@ -22,7 +22,7 @@ public class ArrayUtil {
 
     public static int[] getRandomArray(int size) {
         return IntStream.rangeClosed(1, size)
-            .map(i -> ThreadLocalRandom.current().nextInt())
+            .map(i -> ThreadLocalRandom.current().nextInt(100_000))
             .distinct()
             .toArray();
     }

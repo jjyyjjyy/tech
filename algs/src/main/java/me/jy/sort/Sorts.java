@@ -1,5 +1,12 @@
 package me.jy.sort;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * @author jy
  */
@@ -274,4 +281,84 @@ public final class Sorts {
             }
         }
     }
+
+    // tag::bucket-sort[]
+
+    /**
+     * 桶排序
+     * 将元素按照大小放入不同的桶中, 对每个桶进行排序. 最后取出所有桶内元素.
+     */
+    public static class BucketSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            List<Integer> list = sort(Arrays.stream(arr).boxed().collect(Collectors.toList()), 5);
+            for (int i = 0; i < list.size(); i++) {
+                arr[i] = list.get(i);
+            }
+        }
+
+        private List<Integer> sort(List<Integer> arr, int bucketSize) {
+
+            if (arr.size() <= 1 || bucketSize < 1) {
+                return arr;
+            }
+
+            IntSummaryStatistics statistics = arr.stream().mapToInt(i -> i).summaryStatistics();
+            int min = statistics.getMin();
+            int max = statistics.getMax();
+
+            // 计算出桶数量
+            int bucketCount = (max - min) / bucketSize + 1;
+
+            List<List<Integer>> buckets = IntStream.range(0, bucketCount).mapToObj(i -> new ArrayList<Integer>()).collect(Collectors.toList());
+
+            for (int value : arr) {
+                int bucketIndex = (value - min) / bucketSize;
+                buckets.get(bucketIndex).add(value);
+            }
+
+            List<Integer> result = new ArrayList<>();
+
+            // 桶内排序
+            for (List<Integer> bucket : buckets) {
+                if (bucket.isEmpty()) {
+                    continue;
+                }
+                if (bucketCount == 1) {
+                    bucketSize--;
+                }
+                result.addAll(sort(bucket, bucketSize));
+            }
+            return result;
+        }
+    }
+    // end::bucket-sort[]
+
+    // tag::counting-sort[]
+    public static class CountingSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+
+            IntSummaryStatistics statistics = Arrays.stream(arr).summaryStatistics();
+            int min = statistics.getMin();
+
+            // 计算桶数量
+            int bucketCount = statistics.getMax() - min + 1;
+            int[] countingArray = new int[bucketCount];
+
+            for (int i : arr) {
+                countingArray[i - min]++; // 统计出现次数
+            }
+
+            int position = 0;
+            for (int i = 0; i < countingArray.length; i++) { // 遍历桶
+                for (int j = 0; j < countingArray[i]; j++) { // 桶里值为几, 就代表该桶代表的数出现几次
+                    arr[position++] = i + min;
+                }
+            }
+        }
+    }
+    // end::counting-sort[]
 }

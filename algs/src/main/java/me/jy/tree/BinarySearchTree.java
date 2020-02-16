@@ -10,8 +10,31 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
     private Node root;
 
     public void insert(T value) {
-        checkValue(value);
-        root = insert(value, root);
+        Node node = new Node(value);
+        if (root == null) {
+            root = node;
+            return;
+        }
+        Node current = root;
+        while (true) {
+            int compare = current.value.compareTo(value);
+            if (compare == 0) {
+                return;
+            }
+            if (compare < 0) {
+                if (current.right == null) {
+                    current.right = node;
+                    break;
+                }
+                current = current.right;
+            } else {
+                if (current.left == null) {
+                    current.left = node;
+                    break;
+                }
+                current = current.left;
+            }
+        }
     }
 
     public void remove(T value) {
@@ -87,22 +110,6 @@ public class BinarySearchTree<T extends Comparable<? super T>> {
             // node为树叶或者只有一个子节点
             node = Optional.ofNullable(node.left).orElse(node.right);
         }
-        return node;
-    }
-
-    private Node insert(T value, Node node) {
-        if (node == null) {
-            return new Node(value);
-        }
-        int compare = value.compareTo(node.value);
-        if (compare == 0) {
-            return node;
-        }
-        if (compare < 0) {
-            node.left = insert(value, node.left);
-            return node;
-        }
-        node.right = insert(value, node.right);
         return node;
     }
 

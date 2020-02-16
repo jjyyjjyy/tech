@@ -149,6 +149,65 @@ include::{code-path}/list/ArrayStack.java[]
 include::{code-path}/list/LinkedStack.java[]
 ----
 
+=== 哈希表
+
+对key计算hash值, 确定元素存放的位置.
+
+==== 解决哈希冲突
+
+* 线性检测: 往散列表中插入数据, 如果某个数据经过hash后存放位置被占用了, 则从当前位置开始向后依次查找直到找到一个空闲的位置.
+* 二次检测: 每次检测的步长为平方数, 如 stem:[1^2,2^2,3^2...]
+* 二次散列: 哈希冲突后第二次计算hash值.
+* 链地址法: 使用链表存储冲突的元素.
+
+== 树
+
+=== 术语
+
+* 根节点
+* 叶子节点
+* 边
+* 深度
+* 高度
+* 满二叉树: 除了叶子节点, 其他节点均有两个子节点.
+* 完全二叉树: 最后一层叶子节点从左到右排列, 最后一层以上的节点均有两个节点.
+
+=== 二叉树
+
+树中任意一个节点, 其左子节点的值都小于该节点的值, 其右子节点的值都大于该节点的值.
+
+==== 实现
+
+[source,java]
+----
+include::{code-path}/tree/BinarySearchTree.java[]
+----
+
+==== 时间复杂度
+
+最坏 stem:[O(n)], 平均 stem:[O(logn)]
+
+=== AVL树
+
+==== 性质
+
+* 可以是空树.
+* 任意左右子树均是AVL树, 且高度之差不能大于1.
+
+==== 二叉树失衡场景
+
+* LL: 向左子树的左子树插入元素.
+* LR: 向左子树的右子树插入元素.
+* RR: 向右子树的右子树插入元素.
+* RL: 向右子树的左子树插入元素.
+
+==== 实现
+
+[source,java]
+----
+include::{code-path}/tree/AVLTree.java[]
+----
+
 [#sort]
 == 排序
 
@@ -228,3 +287,37 @@ include::{sorts}[tag="quick-sort"]
 
 * 归并排序将子数组切分后有 *归并* 的动作, 快速排序将子数组排完序后整个数组就自然而然的有序了.
 * 归并排序每次切分数组都是等分.
+
+=== 桶排序
+
+[source,java]
+----
+include::{sorts}[tag="bucket-sort"]
+----
+
+==== 时间复杂度
+
+* 总: stem:[O(n)]
+
+=== 计数排序
+
+[source,java]
+----
+include::{sorts}[tag="counting-sort"]
+----
+
+==== 时间复杂度
+
+* 总: stem:[O(n)]
+
+== 查找
+
+=== 二分查找
+
+[source,bash]
+----
+include::{code-path}/search/BinarySearch.java[]
+----
+
+时间复杂度为 stem:[O(logn)]
+
