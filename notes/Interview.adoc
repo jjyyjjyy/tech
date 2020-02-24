@@ -12,129 +12,196 @@
 :tabsize: 4
 :docinfo: shared
 
-[plantuml,interview,svg]
-....
-@startmindmap
+== Java基础
 
-!include charts/global/stylesheet.iuml
+[qanda]
+重载和重写的区别?::
+* 重载发生在同一类中:
+** 方法名称相同.
+** 方法参数列表不同.
+** 方法的返回值类型和访问修饰符可以不同.
+* 重写发生在父子类中:
+** 方法名称相同.
+** 参数列表相同.
+** 子类方法的返回值类型是父类返回值类型或其子类.
+** 子类抛出的异常类型是父类异常类型或其子类.
+** 子类方法的访问修饰符必须大于等于父类.
+String, StringBuilder, StringBuffer的区别?::
+* String是不可变类, 每次修改字符串都会生成一个新的String对象.
+* StringBuilder和StringBuffer都是可变对象, 可以修改其内部存储的字符串.
+* StringBuffer是线程安全的, StringBuilder不是线程安全的.
+Checked和UnChecked异常的区别?::
+* checked异常为继承了 `Exception` 类但不是 `RuntimeException` 的子类的异常, 需要程序手动处理.
+* unchecked异常为继承了 `RuntimeException` 或 `Error` 的异常.
+程序可以手动捕获, 也可以不处理.
+谈谈对多态的理解?::
+多态是指父类引用指向子类对象.
+即在程序运行时才能动态获取到引用对象的实际类型.
+抽象类和接口的区别?::
+* 一个类只能继承一个抽象类, 但是可以实现多个接口.
+* 接口变量只能是 `public static final` 类型.
+泛型中extends和super的区别?::
+* extends为上界符
+String为什么要设计成不可变的?::
+equals和hashCode方法重写规则?::
 
-* Origin
+...
 
-left
+== JUC
 
-** Java
-*** 集合
-****_ HashMap添加一个键值对的过程是怎么样的?
-****_ HashMap与HashTable, ConcurrentHashMap的区别是什么?
-****_ HashMap遍历时删除元素的有哪些实现方法?
-****_ HashMap扩容是怎样扩容的, 为什么都是2的N次幂的大小?
-****_ HashMap扩容后是否需要rehash?
-****_ HashSet和HashMap的区别?
-****_ ConcurrentHashMap添加一个键值对的过程是怎么样的?
-****_ ConcurrentHashMap是怎么记录元素个数size的?
-****_ 为什么ConcurrentHashMap, HashTable不支持key, value为null?
-*** JVM
-*** JUC
+[qanda]
+synchronized关键字的使用?::
+* 修饰实例方法
+* 修饰静态方法
+* 修饰代码块
+sleep和wait的区别?::
+synchronized和volatile的区别?::
+线程的状态流转?::
+Thread类run()和start()区别?::
+Thread.join()有什么作用?::
+同步和非同步、阻塞和非阻塞的概念?::
+终止一个线程的方法有哪些?::
+* 使用一个volatile修饰的标志位while循环判断是否终止.
+* 调用Thread#interrupt()方法
+** 让Thread#isInterrupted()方法返回false/.(仅限于继承Thread类方式创建的线程)
+** 如果线程处于阻塞状态, 则会抛出InterruptedException.线程内部可以捕获该异常终止方法.
+* 调用Thread.stop()方法.
+此方法会释放所有子线程的锁, 可能会导致线程安全问题.
+多线程断点续传的实现原理?::
+守护线程和本地线程区别?::
+线程与进程的区别?::
+什么是多线程中的上下文切换?::
+死锁与活锁的区别?::
+死锁与饥饿的区别?::
+Java中用到的线程调度算法是什么?::
+什么是线程组, 为什么在Java中不推荐使用?::
+Lock接口是什么? 对比synchronized它有什么优势?::
+什么是阻塞队列? 阻塞队列的实现原理是什么? 如何使用阻塞队列来实现生产者-消费者模型?::
+什么是Callable和Future?::
+什么是FutureTask?::
+什么是并发容器的实现?::
+多线程同步和互斥有几种实现方法?::
+什么是竞争条件? 你怎样发现和解决竞争?::
+Java中你怎样唤醒一个阻塞的线程?::
+CyclicBarrier和CountdownLatch有什么区别?::
+什么是不可变对象, 它对写并发应用有什么帮助?::
+什么是多线程中的上下文切换?::
+Java中用到的线程调度算法是什么?::
+什么是线程组，为什么在Java中不推荐使用?::
+为什么使用Executor框架比使用应用创建和管理线程好?::
+java中有几种方法可以实现一个线程?::
+如何停止一个正在运行的线程?::
+什么是Daemon线程? 它有什么意义?::
+java如何实现多线程之间的通讯和协作?::
+什么是可重入锁?::
+当一个线程进入某个对象的一个synchronized的实例方法后，其它线程是否可进入此对象的其它方法?::
+乐观锁和悲观锁的理解及如何实现?::
+SynchronizedMap和ConcurrentHashMap有什么区别?::
+CopyOnWriteArrayList可以用于什么应用场景?::
+什么叫线程安全? servlet是线程安全吗?::
+volatile有什么用? 能否用一句话说明下volatile的应用场景?::
+为什么代码会重排序?::
+在java中wait和sleep方法的不同?::
+一个线程运行时发生异常会怎样?::
+如何在两个线程间共享数据?::
+Java中notify和notifyAll有什么区别?::
+为什么wait, notify 和 notifyAll这些方法不在thread类里面?::
+什么是ThreadLocal变量?::
+Java中interrupted和isInterrupted方法的区别?::
+为什么wait和notify方法要在同步块中调用?::
+为什么你应该在循环中检查等待条件?::
+Java中的同步集合与并发集合有什么区别?::
+什么是线程池? 为什么要使用它?::
+怎么检测一个线程是否拥有锁?::
+JVM中哪个参数是用来控制线程的栈堆栈小的?::
+Thread类中的yield方法有什么作用?::
+Java中ConcurrentHashMap的并发度是什么?::
+Java中Semaphore是什么?::
+Java线程池中submit()和execute()方法有什么区别?::
+什么是阻塞式方法?::
+Java中的ReadWriteLock是什么?::
+volatile 变量和 atomic 变量有什么不同?::
+可以直接调用Thread类的run()方法么?::
+如何让正在运行的线程暂停一段时间?::
+你对线程优先级的理解是什么?::
+什么是线程调度器和时间分片?::
+你如何确保main()方法所在的线程是Java程序最后结束的线程?::
+线程之间是如何通信的?::
+为什么线程通信的方法wait()、notify()和notifyAll()被定义在Object类里?::
+为什么wait()、notify()和notifyAll()必须在同步方法或者同步块中被调用?::
+为什么Thread类的sleep()和yield()方法是静态的?::
+如何确保线程安全?::
+同步方法和同步块, 哪个是更好的选择?::
+如何创建守护线程?::
+什么是Java Timer 类? 如何创建一个有特定时间间隔的任务?::
+线程池的拒绝策略?::
+* AbortPolicy(默认): 丢弃任务并抛出 `RejectExecutionException` 异常.
+* DiscardPolicy: 丢弃任务, 但是不抛出异常.
+* DiscardOldestPolicy: 丢弃队列最前面的任务, 然后重新提交被拒绝的任务.
+* CallerRunsPolicy: 由调用线程处理该任务.
+...
 
-** 设计模式
-*** 特性
-**** 重用性
-**** 可读性
-**** 可扩展型
-**** 可靠性
-**** 高内聚低耦合
-*** 原则
-**** 单一职责原则
-**** 接口隔离原则
-**** 依赖倒置原则
-**** 里氏替换原则
-**** 开闭原则
-**** 迪米特原则
-**** 合成复用原则
-*** 创建型
-**** 单例模式
-**** 简单工厂模式
-**** 抽象工厂模式
-**** 原型模式
-**** 建造者模式
-*** 结构型
-**** 适配器模式
-**** 桥接模式
-**** 装饰模式
-**** 组合模式
-**** 外观模式
-**** 享元模式
-**** 代理模式
-*** 行为型
-**** 模板方法模式
-**** 命令模式
-**** 访问者模式
-**** 迭代器模式
-**** 观察者模式
-**** 中介者模式
-**** 备忘录模式
-**** 解释器模式
-**** 状态模式
-**** 策略模式
-**** 责任链模式
+== Java集合
 
-** 数据结构
-*** 线性表
-**** 数组
-**** 队列
-**** 栈
-*** 链表
-*** 哈希表
-*** 树
-*** 图
-
-** 算法
-*** 排序
-**** 冒泡排序
-**** 选择排序
-**** 插入排序
-**** 希尔排序
-**** 归并排序
-**** 快速排序
-**** 堆排序
-*** 查找
-**** 二分查找
-
-right
-
-** 构建工具
-*** Maven
-
-** 框架
-*** Spring IoC
-*** Spring AOP
-*** Spring MVC
-*** Spring TX
-*** Spring Boot
-*** Spring Cloud
-**** Spring Cloud Sleuth
-
-** 数据库
-*** PostgreSQL
-*** Redis
-
-** 消息队列
-** RabbitMQ
-
-** DevOps
-*** Shell
-*** Docker
-*** Kubernetes
-
-@endmindmap
-....
+[qanda]
+解决hash冲突的方法?::
+* `HashMap` 使用 *拉链法* , 如果hash值落在相同的槽位上, 则转成链表链在已有元素的后面.
+* `ThreadLocalMap` 使用 *开放地址法* ,如果hash所在的槽位已有元素, 则将元素存放到下一个为空的槽位上.
+ArrayList和LinkedList的区别?::
+* `ArrayList` 底层使用数组存储元素, `LinkedList` 使用双向链表.
+* 都不是线程安全的.
+* `ArrayList` 插入和删除时间复杂度为stem:[O(n)], 查找为stem:[O(1)]. `LinkedList` 查找和删除时间复杂度为stem:[O(n)], 插入为stem:[O(1)].
+* `LinkedList` 每个元素需要维护前后元素的引用, 所以内存占用比 `ArrayList` 大.
+为什么HashMap的长度始终是2的幂?::
+stem:[x%2^n=x&(2^n-1)]
+HashMap的实现原理?::
+* 计算key的hash值: `(h = key.hashCode()) ^ (h >>> 16)` hashCode的前16位和后16位异或, 然后取后16位.
+* 根据hash值得到存放索引(`hash & (length - 1)`)
+** 如果table为空, 则初始化table, 直接插入.
+** 如果索引处为空, 直接插入.
+** 如果索引处不为空, 则根据hash和key比较找到已有的key.
+*** 如果key找到了则直接更新value.
+*** 如果key没有找到, 则判断当前node是否为红黑树的node还是链表node, 插入.
+*** 如果当前node属于链表且长度大于8且table长度大于等于64, 则转成红黑树.
+** 插入后如果table长度超过了阈值, 则扩容两倍.
+*** 因为 stem:[x&(2n-1)= (x&(n-1) || 2xxx&(n-1))], 所以扩容后原来的索引stem:[i]只会移动到新的数组索引stem:[i或2i]处.
+*** 通过 stem:[i&n]就可以计算出新索引为stem:[i"还是"2i].
+HashMap和HashTable的区别?::
+* HashTable线程安全, HashMap线程不安全.
+* HashTable为11, HashMap默认初始长度为16, 且总为2的幂.
+* HashTable扩容后为stem:[2n+1],HashMap扩容后为stem:[2n].
+* HashMap的kv可以为null, HashTable的kv均不能为null.
+* HashMap因hash冲突产生的链表长度大于8后会转成红黑树, HashTable不会.
+JDK中有序的Map?::
+* LinkedHashMap
+* TreeMap
+TreeMap的特点?::
+* get/put/remove都是stem:[O(logn)]
+LinkedHashMap的实现原理?::
+TODO
+ConcurrentHashMap的实现原理?::
+TODO
 
 == JVM
 
 [qanda]
+JVM内存区域划分?::
+* 线程私有:
+** 程序计数器
+** 虚拟机栈
+** 本地方法栈
+* 线程共享:
+** 方法区
+** 堆
 内存溢出和内存泄漏的区别?::
 * 内存泄漏: 内存一直占用但不释放.
 * 内存溢出: 申请内存时, 没有足够的内存使用.
+强/软/弱/虚引用的区别?::
+* 只要强引用存在, 垃圾回收期就不会回收被引用的对象.
+* 在内存不足时, 会将软引用关联的对象列入垃圾回收范围, 然后下一次GC时回收.
+* 弱引用只能活到下一次GC前.
+* 虚引用无法获取被引用的对象, 并且该对象在任意时间会被回收掉.
+回收的同时会将该对象放入ReferenceQueue.
 
 == Maven
 
@@ -156,6 +223,12 @@ Maven依赖传递?::
 * compile范围的依赖才可被传递.
 * 路径最短者优先.
 * 路径相同时先声明者优先.
+
+== Spring
+
+[qanda]
+Spring的事务隔离性?::
+Spring的事务传播行为?::
 
 == Redis
 
@@ -184,6 +257,25 @@ Redis各个数据类型最大存储量分别是多少?::
 Redis怎么实现分布式锁?::
 常见的淘汰算法有哪些?::
 Redis淘汰策略有哪些?::
+* volatile-lru：从已经设置过期时间的数据集中，挑选最近最少使用的数据淘汰。
+* volatile-ttl：从已经设置过期时间的数据集中，挑选即将要过期的数据淘汰。
+* volatile-random：从已经设置过期时间的数据集中，随机挑选数据淘汰。
+* allkeys-lru：从所有的数据集中，挑选最近最少使用的数据淘汰。
+* allkeys-random：从所有的数据集中，随机挑选数据淘汰。
+* no-enviction：禁止淘汰数据。
+redis过期键的删除策略？::
+* 定时删除：在设置键的过期时间的同时，创建一个timer，让定时器在键的过期时间到达时，立即执行对键的删除操作。（主动删除）
+
+对内存友好，但是对cpu时间不友好，有较多过期键的而情况下，删除过期键会占用相当一部分cpu时间。
+
+* 惰性删除：放任过期键不管，但是每次从键空间中获取键时，都检查取到的键是否过去，如果过期就删除，如果没过期就返回该键。（被动删除）
+
+对cpu时间友好，程序只会在取出键的时候才会对键进行过期检查，这不会在删除其他无关过期键上花费任何cpu时间，但是如果一个键已经过期，而这个键又保留在数据库中，那么只要这个过期键不被删除，他所占用的内存就不会释放，对内存不友好。
+
+* 定期删除：每隔一段时间就对数据库进行一次检查，删除里面的过期键。（主动删除）
+
+采用对内存和cpu时间折中的方法，每个一段时间执行一次删除过期键操作，并通过限制操作执行的时长和频率来减少对cpu时间的影响。难点在于，选择一个好的策略来设置删除操作的时长和执行频率。
+
 Redis缓存失效策略有哪些?::
 Redis的持久化机制有几种方式?::
 Redis通讯协议是什么? 有什么特点?::
@@ -191,6 +283,14 @@ Redis通讯协议是什么? 有什么特点?::
 请介绍一下Redis集群实现方案?::
 Redis集群最大节点个数是多少?::
 Redis集群的主从复制模型是怎样的?::
+redis的哨兵的监控机制是怎样的?::
+. 每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令
+. 如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。
+. 如果一个Master被标记为主观下线，则正在监视这个Master的所有 Sentinel 要以每秒一次的频率确认Master的确进入了主观下线状态。
+. 当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认Master的确进入了主观下线状态， 则Master会被标记为客观下线
+. 在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令
+. 当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次
+. 若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。
 Redis如何做内存优化?::
 Redis事务相关命令有哪些? 什么是Redis事务? 原理是什么?::
 Redis事务的注意点有哪些?::
@@ -219,3 +319,101 @@ Redis sentinel (哨兵) 模式优缺点有哪些?::
 Redis集群架构模式有哪几种?::
 如何设置Redis的最大连接数? 查看Redis的最大连接数? 查看Redis的当前连接数?::
 设计一下在交易网站首页展示当天最热门售卖商品的前五十名商品列表?::
+
+...
+
+== SQL
+
+[qanda]
+索引的底层存储结构?::
+B+树
+B树和B+树的区别?::
+* B+树的非叶子节点不存储数据, 只存储索引.
+这样每一层可以存放更多的索引.
+* B+树的叶子节点包含所有的索引及索引所在行的数据.
+* B+树的叶子节点有指针指向左右两边的叶子节点.
+
+=== MySQL
+
+[qanda]
+Innodb和MyIsam的区别?::
+* MyIsam的索引和数据分别存在各个文件里, Innodb存储在同一个文件里.
+* MyIsam的索引B+树叶子节点存储索引所在行数据的磁盘地址, Innodb直接存放存储索引数据行的数据/主键.
+
+=== PostgreSQL
+
+== RabbitMQ
+
+[qanda]
+AMQP协议的流程?::
+. 消息先从生产者Producer出发到达交换器Exchange.
+. 交换器Exchange根据路由规则将消息转发对应的队列Queue之上.
+. 消息在队列Queue上进行存储.
+. 消费者Consumer订阅队列Queue并进行消费.
+如何保证消息投递成功?::
+* 定时检查消息投递状态:
+. 消息生产者发送消息时保存业务数据和消息到db中, 状态为 *已发送* .
+. 消息接收者处理完消息后更改消息状态为 *已接收* .
+. 定时任务轮询 *已发送* 的消息重新发送.
+* 延时二次确认:
+. 消息生产者发送消息时再向 _callback server_ 发送一条延时消息.
+. 消息接收者处理完消息后向 _callback server_ 立即发送一条确认消息.
+. _callback server_ 收到确认消息后记录到DB.
+. _callback server_ 来自生产者的延时消息后查询DB是否存在该条消息.
+如果不存在则通知生产者消息没有收到.
+rabbitmq 的使用场景有哪些?::
+rabbitmq 有哪些重要的角色?::
+rabbitmq 有哪些重要的组件?::
+rabbitmq 中 vhost 的作用是什么?::
+rabbitmq 的消息是怎么发送的?::
+rabbitmq 怎么保证消息的稳定性?::
+rabbitmq 怎么避免消息丢失?::
+要保证消息持久化成功的条件有哪些?::
+rabbitmq 持久化有什么缺点?::
+rabbitmq 有几种广播类型?::
+rabbitmq 怎么实现延迟消息队列?::
+rabbitmq 集群有什么用?::
+rabbitmq 节点的类型有哪些?::
+rabbitmq 集群搭建需要注意哪些问题?::
+rabbitmq 每个节点是其他节点的完整拷贝吗？为什么?::
+rabbitmq 集群中唯一一个磁盘节点崩溃了会发生什么情况?::
+rabbitmq 对集群节点停止顺序有要求吗?::
+...
+
+== DevOps
+
+[qanda]
+CAP一致性?::
+* 一致性(Consistency): 所有节点的数据状态保持一致.
+** 弱(最终)一致性: 数据一致性会有延迟, 但保证未来会有一个时刻保证数据一致性.
+** 强一致性
+* 可用性(Availability): 节点不能不可用.
+* 分区容错性(Partition Tolerance): 一个分区出现故障需要保证一致性或可用性.
+Basic Paxos角色?::
+* Client(民众): 系统外部角色, 请求发起者.
+* Proposer(议员): 接收Client请求, 向集群提出提议.
+* Acceptor(国会): 提议投票和提议接收者.
+只有多数派接受时, 提议才会被最终接受.
+* Learner(记录员): 记录被通过的提议.
+Basic Paxos流程?::
+. Proposer收到Client请求发送给Acceptor提案n.
+. 如果大多数Acceptor同意对提案n投票, 则通知Proposer.
+. Proposer通知Acceptor提案n.
+. Acceptor接受提案n, 通知Learner和Proposer.
+Multi Paxos角色?::
+相对于Basic Paxos, 多了Leader这个角色.
+Leader即唯一的Proposer, 所有的请求都需要经过此Leader.
+Multi Paxos流程?::
+. Proposer向Acceptor申请成为Leader节点, Acceptor同意并响应.
+. Leader收到Client请求后直接向Acceptor发送提议, Acceptor通过提议, 通知Learner和Proposer.
+Raft角色?::
+* Leader: 集群主节点, 统一接收请求并同步到Follower.
+* Follower: 接受Leader请求同步日志.
+* Candidate: Follower想变成Leader必须先变成Candidate, 然后让其他集群节点投票.
+Raft流程?::
+* Leader Election: 集群没有Leader时, 一个Follower节点变成Candidate节点, 然后如果其他大多数节点同意则该节点变成Leader节点.
+* Log Replication: Leader接收到请求, 将请求日志同步给所有Follower, 大多数Follower响应后, Leader应用日志操作数据写入文件系统, 然后再次同步给Follower让各个节点同步数据写入.
+* Safety:
+** Election失败了, 会随机等待一段时间再进行选举.
+** 网络分区导致出现两个Leader.
+当网络恢复后, 老的Leader会变成Follower, 所处的分区会从新Leader上同步日志.
