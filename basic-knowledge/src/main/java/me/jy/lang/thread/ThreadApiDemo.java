@@ -1,23 +1,24 @@
 package me.jy.lang.thread;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author jy
- * @date 2017/11/09
  */
-public class ThreadDemo1 {
+@Slf4j
+public class ThreadApiDemo {
 
     public static void main(String[] args) {
         Thread thread = new Thread(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 System.out.println(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-//        thread.setDaemon(true);// JVM等待所有非守护线程结束后退出
-        System.out.println(thread.isAlive());// false
-        System.out.println(thread.getState());// NEW
+        log.info("{}, {}", thread.getState(), thread.isAlive());
+//        thread.setDaemon(true);// JVM会等待所有非守护线程结束后退出
         thread.start();
         System.out.println(thread.getState());// RUNNABLE
         System.out.println(thread.isAlive());// true

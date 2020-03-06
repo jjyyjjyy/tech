@@ -59,13 +59,15 @@ synchronized和volatile的区别?::
 线程的状态流转?::
 Thread类run()和start()区别?::
 Thread.join()有什么作用?::
+等待线程执行完
 同步和非同步、阻塞和非阻塞的概念?::
 终止一个线程的方法有哪些?::
 * 使用一个volatile修饰的标志位while循环判断是否终止.
 * 调用Thread#interrupt()方法
-** 让Thread#isInterrupted()方法返回false/.(仅限于继承Thread类方式创建的线程)
+** 如果线程处于运行状态, Thread#isInterrupted()方法返回true, 线程内部判断这个标志位跳出方法.
 ** 如果线程处于阻塞状态, 则会抛出InterruptedException.线程内部可以捕获该异常终止方法.
-* 调用Thread.stop()方法.
+Thread#isInterrupted()方法返回false.
+* 调用Thread#stop()方法.
 此方法会释放所有子线程的锁, 可能会导致线程安全问题.
 多线程断点续传的实现原理?::
 守护线程和本地线程区别?::
@@ -361,23 +363,41 @@ AMQP协议的流程?::
 . _callback server_ 收到确认消息后记录到DB.
 . _callback server_ 来自生产者的延时消息后查询DB是否存在该条消息.
 如果不存在则通知生产者消息没有收到.
-rabbitmq 的使用场景有哪些?::
-rabbitmq 有哪些重要的角色?::
-rabbitmq 有哪些重要的组件?::
+rabbitmq的使用场景有哪些?::
+* 削峰: 让服务能够平滑的处理突发的超负荷请求.
+* 解耦: 消息生产者和消费者不需要知道对方的存在.
+* 存储: 消息系统可以保证该消息真正被消费完才会被丢弃.
+* 顺序保证: 消息队列可以保证消息接收的顺序性.
+rabbitmq有哪些角色?::
+* Queue: 存放消息的容器.
+* Exchange: 接收来自生产者的消息, 然后将消息路由到不同的队列.
+* Routing Key: 生产者将消息发送给Exchange的时候一般会指定一个Routing Key.
+* Binding: RabbitMQ中通过绑定将Exchange和队列关联起来, 绑定的时候会指定一个Binding Key.
+rabbitmq的消息是怎么发送的?::
+. 生产者将消息发送给Exchange, 并指定一个Routing Key.
+. RabbitMQ根据Exchange的类型和Binding Key去和Routing Key匹配找到相应的队列.
+. RabbitMQ将消息路由到队列里.
+rabbitmq的Exchange类型?::
+* direct: 将消息路由到BindingKey和RoutingKey相同的队列.
+* fanout: 将发送到该Exchange的消息路由到所有与之绑定的所有队列.
+* topic: 根据RoutingKey匹配BindingKey路由到匹配的队列.
+** `.` 号用于匹配一个单词
+** `#` 号用于匹配0个或多个单词
+* headers: 根据headers匹配队列而不是RoutingKey和BindingKey.
 rabbitmq 中 vhost 的作用是什么?::
-rabbitmq 的消息是怎么发送的?::
+* 实现租户隔离.
 rabbitmq 怎么保证消息的稳定性?::
 rabbitmq 怎么避免消息丢失?::
 要保证消息持久化成功的条件有哪些?::
 rabbitmq 持久化有什么缺点?::
-rabbitmq 有几种广播类型?::
-rabbitmq 怎么实现延迟消息队列?::
-rabbitmq 集群有什么用?::
-rabbitmq 节点的类型有哪些?::
-rabbitmq 集群搭建需要注意哪些问题?::
-rabbitmq 每个节点是其他节点的完整拷贝吗？为什么?::
-rabbitmq 集群中唯一一个磁盘节点崩溃了会发生什么情况?::
-rabbitmq 对集群节点停止顺序有要求吗?::
+rabbitmq怎么实现延迟消息队列?::
+发送ttl消息到一个队列, 然后监听这个队列的死信队列.
+rabbitmq消息的状态?::
+* alpha: 消息内容和消息索引都存放在内存中.
+* beta: 消息索引存放在内存中, 消息内容存放在磁盘上.
+* gamma: 消息索引在内存和磁盘上, 消息内容存放在磁盘上.
+* delta: 消息索引和消息内容都在磁盘上.
+alpha状态只需要在内存中读取消息, delta状态需要两次I/O操作, beta和gamma状态需要一次I/O.
 ...
 
 == DevOps
