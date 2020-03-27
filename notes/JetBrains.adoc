@@ -229,18 +229,18 @@ TIP: https://soft-1252259164.cos.ap-shanghai.myqcloud.com/jetbrains/IDEA-mac.zip
 == 常用插件
 
 * .ignore
-* AsciiDOc
-* ASM Bytecode viewer
-* Bash support
+* AsciiDoc
+* Alibaba Java Coding Guidelines
+* Class Decompile
 * Emoji support plugin
 * Free MyBatis plugin
 * Grep Console
+* Key Promoter X
 * Kubernetes
 * Lombok
 * PlantUML integration
 * Rainbow Brackets
-* SonarLint
-* Swagger
+* RoboPOJOGenerator
 * Translation
 
 == Live template

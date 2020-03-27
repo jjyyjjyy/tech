@@ -40,12 +40,32 @@ Checked和UnChecked异常的区别?::
 抽象类和接口的区别?::
 * 一个类只能继承一个抽象类, 但是可以实现多个接口.
 * 接口变量只能是 `public static final` 类型.
-泛型中extends和super的区别?::
-* extends为上界符
-String为什么要设计成不可变的?::
 equals和hashCode方法重写规则?::
-
-...
+* hashCode()相等, equals()不一定返回true.
+* equals()返回true, hashCode()一定相等.
+new String("abc")创建了几个对象?::
+* 如果常量池已经存在abc这个常量, 则只在堆中创建一个String对象.
+* 如果常量池不存在abc这个常量, 则会先把abc放入常量池, 然后在堆中创建一个String对象.
+String为什么要设计成不可变的?::
+* *字符串常量池*: 相同的字符串字面量会指向字符串常量池同一个对象.
+如果String对象内部可以改变, 则改动了一个字符串值, 会影响系统中指向该字符串常量的字面量.
+* *线程安全*: 字符串对象不可变, 则可以被多个线程安全共享.
+* *缓存hashcode*: 因为字符串不可变, 所以可以缓存计算过的对象hashcode值.
+泛型中extends和super的区别?::
+* extends为上界通配符.
+* super为下界通配符.
+* 上界<? extends T>不能往里存，只能往外取
+* 下界<? super T>不影响往里存，但往外取只能放在Object对象里
+* *PECS(Producer Extends Consumer Super)原则*: 频繁往外读取内容的, 适合用上界Extends; 经常往里插入的, 适合用下界Super.
+获取泛型类型的方法?::
+`((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];`
+创建对象方式?::
+* new
+* Object.clone()
+* Class#newInstance()
+* Constructor#newInstance()
+* 反序列化
+* Unsafe.allocateInstance
 
 == JUC
 

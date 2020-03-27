@@ -1100,12 +1100,6 @@ public class MemoryTest {
 泛型的 `PECS` 原则?::
 * Producer Extends: 设计的类是生产者, 用 `extends`
 * Consumer Super: 设计的类是消费者, 用 `super`
-创建对象方式?::
-* new
-* Object.clone()
-* Class#newInstance()
-* 反序列化
-* Unsafe.allocateInstance
 如何找到JVM CPU占用高的原因?::
 . `jps` 查看JVM进程 `PID`.
 . `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.

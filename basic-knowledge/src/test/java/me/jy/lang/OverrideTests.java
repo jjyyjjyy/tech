@@ -19,7 +19,7 @@ public class OverrideTests {
     @Test
     public void testOverride() {
         Assertions.assertEquals("String", new OverrideTests().o("123"));
-
+        Assertions.assertEquals("String", new OverrideTests().o(null));
     }
 
 }
