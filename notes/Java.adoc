@@ -316,6 +316,51 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 ... 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
 ... 如果线程池中的线程数量大于 corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
 
+=== ThreadPoolExecutor
+
+==== 线程池状态
+
+|===
+| 状态名 | 标志 | 是否接收新任务 | 是否处理阻塞队列任务 | 说明
+
+| RUNNING
+| 111
+| √
+| √
+|
+
+| SHUTDOWN
+| 000
+| ×
+| √
+| 不会接收新的任务, 只会处理阻塞队列中剩余的任务.
+
+| STOP
+| 001
+| ×
+| ×
+| 中断正在执行的任务, 抛弃阻塞队列中的任务.
+
+| TIDYING
+| 010
+| ×
+| ×
+| 任务全部执行完毕, 活动线程为0, 即将进入终结状态.
+
+| TERMINATED
+| 011
+| ×
+| ×
+| 终结状态
+
+|===
+
+==== 使用场景
+
+* FixedThreadPool: 核心线程数等于最大线程数, 使用无界队列存储多余任务, 适用于任务量已知且耗时的场景.
+* CachedThreadPool: 没有核心线程数, 适用于任务执行时间短且密集的场景.
+* SingleThreadPool: 核心线程数和最大线程数都为1, 适用于希望任务排队串行执行的场景.
+
 == ClassLoader
 
 * loadClass 实现双亲委托模型
@@ -575,7 +620,8 @@ HotSpot内置多种编译器:
 
 ==== BootstrapClassLoader
 
-启动类加载器. 本身使用C/C++实现, 没有父加载器.
+启动类加载器.
+本身使用C/C++实现, 没有父加载器.
 通过 `sun.misc.Launcher.getBootstrapClassPath().getURLs()` 获取加载类的路径.
 
 ==== ExtClassLoader
@@ -585,7 +631,8 @@ HotSpot内置多种编译器:
 
 ==== AppClassLoader
 
-加载classpath/java.class.path路径下的类库, 是应用程序默认的类加载器. 父加载器为ExtClassLoader.
+加载classpath/java.class.path路径下的类库, 是应用程序默认的类加载器.
+父加载器为ExtClassLoader.
 
 ==== 用户自定义类加载器
 
@@ -602,7 +649,8 @@ HotSpot内置多种编译器:
 ==== 双亲委派机制
 
 [.lead]
-加载某个类的class文件时, 把请求委托给父加载器处理. 如果父加载器无法加载, 则子加载器才会自己去加载.
+加载某个类的class文件时, 把请求委托给父加载器处理.
+如果父加载器无法加载, 则子加载器才会自己去加载.
 
 .优点
 * 避免类的重复加载.
@@ -621,10 +669,12 @@ HotSpot内置多种编译器:
 链接分为 _验证, 准备, 解析_ 三个阶段.
 
 .验证
-确保字节流符合当前虚拟机要求, 保证类加载的正确性. 验证文件格式/元数据/字节码/符号引用.
+确保字节流符合当前虚拟机要求, 保证类加载的正确性.
+验证文件格式/元数据/字节码/符号引用.
 
 .准备
-为静态变量分配零值(null/0). 常量设置初始值.
+为静态变量分配零值(null/0).
+常量设置初始值.
 
 .解析
 解析符号引用为直接引用.
@@ -644,7 +694,7 @@ HotSpot内置多种编译器:
 
 === JVM内存布局
 
-[plantuml, jvm-memory, svg]
+[plantuml,jvm-memory,svg]
 ....
 @startuml
 package "JVM内存布局" {
@@ -666,8 +716,10 @@ package "JVM内存布局" {
 
 ==== 虚拟机栈
 
-每个线程在创建时都会创建一个虚拟机栈, 栈中的数据以栈帧的格式存在. 在这个线程上执行的每个方法都各自对应一个栈帧.
-栈顶的栈帧对应的就是当前正在执行的方法, 如果该方法调用了其他方法, 则创建出一个新的栈帧并入栈. 方法执行完或抛出异常时当前栈帧会出栈.
+每个线程在创建时都会创建一个虚拟机栈, 栈中的数据以栈帧的格式存在.
+在这个线程上执行的每个方法都各自对应一个栈帧.
+栈顶的栈帧对应的就是当前正在执行的方法, 如果该方法调用了其他方法, 则创建出一个新的栈帧并入栈.
+方法执行完或抛出异常时当前栈帧会出栈.
 
 .栈帧组成
 * 局部变量表(方法内部局部变量字节码行号和变量名的映射关系.)
@@ -773,7 +825,7 @@ include::../jvm/src/test/java/OOMDemo.java[tag=StackOOM]
 JVM主要接受两类标志: boolean类和赋值类参数.
 
 * boolean类:
- `-XX:+FLAG_NAME`.
+`-XX:+FLAG_NAME`.
 如: `-XX:+UseCompressedOops` 开启64位JVM中的对象引用压缩,`-XX:-UseCompressedOops` 关闭压缩.
 
 * 赋值类: `-XX:+FLAG_NAME=VALUE`.
@@ -817,7 +869,8 @@ TIP: 查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
 .GC性能类
 * `-XX:SurvivorRatio=8` 新生代中 _Eden_ 区和 _Survivor_ 区的比例, 默认为8, 及 8:1:1 .
 * `-XX:PretenureSizeThreshold=0` 直接晋升到老年代的对象大小, 大于这个参数的对象将直接在老年代上分配.
-* `-XX:MaxTenuringThreshold=15` 晋升到老年代的对象年龄. 每个对象在 _Minor GC_ 后年龄加一, 当年龄超过这个参数后会进入老年代.
+* `-XX:MaxTenuringThreshold=15` 晋升到老年代的对象年龄.
+每个对象在 _Minor GC_ 后年龄加一, 当年龄超过这个参数后会进入老年代.
 * `-XX:+UseAdaptiveSizePolicy` 动态调整堆中各个区域的大小以及老年代的年龄.
 * `-XX:ParallelGCThreads=8` 设置并行GC时进行内存回收的线程数.
 * `-XX:GCTimeRatio=N` 设置应用运行时间占比: stem:["Throughput"="GCTimeRatio"/(1+"GCTimeRatio")]
@@ -1047,12 +1100,6 @@ public class MemoryTest {
 泛型的 `PECS` 原则?::
 * Producer Extends: 设计的类是生产者, 用 `extends`
 * Consumer Super: 设计的类是消费者, 用 `super`
-创建对象方式?::
-* new
-* Object.clone()
-* Class#newInstance()
-* 反序列化
-* Unsafe.allocateInstance
 如何找到JVM CPU占用高的原因?::
 . `jps` 查看JVM进程 `PID`.
 . `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.
