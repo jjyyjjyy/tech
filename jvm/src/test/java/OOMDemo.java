@@ -1,3 +1,6 @@
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +51,16 @@ public class OOMDemo {
         }
     }
 
-    /*private static void createInfiniteProxyClasses() {
+    private static void createInfiniteProxyClasses() {
+
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(OOMDemo.class);
+        enhancer.setUseCache(false);
         enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> null);
         while (true) {
             enhancer.create();
         }
-    }*/
+    }
 
     // java.lang.OutOfMemoryError: Direct buffer memory
     // above jdk13: java.lang.OutOfMemoryError: Cannot reserve 1000000000 bytes of direct buffer memory (allocated: 0, limit: 10485760)

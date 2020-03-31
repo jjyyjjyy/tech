@@ -189,12 +189,12 @@ TODO
 [qanda]
 JVM内存区域划分?::
 * 线程私有:
-** 程序计数器
-** 虚拟机栈
-** 本地方法栈
+** 程序计数器: 存储当前线程执行的字节码的指令地址.
+** 虚拟机栈: 存放当前线程的栈帧. 每个栈帧对应一个被调用的方法, 栈帧中包括局部变量表, 操作数栈, 方法返回地址等信息. 当线程执行一个方法时, 就会创建一个栈帧压栈. 当方法执行完毕, 便会将栈帧出栈.
+** 本地方法栈: 存储当前线程调用的本地方法的栈帧.
 * 线程共享:
-** 方法区
-** 堆
+** 方法区: 存储类的信息, 静态变量, 常量, 编译后的代码等.
+** 堆: 存储对象数据.
 内存溢出和内存泄漏的区别?::
 * 内存泄漏: 内存一直占用但不释放.
 * 内存溢出: 申请内存时, 没有足够的内存使用.
@@ -204,6 +204,34 @@ JVM内存区域划分?::
 * 弱引用只能活到下一次GC前.
 * 虚引用无法获取被引用的对象, 并且该对象在任意时间会被回收掉.
 回收的同时会将该对象放入ReferenceQueue.
+GC分类?::
+* Minor GC/Young GC: 新生代的收集.
+* Major GC/Old GC: 老年代的收集.(CMS)
+* Mixed GC: 收集整个新生代和部分老年代的过程. (G1)
+* Full GC: 整个Java堆和方法区的收集.
+哪些情况会导致Full GC?::
+* 老年代满
+* CMS回收失败, 发生 `Concurrent Mode Failure` .
+* 从新生代要放入老年代的对象超过了老年代剩余空间.
+OOM类型?::
+* 堆内存溢出. `Java heap space`
+* 花费在GC上的时间超过了应用总运行时间的98%. `GC overhead limit exceeded`
+* 使用反射创建大量的动态代理类, 导致Metaspace溢出. `Metaspace`
+* 创建线程时没有足够内存分配. `unable to create new native thread`
+* 使用Unsafe分配内存时不够. `Direct buffer memory`
+哪些对象属于GC Root?::
+* 静态变量
+// TODO
+哪些属于GC Root不正常引用或者哪些情况会出现内存泄露?::
+
+CMS采用哪种回收算法?::
+CMS使用标记-清除算法.
+CMS怎么解决内存碎片问题?::
+* CMS提供 `-XX:+UseCMSCompactAtFullCollection` 开关参数, 用于CMS在Full GC时开启内存碎片的合并整理过程.
+* CMS提供 `-XX:CMSFullGCsBeforeCompaction` 参数, 用于设置在执行指定次数不整理空间的Full FC后, 在下一次Full GC前整理内存碎片.
+
+
+
 
 == Maven
 
