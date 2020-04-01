@@ -39,6 +39,13 @@ String, StringBuilder, StringBuffer的区别?::
 * String是不可变类, 每次修改字符串都会生成一个新的String对象.
 * StringBuilder和StringBuffer都是可变对象, 可以修改其内部存储的字符串.
 * StringBuffer是线程安全的, StringBuilder不是线程安全的.
+创建字符串的方式?::
+* 字面量创建. `String s = "abc";`
+* 创建String对象. `String s = new String("abc");`
+* 两个字面量相加. `String s = "a" + "bc";`
+* 两个String对象相加. `String s = new String("a") + new String("bc");`
+* 字面量与String对象相加. `String s = new String("a") + "bc";`
+* 字面量与一个字符串变量相加. `String a = "a"; String s = a + "bc";`
 Checked和UnChecked异常的区别?::
 * checked异常为继承了 `Exception` 类但不是 `RuntimeException` 的子类的异常, 需要程序手动处理.
 * unchecked异常为继承了 `RuntimeException` 或 `Error` 的异常.

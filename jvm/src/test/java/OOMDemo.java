@@ -51,6 +51,8 @@ public class OOMDemo {
         }
     }
 
+    // -XX:MaxMetaspaceSize=20m
+    // java.lang.OutOfMemoryError: Metaspace
     private static void createInfiniteProxyClasses() {
 
         Enhancer enhancer = new Enhancer();
@@ -72,9 +74,9 @@ public class OOMDemo {
 //        heapOOM();
 //        stackOverFlow();
 //        createInfiniteThread();
-//        testUTF8ConstantPoolOOM();
+        testUTF8ConstantPoolOOM();
 //        createInfiniteProxyClasses();
-        directMemoryOOM();
+//        directMemoryOOM();
     }
 
 
