@@ -16,7 +16,8 @@
         <module>spring-session-demo</module>
         <module>spring-aop-demo</module>
         <module>spring-tx-demo</module>
+        <module>mybatis-demo</module>
     </modules>
-    <artifactId>spring-notes</artifactId>
+    <artifactId>framework-demo</artifactId>
 
 </project>

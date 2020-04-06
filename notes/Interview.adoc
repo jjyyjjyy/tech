@@ -32,8 +32,8 @@ Java基本数据类型有哪些? 各占多少字节?::
 * 重写发生在父子类中:
 ** 方法名称相同.
 ** 参数列表相同.
-** 子类方法的返回值类型是父类返回值类型或其子类.
-** 子类抛出的异常类型是父类异常类型或其子类.
+** 子类方法的返回值类型可以是父类返回值类型或其子类.
+** 子类抛出的异常类型可以是父类异常类型或其子类.
 ** 子类方法的访问修饰符必须大于等于父类.
 String, StringBuilder, StringBuffer的区别?::
 * String是不可变类, 每次修改字符串都会生成一个新的String对象.
@@ -54,8 +54,17 @@ Checked和UnChecked异常的区别?::
 多态是指父类引用指向子类对象.
 即在程序运行时才能动态获取到引用对象的实际类型.
 抽象类和接口的区别?::
-* 一个类只能继承一个抽象类, 但是可以实现多个接口.
-* 接口变量只能是 `public static final` 类型.
+* 抽象类可以有构造方法, 接口不行.
+* 抽象类可以有成员变量, 接口不行.
+* 接口变量只能是 `public static final` 常量类型.
+* 一个类只能继承一个抽象类, 但是一个接口以继承多个接口.
+静态内部类和成员内部类的区别?::
+.成员内部类
+* 成员内部类的变量和方法不能声明为静态的.
+* 内部类可以引用外部类的非静态属性及方法.
+.静态内部类
+* 静态内部类的属性和方法可以声明为静态和非静态的.
+* 静态内部类只能引用外部类的静态变量或方法.
 equals和hashCode方法重写规则?::
 * hashCode()相等, equals()不一定返回true.
 * equals()返回true, hashCode()一定相等.
@@ -78,10 +87,21 @@ String为什么要设计成不可变的?::
 创建对象方式?::
 * new
 * Object.clone()
-* Class#newInstance()
-* Constructor#newInstance()
+* Class::newInstance()
+* Constructor::newInstance()
 * 反序列化
 * Unsafe.allocateInstance
+getMethods()和getDeclareMethods()的区别?::
+* `getMethods()` 返回本类以及从父类继承过来的public方法.
+* `getDeclareMethods()` 只返回本类的方法.
+Class.forName()和ClassLoader::loadClass的区别?::
+`Class.forName()` 会执行类的静态代码块, ClassLoader不会.
+BIO/NIO/AIO区别?::
+* `BIO` 一个线程对应一个读写请求.
+BIO用流处理数据.
+* `NIO` 所有的读写请求交给一个线程轮询状态, 然后根据状态交给线程池中的线程处理.
+NIO用块处理数据.
+* `AIO` 通过内核回调机制通知请求读写完毕, 然后执行回调.
 
 == JUC
 
@@ -185,10 +205,11 @@ Timer类的缺点?::
 
 [qanda]
 有哪些Map类?::
-* HashMap
-* LinkedHashMap
-* TreeMap
-* ConcurrentHashMap
+* HashMap `查找键值对`
+* LinkedHashMap `保证key按照插入的顺序输出`
+* TreeMap `按照自定义顺序遍历`
+* ConcurrentHashMap `线程安全`
+* WeakHashMap
 解决hash冲突的方法?::
 * `HashMap` 使用 *拉链法* , 如果hash值落在相同的槽位上, 则转成链表链在已有元素的后面.
 * `ThreadLocalMap` 使用 *开放地址法* ,如果hash所在的槽位已有元素, 则将元素存放到下一个为空的槽位上.
@@ -198,7 +219,7 @@ ArrayList和LinkedList的区别?::
 * `ArrayList` 插入和删除时间复杂度为stem:[O(n)], 查找为stem:[O(1)]. `LinkedList` 查找和删除时间复杂度为stem:[O(n)], 插入为stem:[O(1)].
 * `LinkedList` 每个元素需要维护前后元素的引用, 所以内存占用比 `ArrayList` 大.
 为什么HashMap的长度始终是2的幂?::
-stem:[x%2^n=x&(2^n-1)]
+stem:[x%2^n=x&(2^n-1)] 用与运算代替模运算, 效率更高.
 HashMap的实现原理?::
 * 计算key的hash值: `(h = key.hashCode()) ^ (h >>> 16)` hashCode的前16位和后16位异或, 然后取后16位.
 * 根据hash值得到存放索引(`hash & (length - 1)`)
@@ -208,24 +229,40 @@ HashMap的实现原理?::
 *** 如果key找到了则直接更新value.
 *** 如果key没有找到, 则判断当前node是否为红黑树的node还是链表node, 插入.
 *** 如果当前node属于链表且长度大于8且table长度大于等于64, 则转成红黑树.
-** 插入后如果table长度超过了阈值, 则扩容两倍.
-*** 因为 stem:[x&(2n-1)= (x&(n-1) || 2xxx&(n-1))], 所以扩容后原来的索引stem:[i]只会移动到新的数组索引stem:[i或2i]处.
+** 插入后如果table长度超过了阈值(capacity*loadFactor), 则扩容两倍.
+*** 因为 stem:[x&(2n-1)=(x&(n-1) || 2xxx&(n-1))], 所以扩容后原来的索引stem:[i]只会移动到新的数组索引stem:[i或2i]处.
 *** 通过 stem:[i&n]就可以计算出新索引为stem:[i"还是"2i].
 HashMap和HashTable的区别?::
 * HashTable线程安全, HashMap线程不安全.
-* HashTable为11, HashMap默认初始长度为16, 且总为2的幂.
+* HashTable默认初始长度为11, HashMap默认初始长度为16, 且总为2的幂.
 * HashTable扩容后为stem:[2n+1],HashMap扩容后为stem:[2n].
-* HashMap的kv可以为null, HashTable的kv均不能为null.
+* HashMap的kv可以为null, 放在数据索引为0的位置.
+HashTable的kv均不能为null.
 * HashMap因hash冲突产生的链表长度大于8后会转成红黑树, HashTable不会.
 JDK中有序的Map?::
 * LinkedHashMap
 * TreeMap
 TreeMap的特点?::
 * get/put/remove都是stem:[O(logn)]
+HashSet的实现原理?::
+// TODO
 LinkedHashMap的实现原理?::
 // TODO
 ConcurrentHashMap的实现原理?::
 // TODO
+fail-fast和fail-safe的区别是什么?::
+* `fail-fast` 输赢迭代器遍历一个集合对象的时候, 如果遍历这个对象过程中对集合做了修改会抛出 `ConcurrentModifiedException` .
+* `fail-safe` 在遍历时先复制原有集合, 然后在拷贝的集合上进行遍历.
+JDK中的队列?::
+.非阻塞
+* LinkedList
+* PriorityQueue
+* ConcurrentLinkedQueue .阻塞
+* ArrayBlockingQueue
+* LinkedBlockingQueue
+* PriorityBlockingQueue
+* DelayQueue
+* SynchronousQueue
 
 == JVM
 
@@ -359,6 +396,42 @@ Maven依赖传递?::
 * compile范围的依赖才可被传递.
 * 路径最短者优先.
 * 路径相同时先声明者优先.
+
+== Mybatis
+
+[qanda]
+#{}和${}的区别是什么?::
+* `\#{}` 是预编译处理, Mybatis会将sql中的 `#{}` 替换为 `?` 号，调用PreparedStatement的set方法来赋值
+* `${}` 是纯粹的字符串替换.
+当实体类中的属性名和表中的字段名不一样, 怎么办?::
+* sql中使用别名, 与属性名保持一致.
+* 使用 `resultMap` 来设置实体属性名和列名的映射关系.
+模糊查询like语句该怎么写?::
+* 属性值用 `%` 包裹.
+* sql中写成 `%#{param}%`
+Mapper接口里的方法可以被重载吗?::
+不能, Mapper中每一个方法是用namespace加方法名作为唯一标识的.
+Mybatis分页插件原理?::
+* 拦截sql
+如何获取自增id?::
+* 保存的对象中会设置自增id的值.
+mapper中如何传递多个参数?::
+* sql中直接用 `\#{0},#{1}...` 标识第几个参数.
+* 方法中使用 `@Param` 注解设置参数名称, sql中使用 `#{参数名称}` 获取参数值.
+* 参数使用对象或者map, sql中引用对象或者map的key.
+ResultMap和ResultType的区别?::
+Mybatis如何执行批处理?::
+使用 `BatchExecutor` 执行批处理.
+Mybatis有哪些Executor? 区别是什么?::
+* SimpleExecutor
+* ReuseExecutor
+* BatchExecutor
+Mybatis的缓存实现原理?::
+* 一级缓存
+* 二级缓存
+Mybatis的延迟加载实现原理?::
+Mybatis仅支持 `association` 关联对象和 `collection` 关联集合对象的延迟加载.
+使用 `CGLIB` 创建目标对象的代理对象, 获取该对象发现是空对象, 则单独发送查询关联对象的sql, 设置该对象的值.
 
 == Spring
 

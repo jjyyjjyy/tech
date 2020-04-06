@@ -6,25 +6,46 @@ import java.util.Arrays;
 
 /**
  * @author jy
- * @date 2018/02/22
  */
-public class ReflectionTests {
+class ReflectionTests {
 
 
     @Test
-    public void testMethod() {
+    void testGetMethods() {
         System.out.println(Arrays.toString(Child.class.getMethods())); // a + Object
         System.out.println(Arrays.toString(Child.class.getDeclaredMethods())); // []
     }
 
+    @Test
+    void testGetFields() {
+        System.out.println(Arrays.toString(Child.class.getFields()));
+        System.out.println(Arrays.toString(Child.class.getDeclaredFields()));
+    }
 
     public static class Parent {
-        public void a() {
 
+        public int parentPublicField;
+        protected int parentProtectedField;
+        private int aField;
+        private int parentPrivateField;
+
+
+        private void parentPrivateMethod() {
+        }
+
+        protected void parentProtectedMethod() {
+        }
+
+        public void parentPublicMethod() {
         }
     }
 
     public static class Child extends Parent {
+
+        private int childPrivateField;
+
+        private void childPrivateMethod() {
+        }
     }
 }
 
