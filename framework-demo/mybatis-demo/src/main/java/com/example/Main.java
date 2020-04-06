@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.mapper.UserMapper;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
+import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
@@ -25,6 +26,7 @@ public class Main {
         TransactionFactory transactionFactory = new JdbcTransactionFactory();
         Environment environment = new Environment("development", transactionFactory, dataSource);
         Configuration configuration = new Configuration(environment);
+        configuration.setLogImpl(Slf4jImpl.class);
         configuration.addMapper(UserMapper.class);
 
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);

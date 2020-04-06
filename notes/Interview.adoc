@@ -96,6 +96,9 @@ getMethods()和getDeclareMethods()的区别?::
 * `getDeclareMethods()` 只返回本类的方法.
 Class.forName()和ClassLoader::loadClass的区别?::
 `Class.forName()` 会执行类的静态代码块, ClassLoader不会.
+`Class::getResourceAsStream` 和 `ClassLoader::getResourceAsStream` 的区别?::
+* `Class::getResourceAsStream` 为使用加载该类的类加载器加载文件: 不以 `/` 开头时为在该类所在路径下加载文件, 以 `/` 开头时为在 `classpath` 下加载文件.
+* `ClassLoader::getResourceAsStream` : 为用指定类加载器加载文件.
 BIO/NIO/AIO区别?::
 * `BIO` 一个线程对应一个读写请求.
 BIO用流处理数据.
@@ -257,7 +260,8 @@ JDK中的队列?::
 .非阻塞
 * LinkedList
 * PriorityQueue
-* ConcurrentLinkedQueue .阻塞
+* ConcurrentLinkedQueue
+.阻塞
 * ArrayBlockingQueue
 * LinkedBlockingQueue
 * PriorityBlockingQueue
@@ -426,12 +430,17 @@ Mybatis有哪些Executor? 区别是什么?::
 * SimpleExecutor
 * ReuseExecutor
 * BatchExecutor
+* CachingExecutor
 Mybatis的缓存实现原理?::
 * 一级缓存
 * 二级缓存
 Mybatis的延迟加载实现原理?::
 Mybatis仅支持 `association` 关联对象和 `collection` 关联集合对象的延迟加载.
 使用 `CGLIB` 创建目标对象的代理对象, 获取该对象发现是空对象, 则单独发送查询关联对象的sql, 设置该对象的值.
+Mybatis用到哪些设计模式?::
+* 单例模式: `KeyGenerator` ...
+* 建造者模式: `ResultMapping.Builder` `MappedStatement.Builder`
+* 组合模式: `MixedSqlNode`
 
 == Spring
 
