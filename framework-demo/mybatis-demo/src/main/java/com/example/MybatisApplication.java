@@ -1,6 +1,5 @@
 package com.example;
 
-import com.example.mapper.UserMapper;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.executor.Executor;
@@ -20,13 +19,13 @@ import java.lang.reflect.Field;
 /**
  * @author jy
  */
-public class Main {
+public class MybatisApplication {
 
     public static void main(String[] args) {
 
         PooledDataSource dataSource = new PooledDataSource();
         dataSource.setDriver("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://127.0.0.1/mybatis-demo");
+        dataSource.setUrl("jdbc:postgresql:mybatis-demo");
         dataSource.setUsername("jy");
         dataSource.setPassword("123456");
 
