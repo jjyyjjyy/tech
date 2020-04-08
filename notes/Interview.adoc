@@ -441,6 +441,8 @@ Mybatis用到哪些设计模式?::
 * 单例模式: `KeyGenerator` ...
 * 建造者模式: `ResultMapping.Builder` `MappedStatement.Builder`
 * 组合模式: `MixedSqlNode`
+* 代理模式: `SqlSessionManager`
+* 责任链模式: `InterceptorChain`
 
 == Spring
 

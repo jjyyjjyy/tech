@@ -1,6 +1,7 @@
 package com.example.mapper;
 
 import com.example.domain.User;
+import org.apache.ibatis.session.RowBounds;
 
 import java.util.List;
 
@@ -9,5 +10,7 @@ import java.util.List;
  */
 public interface UserMapper {
 
-    List<User> findAll();
+    List<User> findAll(RowBounds rowBounds);
+
+    int deleteUser(int userId);
 }

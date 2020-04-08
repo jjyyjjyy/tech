@@ -12,6 +12,11 @@
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
+    <delete id="deleteUser">
+        delete
+        from public.user
+        where id = ${userId}
+    </delete>
 
     <select id="findAll" resultMap="user">
         select *
