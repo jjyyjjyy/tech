@@ -14,7 +14,7 @@
     <properties>
         <!-- plugins -->
         <asciidoctor.version>2.0.0-RC.1</asciidoctor.version>
-        <asciidoctorj-diagram>2.0.0</asciidoctorj-diagram>
+        <asciidoctorj-diagram>2.0.1</asciidoctorj-diagram>
     </properties>
 
     <build>

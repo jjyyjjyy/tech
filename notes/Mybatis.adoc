@@ -26,6 +26,7 @@ interface TransactionFactory {
 
 TransactionFactory <.. JdbcTransactionFactory
 TransactionFactory <.. ManagedTransactionFactory
+TransactionFactory <.. SpringManagedTransactionFactory
 
 note bottom of JdbcTransactionFactory
 * 创建JdbcTransaction对象, 使用JDBC API管理数据库连接的生命周期.
@@ -33,6 +34,10 @@ end note
 
 note bottom of ManagedTransactionFactory
 * 创建ManagedTransaction对象, 让外部容器管理数据库连接.
+end note
+
+note bottom of SpringManagedTransactionFactory
+* 创建SpringManagedTransaction对象.
 end note
 
 ....

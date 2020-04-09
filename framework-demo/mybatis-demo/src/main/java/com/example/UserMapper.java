@@ -13,4 +13,6 @@ public interface UserMapper {
     List<User> findAll(RowBounds rowBounds);
 
     int deleteUser(int userId);
+
+    User findById(int id, String username);
 }

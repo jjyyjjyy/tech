@@ -1,5 +1,6 @@
 package com.example;
 
+import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.example.mapper.UserMapper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
@@ -19,7 +20,14 @@ public class MybatisPlusApplication {
     }
 
     @Bean
+    public PaginationInterceptor paginationInterceptor() {
+        return new PaginationInterceptor();
+    }
+
+    @Bean
     public CommandLineRunner clr(UserMapper userMapper) {
-        return args -> userMapper.selectList(null).forEach(System.out::println);
+        return args -> {
+            System.out.println(userMapper.findById(1, "wow"));
+        };
     }
 }

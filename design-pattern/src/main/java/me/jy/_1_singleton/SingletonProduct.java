@@ -64,10 +64,10 @@ public class SingletonProduct {
     private static class S5 {
 
         public static S5 getInstance() {
-            return S4Holder.INSTANCE;
+            return S5Holder.INSTANCE;
         }
 
-        private static class S4Holder {
+        private static class S5Holder {
             private static S5 INSTANCE = new S5();
         }
     }

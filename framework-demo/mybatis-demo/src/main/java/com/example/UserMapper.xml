@@ -22,5 +22,11 @@
         select *
         from public.user
     </select>
+    <select id="findById" resultMap="user">
+        select *
+        from public.user
+        where id = #{param1}
+          and username = #{param2}
+    </select>
 
 </mapper>

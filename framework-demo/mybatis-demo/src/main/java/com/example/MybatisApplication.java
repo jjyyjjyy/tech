@@ -43,6 +43,8 @@ public class MybatisApplication {
         userMapper.findAll(new RowBounds(0, 100)).forEach(System.out::println);
 
         userMapper.deleteUser(2);
+
+        System.out.println(userMapper.findById(1, "wow"));
     }
 
     @Intercepts(@Signature(
