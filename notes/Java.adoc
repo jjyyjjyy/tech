@@ -1,7 +1,4 @@
 = Java
-:icons: font
-:source-highlighter: highlightjs
-:highlightjs-theme: idea
 :source-linenums-option:
 :hardbreaks:
 :sectlinks:
@@ -11,7 +8,6 @@
 :toclevels: 4
 :toc-title: 目录
 :tabsize: 4
-:docinfo: shared
 
 .Resources
 * https://book.douban.com/subject/30133440[, window="blank"]

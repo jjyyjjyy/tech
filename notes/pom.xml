@@ -12,25 +12,64 @@
     <artifactId>notes</artifactId>
 
     <properties>
+
+        <spring-doc-resources.version>0.2.1.RELEASE</spring-doc-resources.version>
+
         <!-- plugins -->
         <asciidoctor.version>2.0.0-RC.1</asciidoctor.version>
         <asciidoctorj-diagram>2.0.1</asciidoctorj-diagram>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.spring.docresources</groupId>
+            <artifactId>spring-doc-resources</artifactId>
+            <version>${spring-doc-resources.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-doc-resources</id>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <includeGroupIds>io.spring.docresources</includeGroupIds>
+                            <includeArtifactIds>spring-doc-resources</includeArtifactIds>
+                            <includeTypes>zip</includeTypes>
+                            <excludeTransitive>true</excludeTransitive>
+                            <outputDirectory>${project.build.directory}/generated-docs/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <version>${asciidoctor.version}</version>
                 <configuration>
-                    <sourceDirectory>.</sourceDirectory>
+                    <sourceDirectory>${project.basedir}</sourceDirectory>
                     <backend>html5</backend>
                     <requires>
                         <require>asciidoctor-diagram</require>
                     </requires>
                     <attributes>
-                        <highlightjsdir>highlight</highlightjsdir>
+                        <docinfo>shared</docinfo>
+                        <stylesdir>css/</stylesdir>
+                        <stylesheet>spring.css</stylesheet>
+                        <linkcss>true</linkcss>
+                        <icons>font</icons>
+                        <source-highlighter>highlightjs</source-highlighter>
+                        <highlightjsdir>js/highlight</highlightjsdir>
+                        <highlightjs-theme>idea</highlightjs-theme>
                         <allow-uri-read/>
                     </attributes>
                 </configuration>
@@ -51,6 +90,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>spring-repo</id>
+            <name>Spring Repository</name>
+            <url>https://repo.spring.io/release</url>
+        </repository>
+    </repositories>
 
     <pluginRepositories>
         <pluginRepository>
