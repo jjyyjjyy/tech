@@ -15,8 +15,6 @@
 * https://www.youtube.com/watch?v=uu7j1_jhiU4[window="_blank"]
 * https://www.imooc.com/learn/924[window="_blank"]
 
-TIP: https://soft-1252259164.cos.ap-shanghai.myqcloud.com/jetbrains/IDEA-mac.zip[Self used settings for Mac]
-
 == 快捷键
 
 === Navigate

@@ -244,7 +244,7 @@ small {
 }
 
 code {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Menlo, Consolas, "Courier New", monospace;
   font-weight: normal;
   color: #3d3d3c;
   word-break: break-word
@@ -485,13 +485,13 @@ h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 {
   color: #009;
   padding: 2px 6px;
   font-size: .875rem;
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace
+  font-family: Menlo, Consolas, "Courier New", monospace
 }
 
 pre, pre > code {
   line-height: 1.85;
   color: rgba(0, 0, 0, 0.9);
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Menlo, Consolas, "Courier New", monospace;
   font-weight: normal;
   text-rendering: optimizeSpeed;
   word-break: normal
@@ -514,7 +514,7 @@ strong strong {
 }
 
 kbd {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Menlo, Consolas, "Courier New", monospace;
   display: inline-block;
   color: #000;
   font-size: 0.65em;
@@ -957,7 +957,7 @@ table.pyhltable .linenodiv {
 }
 
 .verseblock pre {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: Menlo, Consolas, "Courier New", monospace;
   font-size: 0.9rem;
   color: rgba(0, 0, 0, 0.85);
   font-weight: 300;
