@@ -70,7 +70,13 @@
                         <source-highlighter>highlightjs</source-highlighter>
                         <highlightjsdir>js/highlight</highlightjsdir>
                         <highlightjs-theme>idea</highlightjs-theme>
+                        <source-linenums-option/>
+                        <toc>left</toc>
+                        <toclevels>3</toclevels>
+                        <toc-title>目录</toc-title>
+                        <tabsize>4</tabsize>
                         <allow-uri-read/>
+                        <stem/>
                     </attributes>
                 </configuration>
                 <dependencies>

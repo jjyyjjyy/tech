@@ -944,6 +944,14 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 .使用场景
 * CMS使用标记清除算法回收老年代.
 
+=== GC分类
+
+* Minor GC/Young GC: 新生代的收集.
+* Major GC/Old GC: 老年代的收集.(CMS)
+* Mixed GC: 收集整个新生代和部分老年代的过程.
+(G1)
+* Full GC: 整个Java堆和方法区的收集.
+
 === 垃圾收集器
 
 [.lead]
@@ -953,44 +961,104 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation), 默认空间占比 1:2. 新生代又被分为一个Eden区和两个Survivor区.
 默认空间占比 8:1:1.
 
-对象首先在新生代Eden区分配, *Eden区填满时*, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代.
+* 对象首先在新生代Eden区分配, *Eden区填满时*, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代.
 这一过程称为 *Minor GC*.
 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
-单独回收老年代的过程称为 *Major GC*.
-(CMS) 回收新生代和一部分老年代的过程称为 *Mixed GC*.(G1) 对象不断移动到老年代, 等到 *老年代空间占满*, JVM会回收整个堆.
+* 单独回收老年代的过程称为 *Major GC*.
+(CMS)
+* 回收新生代和一部分老年代的过程称为 *Mixed GC*.(G1)
+* 对象不断移动到老年代, 等到 *老年代空间占满*, JVM会回收整个堆.
 这一过程称为 *Full GC*.
 
 ==== Serial
 
 [.lead]
-Serial垃圾收集器使用单线程回收内存, 垃圾回收时会暂停所有的应用线程.
+Serial垃圾收集器使用 *单线程* 回收内存, 垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseSerialGC` 启用Serial垃圾收集器.
+
+* 新生代 `Serial` 使用复制算法.
+暂停所有用户线程.
+* 老年代 `Serial Old` 使用标记-整理算法, 暂停所有线程.
+
+==== ParNew
+
+[.lead]
+Serial垃圾收集器使用 *多线程* 回收 *新生代内存* (线程数等于CPU数), 垃圾回收时会暂停所有的应用线程.
+使用 `-XX:+UseParNewGC` 启用ParNew垃圾收集器.
+通常与CMS搭配使用.
+
+* 新生代 `ParNew` 使用复制算法.
+暂停所有用户线程.
 
 ==== Parallel
 
-TIP: JDK8默认收集器
+TIP: JDK8默认收集器.
 
 [.lead]
-Parallel垃圾收集器使用多线程回收内存, 垃圾回收时会暂停所有的应用线程.
+Parallel垃圾收集器使用 *多线程* 回收内存.
+垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseParallelGC` 启用Parallel垃圾收集器.
+Parallel收集器关注吞吐量.
+
+* 新生代 `Parallel Scavenge` 使用复制算法.
+暂停所有用户线程.
+* 老年代 `Parallel Old` 使用标记-整理算法, 暂停所有线程.
+
+.Parallel收集器参数
+* `-XX:MaxGCPauseMills` 收集器将尽力保证内存回收花费的时间不包括这个设定的值.
+* `-XX:GCTimeRatio` 垃圾收集时间占总时间的占比. 默认99.
+* `-XX:+UseAdaptiveSizePolicy` JVM根据当前系统的运行信息自动调节 `-Xmn/-XX:SurvivorRatio/-XX:PretenureSizeThreshold`
 
 ==== CMS
 
-[.lead]
-CMS回收新生代时会暂停所有应用线程, 使用多线程回收.
-在Full GC时不再暂停应用线程, 而是使用若干个后台线程定期扫描老年代, 及时回收不再使用的对象.
-但是当堆变得碎片化, CMS会退化成Serial收集器使用单线程回收内存并整理老年代, 之后再恢复成多线程收集.
+WARNING: JDK14被移除.
+
+CMS使用多线程并发回收老年代内存.
 使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
+
+.CMS回收流程
+. 初始标记: 标记一下 `GC Roots` 对象. `单线程` `STW`
+. 并发标记: 从 `GC Roots` 对象开始遍历整个对象图.
+. 重新标记: 修正并发标记期间, 因用户程序继续运作而导致标记变动的那部分对象的标记记录. `STW`
+. 并发清除: 清除那些被标记为死亡的对象.
+
+CMS回收并发线程数默认是 stem:[("nCPU"+3)/4] .
+
+.CMS退化成Serial Old收集器回收老年代的两个诱因
+* 由于CMS使用标记-清除算法, 会产生较多的内存碎片导致分配大对象的时候找不到连续的可用空间.
+* CMS并发标记阶段应用线程会产生一部分新的可回收对象( _浮动垃圾_ ), 且分配新的对象内存的时候可能因为内存不足发生 `concurrent mode failure` .
+
+.CMS参数
+* `-XX:CMSInitiatingOccupancyFraction` 老年代占用超过这个阈值后会触发CMS回收内存.
+* `-XX:+UseCMSCompactAtFullCollection` 在Full GC时开启内存碎片的合并.
+* `-XX:CMSFullGCsBeforeCompaction` 在执行指定次数不整理空间的Full FC后, 在下一次Full GC前整理内存碎片.
+* `-XX:+CMSScavengeBeforeRemark` 在CMS重新标记阶段前触发 `Young GC` .
 
 ==== G1
 
 TIP: JDK9默认收集器
 
-使用 `-XX:+UseG1GC` 启动G1收集器
+使用 `-XX:+UseG1GC` 启动G1收集器.
+
+将堆划分为多个大小相等的独立区域, 每个区域可以根据需要扮演Eden/Survivor/Old/Humongous空间.
+
+.G1回收流程
+. 初始标记: 标记 `GC Roots` 对象. `单线程` `STW`
+. 并发标记: 从 `GC Roots` 对象开始遍历整个对象图.
+. 最终标记: 修正并发标记期间, 因用户程序继续运作而导致标记变动的那部分对象的标记记录. `STW`
+. 筛选回收: 将回收的Region存活下来的对象复制到空的Region中再清空原来的Region. `STW`
 
 ==== ZGC
 
-使用 `-XX:+UseZGC` 启动ZGC收集器
+TIP: JDK11新增的收集器
+
+使用 `-XX:+UseZGC` 启动ZGC收集器.
+
+.ZGC回收流程
+. 并发标记
+. 并发预备重分配
+. 并发重分配
+. 并发重映射
 
 === GC调优
 
@@ -1014,93 +1082,3 @@ TIP: JDK9默认收集器
 ** -Xmn 同时设置新生代的初始值和最大值
 
 推荐设置: `-XX:NewRatio=4`
-
-=== gc日志分析
-
-==== Parallel Minor GC
-
-[source,txt]
-----
-2018-07-25T10:15:43.831+0000: 7.861: [GC (Metadata GC Threshold)
-Desired survivor size 178782208 bytes, new threshold 7 (max 15)
-[PSYoungGen: 1284666K->30929K(1958400K)] <1>
- 1314750K->61020K(4754944K), <2>
-  0.0605807 secs] [Times: user=0.31 sys=0.02, real=0.06 secs] <3>
-----
-<1> 新生代的空间使用从1284MB降到30MB, 此时整个新生代大小为1958MB.
-<2> 整个堆的空间使用从1314MB降到61MB.
-<3> 本次gc花费0.06秒(并行回收), 总共消耗CPU的时间为0.31秒.
-
-==== Parallel Full GC
-
-[source,txt]
-----
-2018-07-25T10:15:39.817+0000: 3.847: [Full GC (Metadata GC Threshold)
-[PSYoungGen: 25798K->0K(1450496K)] <1>
-[ParOldGen: 12907K->30083K(2796544K)] <2>
-38705K->30083K(4247040K), <3>
-[Metaspace: 33973K->33973K(1081344K)], 0.0771380 secs] <4>
-[Times: user=0.40 sys=0.01, real=0.07 secs] <5>
-----
-<1> 新生代的占用空间从25MB降到0, 此时整个新生代大小为1450MB.
-<2> 老年代的占用空间从12MB升到30MB, 此时整个老年代大小为2796MB (此时老年代经过了压缩整理).
-<3> 整个堆的空间占用从38MB降到30MB, 此时整个堆的大小为4247MB.
-<4> Metaspace没有回收.
-<5> 本次回收用时.0.7秒, 总消耗CPU时间0.4秒.
-
-==== CMS垃圾收集器
-
-[source,java]
-----
-// -Xmx20M -Xms20M -Xmn10M -verbose:gc -XX:+PrintGCDetails -XX:+UseConcMarkSweepGC
-public class MemoryTest {
-
-    private static final int MB = 1024 * 1024;
-
-    public static void main(String[] args){
-        byte[] b1 = new byte[MB];
-        byte[] b2 = new byte[2 * MB];
-        byte[] b3 = new byte[3 * MB];
-        byte[] b4 = new byte[4 * MB];
-        byte[] b6 = new byte[2 * MB];
-        byte[] b7 = new byte[3 * MB];
-    }
-}
-----
-
-==== ParNew Minor GC
-
-[source,text]
-----
-[GC (Allocation Failure) [ParNew: 7819K->518K(9216K), 0.0044298 secs] <1>
-7819K->6664K(19456K), 0.0044645 secs] <2>
-[Times: user=0.02 sys=0.00, real=0.00 secs] <3>
-----
-<1> 新生代的占用空间从78MB降到5MB, 此时整个新生代大小为92MB.
-<2> 整个堆的空间占用从78MB降到66MB, 此时整个堆的大小为20MB.
-<3> 本次GC用时0.001秒, 总消耗CPU时间0.02秒.
-
-== QA
-
-[qanda]
-`|` 和 `||` 的区别?::
-`||` 是短路操作, 如果左边是true, 则右边不会执行. `|` 左右两边都会执行.
-`ClassLoader.loadClass()` 和 `Class.forName()` 有什么区别?::
-`Class.forName()` 会初始化类的static代码块和static参数, `ClassLoader.loadClass()` 不会.
-`ClassNotFoundException` 和 `NoClassDefFoundError` 有什么区别?::
-* `ClassNotFoundException` 是Exception类型, `NoClassDefFoundError` 是Error类型.
-* 使用 `Class.forName()` / `ClassLoader.loadClass()` / `ClassLoader.findSystemClass()` 动态加载类时找不到类就会抛出 `ClassNotFoundException` ,当编译成功但运行时(调用该类的一个方法或者new一个实例时)找不到类或者初始化static成员时有异常则会抛出 `NoClassDefFoundError` 异常.
-强引用/软引用/弱引用/虚引用区别及使用场景?::
-* 普通对象被其他对象引用, 这样的引用为强引用.
-* JVM在内存不足时回收软引用
-* TODO
-泛型的 `PECS` 原则?::
-* Producer Extends: 设计的类是生产者, 用 `extends`
-* Consumer Super: 设计的类是消费者, 用 `super`
-如何找到JVM CPU占用高的原因?::
-. `jps` 查看JVM进程 `PID`.
-. `top -Hp PID` 查看该JVM进程内线程资源占用情况.找到占用资源高的线程 `TID`.
-. `printf '%x\n' TID` 将线程id转成16进制数.
-. `jstack PID | grep TID -A 10` 查看该线程所在堆栈, 检查堆栈所在代码上的错误.
-Java中Connection为什么要close?::
-及时释放数据库链接, 减少资源消耗. (如果没有显式close, 也会被gc)
