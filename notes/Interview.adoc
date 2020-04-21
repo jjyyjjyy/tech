@@ -368,8 +368,12 @@ Full GC发生的场景有哪些?::
 ** 缺点① 如果堆中大部分对象需要被回收, 则标记和清除执行时间会较长.
 ** 缺点② 内存中会出现大量不连续的碎片, 分配大对象时如无法找到足够的连续内存, 则会触发一次FULL GC.
 * 复制: 将内存区域分为两部分, 每次只使用其中的一块. 回收时把存货的对象移动到另一块内存, 然后直接清空原先的块. 一般用于新生代.
+** 优点① 没有内存碎片.
 ** 缺点① 浪费了一半的内存可用空间.
+** 缺点② 如何对象存活率高, 那么拷贝对象的成本也高.
 * 标记整理: 将存活的对象统一移动到一端, 然后直接清理掉边界之外的内存.
+** 优点① 没有内存碎片.
+** 缺点① 移动对象会发生STW, 会暂停用户线程.
 * 分代收集: 根据不同的内存区域, 使用不同的回收算法.
 有哪些垃圾回收器?::
 * Young区:
@@ -396,8 +400,8 @@ Full GC发生的场景有哪些?::
 * 增量更新: 当一个黑色对象插入一个白色对象的引用时, 将这个黑色对象变为灰色对象. `CMS`
 * 原始快照: 当一个灰色对象删除一个白色对象的引用时, 将引用关联的对象变为灰色对象. `G1`
 对象何时进入老年代?::
-* survivor区中的对象年龄超过了 `-XX:PretenureSizeThreshold` 设置的值.
-* Young GC时eden区的对象放不进survivor区, 会直接进入老年代.
+* survivor区中的对象年龄超过了 `-XX:PretenureSizeThreshold` 设置的值. (默认为6)
+* Young GC时Eden区的对象放不进survivor区, 会直接进入老年代.
 CMS采用哪种回收算法?::
 CMS使用标记-清除算法.
 CMS怎么解决内存碎片问题?::
@@ -424,9 +428,35 @@ Minor GC慢的原因?::
 * 内存分配担保失败, MinorGC升级为Full GC.
 * 采用serial收集器回收新生代. 串行执行, 效率较低.
 频繁GC问题如何定位?::
-* jstat
-* jmap
+* `jstat -gc <pid> [interval(ms)]`
+** `S0C` 第一个survivor区大小.
+** `S1C` 第二个survivor区大小.
+** `S0U` 第一个survivor区已使用大小.
+** `S1U` 第二个survivor区已使用大小.
+** `EC` Eden区大小
+** `EU` Eden区已使用大小.
+** `OC` Old区大小.
+** `OU` Old区已使用大小.
+** `MC` Metaspace区大小.
+** `MU` Metaspace区已使用大小.
+** `CCSC` 压缩类空间大小.
+** `CCSU` 压缩类空间已使用大小.
+** `YGC` YoungGC次数.
+** `YGCT` YoungGC总消耗时间.
+** `FGC` FullGC次数.
+** `FGCT` FullGC总消耗时间.
+** `GCT` GC总消耗时间.
 * jcmd
+** `jcmd <pid> Thread.print` 打印线程栈.
+** `jcmd <pid> GC.class_histogram | head -20` 查看各个类的所有实例对象大小. 执行时会触发Full GC.
+** `jcmd <pid> GC.run` 执行一次 `System.gc()` .
+** `jcmd <pid> VM.heap_info` 打印堆和方法区占用大小.
+** `jcmd <pid> VM.flags` 查看JVM启动参数.
+** `jcmd <pid> GC.heap_dump <file>` dump JVM进程.
+* jmap
+** `jmap -histo:live <pid> | head -20` 查看各个类的所有实例对象大小. 执行时会触发Full GC.
+** `jmap -dump:live,format=b,file=<file> <pid>` dump JVM进程.
+** `jmap -heap <pid>` 打印堆各个区占用大小.
 * core dump分析
 * gc日志上传到 https://gceasy.io 分析, 根据报告调整各个区内存大小.
 内存溢出和内存泄漏的区别?::
