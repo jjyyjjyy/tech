@@ -32,7 +32,7 @@ public class CosClassLoader extends ClassLoader {
     }
 
     /**
-     * 加载类文件为Class
+     * 加载类文件为Class, 可以破坏双亲委派模型
      *
      * @param name 类权限定名
      * @return Class对象
