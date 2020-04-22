@@ -347,7 +347,7 @@ Young GC发生的场景有哪些?::
 * Eden区满.
 * 触发Full GC前会先执行一次 `Young GC` .
 Full GC发生的场景有哪些?::
-* 老年代满
+* 老年代满了或者达到设定的阈值.
 * CMS回收失败, 发生 `promotion failed/concurrent mode failure` .
 * 从新生代要放入老年代的对象平均大小超过了老年代剩余空间.
 如何标记对象可以被回收?::

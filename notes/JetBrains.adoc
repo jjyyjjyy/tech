@@ -127,7 +127,7 @@
 
 | Show intention action
 | `option + enter`
-| IDEA save my life!
+| _King's right hand man._
 |===
 
 === Refactor

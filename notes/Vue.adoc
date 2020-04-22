@@ -1,19 +1,12 @@
 = Vue
-v2.6.10
+v2.6.11
 :icons: font
-:source-highlighter: highlightjs
-:highlightjs-theme: idea
 :hardbreaks:
 :sectlinks:
 :sectnums:
 :stem:
-:toc: left
-:toclevels: 3
-:toc-title: 目录
-:tabsize: 4
-:docinfo: shared
 
-[#Vue-prototype-init]
+[#vue-prototype-init]
 == Vue prototype初始化过程
 
 .instance/index.js
@@ -67,7 +60,7 @@ v2.6.10
 .. 设置Vue.prototype.\\__patch__
 .. 设置Vue.prototype.$mount
 
-[#Vue-instance-init]
+[#vue-instance-init]
 == Vue实例init
 
 .src/core/instance/init.js
@@ -85,10 +78,11 @@ v2.6.10
 .. 将旧的el删除
 . mounted
 
-[#Vue-patch]
+[#vue-patch]
 == patch
 
-NOTE: *sameVnode:* ① key相同.
+NOTE: *判断两个VNode是否相同:*
+① key相同.
 ② 如果是文本节点, 则文本内容相同.
 ③ 如果是input标签, 则type相同.
 
@@ -182,6 +176,7 @@ function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly
 <10> 如果oldChildren先遍历完, 则说明newChildren中有新VNode加入, 则将newChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode插入到旧尾.
 <11> 如果newChildren先遍历完, 则说明newChildren中有VNode被删除, 则将oldChildren中从 `newStartIdx` 到 `newEndIdx` 的VNode删除.
 
+[#vue-debug-env]
 == 调试环境搭建
 
 === 下载代码

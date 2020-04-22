@@ -1,4 +1,4 @@
-= Notes
+= Penguin's utopia
 :doctype: book
 :icons: font
 :sectlinks:
