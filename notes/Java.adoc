@@ -292,19 +292,59 @@ NOTE: Class#getDeclaredMethods不包含从父类继承过来的方法.
 include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 ----
 
-== 线程
+== 多线程
 
-. 线程状态
+=== 创建线程的方式
+
+* 继承Thread然后实例化这个对象.
+* 创建Runnable对象, 使用 `new Thread(Runnable)` 构造函数创建线程对象.
+* 创建Callable对象, 使用 `new FutureTask(Callable)` 构造函数创建线程对象.
+
+=== 常见方法
+
+==== run
+==== start
+==== join
+==== interrupt
+==== _sleep_
+==== _yield_
+==== object::wait
+==== object::notify
+==== ParkSupport.park
+==== ParkSupport.unPark
+
+=== 线程状态
 * NEW
 * RUNNABLE
 * BLOCKED
 * WAITING
 * TIMED_WAITING
 * TERMINATED
+
 . 线程内异常无法在外层try-catch,只能设置Thread的UncaughtExceptionHandler
 . 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
 . wait()释放对象锁,sleep()不释放.
-. Executor:
+
+=== volatile
+
+* 保证有序性和可见性
+* 不保证原子性
+
+=== synchronized
+
+==== 使用方式
+
+==== 实现原理
+
+==== 锁升级的过程
+
+
+=== ReentrantLock
+
+=== CAS
+
+=== Executor
+
 * ThreadPoolExecutor
 * ForkJoinPool
 * ScheduledThreadPoolExecutor
@@ -358,6 +398,14 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 * CachedThreadPool: 没有核心线程数, 适用于任务执行时间短且密集的场景.
 * SingleThreadPool: 核心线程数和最大线程数都为1, 适用于希望任务排队串行执行的场景.
 
+=== JUC工具类
+
+==== Semaphore
+==== CountDownLatch
+==== CyclicBarrier
+
+=== CompletableFuture
+
 == ClassLoader
 
 * loadClass 实现双亲委托模型
@@ -368,7 +416,8 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 [.lead]
 一个完整的操作是<数据来源，操作，回调函数>构成的三元组。Stream中使用Stage的概念来描述一个完整的操作，并用某种实例化后的PipelineHelper来代表Stage，将具有先后顺序的各个Stage连到一起，就构成了整个流水线
 
-.中间操作:
+=== 中间操作:
+
 . 无状态:
 .. unordered
 .. filter
@@ -387,7 +436,8 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 .. limit
 .. skip
 
-.结束操作
+=== 结束操作
+
 . 非短路操作
 .. forEach
 .. forEachOrdered
@@ -1064,8 +1114,8 @@ TIP: JDK11新增的收集器
 
 ==== 选择恰当的垃圾收集器
 
-* 数据分析/科学计算类应用, 关注吞吐量.
-* 事务型应用, 关注低延迟.
+* 数据分析/科学计算类应用, 关注吞吐量. `ParallelGC`
+* 事务型应用, 关注低延迟. `CMS/ZGC`
 * 客户端/嵌入式设备应用, 关注内存占用.
 
 ==== 永远不要把堆内存的大小设置的比机器物理内存大
@@ -1080,5 +1130,3 @@ TIP: JDK11新增的收集器
 ** -XX:NewSize 设置新生代大小的初始值
 ** -XX:MaxNewSize 设置新生代大小的最大值
 ** -Xmn 同时设置新生代的初始值和最大值
-
-推荐设置: `-XX:NewRatio=4`
