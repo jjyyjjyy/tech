@@ -300,20 +300,8 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 * 创建Runnable对象, 使用 `new Thread(Runnable)` 构造函数创建线程对象.
 * 创建Callable对象, 使用 `new FutureTask(Callable)` 构造函数创建线程对象.
 
-=== 常见方法
-
-==== run
-==== start
-==== join
-==== interrupt
-==== _sleep_
-==== _yield_
-==== object::wait
-==== object::notify
-==== ParkSupport.park
-==== ParkSupport.unPark
-
 === 线程状态
+
 * NEW
 * RUNNABLE
 * BLOCKED
@@ -321,9 +309,62 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 * TIMED_WAITING
 * TERMINATED
 
-. 线程内异常无法在外层try-catch,只能设置Thread的UncaughtExceptionHandler
-. 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
-. wait()释放对象锁,sleep()不释放.
+=== 常见方法
+
+==== run
+
+调用Runnable对象的run方法.
+如果使用继承Thread的方式来创建线程对象, 则会重写run方法.
+
+==== start
+
+start方法会运行当前创建出来的线程, 线程状态从 `NEW` 变为 `RUNNABLE` .
+start方法不能重复调用.
+
+==== _sleep_
+
+当前线程从 `RUNNABLE` 变为 `TIME_WAITING` 状态.
+
+如果调用方调用了这个线程的 `interrupt()` 方法, 则 `sleep` 方法会抛出 `InterruptedException` .
+
+==== _yield_
+
+当前线程从 `RUNNING` 变为 `RUNNABLE` 状态, 具体由操作系统实现, `Thread.State` 中均为 `RUNNABLE` 枚举值.
+
+==== join
+
+等待指定线程执行完.
+
+`join` 是使用 `wait` 来实现的.
+
+==== interrupt
+
+打断 `sleep/wait/join` 的线程, 设置 `interrupted` 标志位为true.
+
+==== _interrupted_
+
+返回当前线程的打断标志, 然后重置为false.
+
+==== object::wait
+
+当前线程从 `RUNNABLE` 变为 `BLOCKED` 状态.
+
+==== object::notify
+
+唤醒另外一个等待线程锁的代码块.
+
+==== ParkSupport.park
+
+使指定线程进入阻塞状态.
+
+==== ParkSupport.unPark
+
+使指定线程从阻塞状态进入运行状态.
+
+NOTE: 注意事项:
+每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
+线程内异常无法在外层try-catch, 只能设置Thread的UncaughtExceptionHandler
+wait()释放对象锁,sleep()不释放.
 
 === volatile
 
@@ -334,10 +375,53 @@ include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 
 ==== 使用方式
 
+* 修饰成员方法
+* 修饰静态方法
+* 代码块指定修饰对象
+
 ==== 实现原理
+
+synchronized基于Monitor实现. 在代码块前后和异常表 `to` 之后分别插入 `monitorenter/monitorexit` 指令.
+
+Monitor锁对象组成:
+* `Owner` 持有该Monitor锁的对象.
+* `EntryList` 保存竞争该Monitor锁的 `Blocked` 状态的对象.
+* `WaitSet` 保存竞争该Monitor锁的 `Waiting` 状态的对象.
+
+. 线程1竞争锁时发现Owner为空, 则设置Owner为线程1.
+. 线程2竞争锁, 发现Owner不为空, 则进入EntryList等待唤醒.
+. 线程1释放锁, Owner置为空, 唤醒EntryList里的一个线程, 设置为Owner.
 
 ==== 锁升级的过程
 
+===== MarkWord
+
+无锁: stem:[ubrace("hash")_(25位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^0 ubrace("lock")_(2位)^01]
+
+偏向锁: stem:[ubrace("thread")_(23位) ubrace("epoch")_(2位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^1 ubrace("lock")_(2位)^01]
+
+轻量级锁: stem:[ubrace("ptr_lock_record")_(30位) ubrace("lock")_(2位)^00]
+
+重量级锁: stem:[ubrace("ptr_monitor")_(30位) ubrace("lock")_(2位)^10]
+
+===== 轻量级锁
+
+. 每次竞争锁时, 线程栈帧中都会生成一个新的 `LockRecord` 对象(`LockRecord地址 00` )和指向持有该线程锁的对象引用地址,
+. 第一次有对象竞争这个线程的锁时, 把 `LockRecord` 地址和对象的MarkWord( `hash age bias 01` )cas互换, 后面两位设置为 `00` , 将栈帧中的对象引用指向这个对象.
+. 如果cas失败:
+.. 锁竞争对象MarkWord中LockRecord地址指向当前线程, 则表示该次竞争属于锁重入, cas会设置自己的LockRecord地址为null, 将栈帧中的对象引用指向这个对象.
+.. 已经有其他线程持有了本线程的锁, 则进入 *锁膨胀* 的过程.
+. 每次释放锁时cas检测是否栈顶的LockRecord对象记录的值是否为null:
+.. 如果为null, 表示有重入, 将该LockRecord对象出栈.
+.. 如果不为null, 用cas更新对象的MarkWord为LockRecord中的hash.
+... 更新成功, 表示解锁成功, 出栈.
+... 更新失败, 表示该LockRecord指向对象持有的是重量级锁.
+
+===== 偏向锁
+
+.
+
+===== 自旋锁
 
 === ReentrantLock
 
@@ -499,10 +583,8 @@ Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属
 如果 stem:[a_1->b_0],则 stem:[I_A->I_B].多个不存在 stem:[->]的关系称为 *并发的*.
 
 * *互斥*: 对于线程A,B, 以及整数j,k, 都有 stem:[CS_A^j->CS_B^i]或者stem:[CS_B^j->CS_A^i].
-* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁.
-如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
-* *无饥饿*: 每个尝试获得锁的线程最终都能成功.
-(无饥饿意味着无死锁)
+* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁. 如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
+* *无饥饿*: 每个尝试获得锁的线程最终都能成功. (无饥饿意味着无死锁)
 
 === 互斥
 
@@ -998,8 +1080,7 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 
 * Minor GC/Young GC: 新生代的收集.
 * Major GC/Old GC: 老年代的收集.(CMS)
-* Mixed GC: 收集整个新生代和部分老年代的过程.
-(G1)
+* Mixed GC: 收集整个新生代和部分老年代的过程. (G1)
 * Full GC: 整个Java堆和方法区的收集.
 
 === 垃圾收集器
@@ -1011,14 +1092,10 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation), 默认空间占比 1:2. 新生代又被分为一个Eden区和两个Survivor区.
 默认空间占比 8:1:1.
 
-* 对象首先在新生代Eden区分配, *Eden区填满时*, 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW**(stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代.
-这一过程称为 *Minor GC*.
-由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
-* 单独回收老年代的过程称为 *Major GC*.
-(CMS)
-* 回收新生代和一部分老年代的过程称为 *Mixed GC*.(G1)
-* 对象不断移动到老年代, 等到 *老年代空间占满*, JVM会回收整个堆.
-这一过程称为 *Full GC*.
+* 对象首先在新生代Eden区分配, *Eden区填满时* , 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW** (stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代. 这一过程称为 *Minor GC* . 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
+* 单独回收老年代的过程称为 *Major GC* . (CMS)
+* 回收新生代和一部分老年代的过程称为 *Mixed GC* .(G1)
+* 对象不断移动到老年代, 等到 *老年代空间占满* , JVM会回收整个堆. 这一过程称为 *Full GC* .
 
 ==== Serial
 
@@ -1026,8 +1103,7 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 Serial垃圾收集器使用 *单线程* 回收内存, 垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseSerialGC` 启用Serial垃圾收集器.
 
-* 新生代 `Serial` 使用复制算法.
-暂停所有用户线程.
+* 新生代 `Serial` 使用复制算法. 暂停所有用户线程.
 * 老年代 `Serial Old` 使用标记-整理算法, 暂停所有线程.
 
 ==== ParNew
@@ -1050,8 +1126,7 @@ Parallel垃圾收集器使用 *多线程* 回收内存.
 使用 `-XX:+UseParallelGC` 启用Parallel垃圾收集器.
 Parallel收集器关注吞吐量.
 
-* 新生代 `Parallel Scavenge` 使用复制算法.
-暂停所有用户线程.
+* 新生代 `Parallel Scavenge` 使用复制算法, 暂停所有用户线程.
 * 老年代 `Parallel Old` 使用标记-整理算法, 暂停所有线程.
 
 .Parallel收集器参数
@@ -1063,8 +1138,7 @@ Parallel收集器关注吞吐量.
 
 WARNING: JDK14被移除.
 
-CMS使用多线程并发回收老年代内存.
-使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
+CMS使用多线程并发回收老年代内存. 使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
 
 .CMS回收流程
 . 初始标记: 标记一下 `GC Roots` 对象. `单线程` `STW`
