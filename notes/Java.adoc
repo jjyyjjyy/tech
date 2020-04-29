@@ -353,14 +353,6 @@ start方法不能重复调用.
 
 唤醒另外一个等待线程锁的代码块.
 
-==== ParkSupport.park
-
-使指定线程进入阻塞状态.
-
-==== ParkSupport.unPark
-
-使指定线程从阻塞状态进入运行状态.
-
 NOTE: 注意事项:
 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
 线程内异常无法在外层try-catch, 只能设置Thread的UncaughtExceptionHandler
@@ -396,32 +388,69 @@ Monitor锁对象组成:
 
 ===== MarkWord
 
-无锁: stem:[ubrace("hash")_(25位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^0 ubrace("lock")_(2位)^01]
+无锁: stem:[ubrace("unused")_(25位) ubrace("hash")_(31位) ubrace("unused")_(1位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^0 ubrace("lock")_(2位)^01]
+偏向锁: stem:[ubrace("thread")_(54位) ubrace("epoch")_(2位) ubrace("unused")_(1位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^1 ubrace("lock")_(2位)^01]
+轻量级锁: stem:[ubrace("ptr_lock_record")_(62位) ubrace("lock")_(2位)^00]
+重量级锁: stem:[ubrace("ptr_monitor")_(62位) ubrace("lock")_(2位)^10]
 
-偏向锁: stem:[ubrace("thread")_(23位) ubrace("epoch")_(2位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^1 ubrace("lock")_(2位)^01]
-
-轻量级锁: stem:[ubrace("ptr_lock_record")_(30位) ubrace("lock")_(2位)^00]
-
-重量级锁: stem:[ubrace("ptr_monitor")_(30位) ubrace("lock")_(2位)^10]
+无锁 -> 偏向锁 -> 轻量级锁 -> 重量级锁
 
 ===== 轻量级锁
 
+.加锁
 . 每次竞争锁时, 线程栈帧中都会生成一个新的 `LockRecord` 对象(`LockRecord地址 00` )和指向持有该线程锁的对象引用地址,
 . 第一次有对象竞争这个线程的锁时, 把 `LockRecord` 地址和对象的MarkWord( `hash age bias 01` )cas互换, 后面两位设置为 `00` , 将栈帧中的对象引用指向这个对象.
 . 如果cas失败:
 .. 锁竞争对象MarkWord中LockRecord地址指向当前线程, 则表示该次竞争属于锁重入, cas会设置自己的LockRecord地址为null, 将栈帧中的对象引用指向这个对象.
 .. 已经有其他线程持有了本线程的锁, 则进入 *锁膨胀* 的过程.
+
+.解锁
 . 每次释放锁时cas检测是否栈顶的LockRecord对象记录的值是否为null:
 .. 如果为null, 表示有重入, 将该LockRecord对象出栈.
 .. 如果不为null, 用cas更新对象的MarkWord为LockRecord中的hash.
 ... 更新成功, 表示解锁成功, 出栈.
 ... 更新失败, 表示该LockRecord指向对象持有的是重量级锁.
 
-===== 偏向锁
+===== 重量级锁
 
-.
+.加锁
+. 线程cas更新对象MarkWord里的hash值为自己的LockRecord地址值失败, 则表示已经有其他线程持有了这个对象的轻量级锁, 此时进入锁膨胀的过程.
+. 申请一个Monitor对象
+.. 将Monitor的Owner地址指向此时MarkWord里的LockRecord地址.
+.. 将对象的MarkWord设置为Monitor对象的地址,
+.. 将当前线程放入Monitor的EntryList里.
+
+.解锁
+. 将Monitor的Owner置为null.
+. 从EntryList里唤醒一个线程让其持有这个Monitor锁, 设置为Owner.
 
 ===== 自旋锁
+
+重量级锁加锁失败时, 会自旋尝试多次, 尝试失败后才会把自己加到EntryList里.
+
+===== 偏向锁
+
+对象初始化时, MarkWord最后三位设置为 stem:[101], 第一次竞争锁时线程id存储在MarkWord的前54位里. 下一次该线程竞争锁时可以直接进入代码同步块.
+
+* `-XX:BiasedLockingStartupDelay=0` 设置偏向锁不延迟打开.
+
+.偏向锁的撤销
+* JVM关闭偏向锁的功能. `-XX:-UseBiasedLocking`
+* 有其他线程竞争锁.
+* 调用wait/notify, 因为此时需要依赖Monitor对象的WaitSet.
+
+=== Park
+
+每个线程都关联一个Parker对象, 由 `_counter, _cond, _mutex` 三部分组成.
+
+.ParkSupport.park()
+* `_counter` 为0时, 进入阻塞状态.
+* `_counter` 为1时, 不进入阻塞状态, 继续运行.
+* 重置 `_counter` 为0.
+
+.ParkSupport.unPark(Thread)
+* 如果线程处于阻塞状态, 就唤醒线程继续运行.
+* 如果线程处于运行状态, 则设置 `_counter` 为1, 线程继续运行.
 
 === ReentrantLock
 
@@ -863,13 +892,13 @@ package "JVM内存布局" {
 [source,java]
 .StackOverflowError
 ----
-include::../jvm/src/test/java/OOMDemo.java[tag=StackOverflow]
+include::../jvm/src/test/java/oom/OOMDemo.java[tag=StackOverflow]
 ----
 
 [source,java]
 .OutOfMemoryError
 ----
-include::../jvm/src/test/java/OOMDemo.java[tag=StackOOM]
+include::../jvm/src/test/java/oom/OOMDemo.java[tag=StackOOM]
 ----
 
 ==== 本地方法栈

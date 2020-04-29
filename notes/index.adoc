@@ -1,4 +1,4 @@
-= Penguin's homeland
+= Penguin's Homeland
 :doctype: book
 :icons: font
 :sectlinks:
