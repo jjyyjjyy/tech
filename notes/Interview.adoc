@@ -287,7 +287,8 @@ JDK中的队列?::
 .非阻塞
 * LinkedList
 * PriorityQueue
-* ConcurrentLinkedQueue .阻塞
+* ConcurrentLinkedQueue
+.阻塞
 * ArrayBlockingQueue
 * LinkedBlockingQueue
 * PriorityBlockingQueue
