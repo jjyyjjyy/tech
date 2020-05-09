@@ -1,4 +1,4 @@
-= Spring Boot v2.1.0.RELEASE 启动流程
+= Spring Boot
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
@@ -11,22 +11,26 @@
 :tabsize: 4
 :docinfo: shared
 
-== 文档:
+== 文档
 
-https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-reference.pdf
+https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 
-== 初始化SpringApplication:
+== 启动流程
 
-. 构造SpringApplication实例:
-.. 确定ApplicationType: None-Web/Servlet/Reactive
-.. 获取META-INF/spring.factories中 `ApplicationContextInitializer` 并设置到成员变量中
+=== 初始化SpringApplication
+
+. 初始化 `primarySources` , 并将命令行参数加入到 `primarySources` 中
+. 确定ApplicationType: None Web/Servlet/Reactive
+. 获取 `META-INF/spring.factories` 中的 `ApplicationContextInitializer` 并设置到 `SpringApplication` 成员变量中
 * DelegatingApplicationContextInitializer
 * SharedMetadataReaderFactoryContextInitializer
 * ContextIdApplicationContextInitializer
 * ConfigurationWarningsApplicationContextInitializer
+* RSocketPortInfoApplicationContextInitializer
 * ServerPortInfoApplicationContextInitializer
 * ConditionEvaluationReportLoggingListener
-.. 获取``META-INF/spring.factories``中 ``ApplicationListener`` 并设置到成员变量中
+. 获取 `META-INF/spring.factories` 中的 `ApplicationListener` 并设置到 `SpringApplication` 成员变量中
+* CloudFoundryVcapEnvironmentPostProcessor
 * ConfigFileApplicationListener
 * AnsiOutputApplicationListener
 * LoggingApplicationListener
@@ -37,15 +41,14 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 * ClearCachesApplicationListener
 * FileEncodingApplicationListener
 * LiquibaseServiceLocatorApplicationListener
-.. 设置启动类class属性
-. ``SpringApplication#run``
+. 设置启动类class对象
 
-== 获取配置:
+=== SpringApplication::run
 
-. 从META-INF/spring.factories中获取SpringApplicationRunListener(EventPublishRunListener)。
+==== 获取配置
 
-. 发布**ApplicationStartingEvent**:
-
+. 从 `META-INF/spring.factories` 中获取 `SpringApplicationRunListener` (EventPublishRunListener)
+. 发布 *ApplicationStartingEvent*
 * LoggingApplicationListener: 设置log system,默认logback。
 * BackgroundPreInitializer: 触发内置bean的构造函数。
 
@@ -58,7 +61,6 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 ** systemProperties
 ** systemEnvironment
 ** defaultProperties(SpringApplication#defaultProperties)
-
 
 - 根据命令行参数设置active profiles
 
@@ -98,13 +100,13 @@ https://docs.spring.io/spring-boot/docs/current/reference/pdf/spring-boot-refere
 
 . 打印banner日志。
 
-== 创建ApplicationContext:
+== 创建ApplicationContext
 
-. 根据ApplicationType创建对应的context:
+. 根据ApplicationType创建对应的context
 
-* Servlet: ```AnnotationConfigServletWebServerApplicationContext```
-* Reactive: ```AnnotationConfigReactiveWebServerApplicationContext```
-* None-Web: ```AnnotationConfigApplicationContext```
+* Servlet: `AnnotationConfigServletWebServerApplicationContext`
+* Reactive: `AnnotationConfigReactiveWebServerApplicationContext`
+* None-Web: `AnnotationConfigApplicationContext`
 
 . BeanUtils#instantiateClass。
 
