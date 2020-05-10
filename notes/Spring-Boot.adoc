@@ -50,45 +50,28 @@ https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 . 从 `META-INF/spring.factories` 中获取 `SpringApplicationRunListener` (EventPublishRunListener)
 . 发布 *ApplicationStartingEvent*
 * LoggingApplicationListener: 设置log system,默认logback。
-* BackgroundPreInitializer: 触发内置bean的构造函数。
-
-. 创建Environment对象(StandardServletEnvironment):
-
+* BackgroundPreInitializer: 执行内置bean的构造函数。
+. 根据 `webApplicationType` 初始化 `Environment` 对象
+** SERVLET: `StandardServletEnvironment`
+** REACTIVE: `StandardReactiveWebEnvironment`
+** NONE: `StandardEnvironment`
 * 添加系统属性:
 ** springApplicationCommandLineArgs(启动命令行参数)
 ** servletConfigInitParams
 ** servletContextInitParams
 ** systemProperties
 ** systemEnvironment
-** defaultProperties(SpringApplication#defaultProperties)
-
+** defaultProperties(SpringApplication::defaultProperties)
 - 根据命令行参数设置active profiles
-
-. 发布**ApplicationEnvironmentPreparedEvent**:
-
-* ConfigFileApplicationListener: 调用EnvironmentPostProcessor#postProcessEnvironment。
-
-** SystemEnvironmentPropertySourceEnvironmentPostProcessor:
-
-       把systemEnvironment包装成OriginAwareSystemEnvironmentPropertySource.
-
-** SpringApplicationJsonEnvironmentPostProcessor:
-
-       解析spring.application.json中的配置, 比systemProperties优先级高
-
-** CloudFoundaryVcapEnvironmentPostProcessor:
-
-       设置vcap属性配置.
-
-** ConfigFileApplicationListener:
-
-       从META-INF/spring.factories中获取ProperySourceLoader(properties/xml/yaml)并读取配置文件。Environment#propertySources中active profile在前,default profile在最后.
-
+. 发布 *ApplicationEnvironmentPreparedEvent*
+* ConfigFileApplicationListener: 调用 `EnvironmentPostProcessor::postProcessEnvironment`
+** SystemEnvironmentPropertySourceEnvironmentPostProcessor: 把systemEnvironment包装成OriginAwareSystemEnvironmentPropertySource.
+** SpringApplicationJsonEnvironmentPostProcessor: 解析spring.application.json中的配置, 比systemProperties优先级高
+** CloudFoundaryVcapEnvironmentPostProcessor: 设置vcap属性配置.
+** ConfigFileApplicationListener: 从META-INF/spring.factories中获取ProperySourceLoader(properties/xml/yaml)并读取配置文件。Environment#propertySources中active profile在前,default profile在最后.
 * AnsiOutputApplicationListener: 设置 `spring.output.ansi.enabled` 和 `spring.output.ansi.console-available`。
-
-* LoggingApplicationListener: 初始化Log properties/system。
-
-* ClassPathLoggingApplicationListener: 打印classpath日志。
+* LoggingApplicationListener: 初始化Log properties/system
+* ClassPathLoggingApplicationListener: 打印classpath日志
 
 * BackgroundPreinitializer
 
@@ -159,16 +142,15 @@ https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 ** environment
 ** systemEnvironment
 ** systemProperties
-. postPrcoessBeanFactory: 注册```WebApplicationContextServletContextAwareProcessor```。
-. invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/noneOrdered顺序调用```BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&&postProcessBeanFactory```, 再按顺序调用```BeanFactoryPostProcessor#postProcessBeanFactory```。
-
-* ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以org/org.springframework开头。
+. postPrcoessBeanFactory: 注册```WebApplicationContextServletContextAwareProcessor```
+. invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/noneOrdered顺序调用```BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&&postProcessBeanFactory```, 再按顺序调用```BeanFactoryPostProcessor#postProcessBeanFactory```
+* ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以org/org.springframework开头
 * CachingMetadataReaderFactoryPostProcessor:
-** 注册 ```SharedMetadataReaderFactoryBean```。
-** 设置ConfigurationClassPostProcessor的metadataReaderFactory为```SharedMetadataReaderFactoryBean```。
+** 注册 ```SharedMetadataReaderFactoryBean```
+** 设置ConfigurationClassPostProcessor的metadataReaderFactory为`SharedMetadataReaderFactoryBean`
 * ConfigurationClassPostProcessor:
 ** 扫描并注册BeanDefinition。
-** 注册```ImportAwareBeanPostProcessor```。
+** 注册```ImportAwareBeanPostProcessor```
 ** 为Configuration类创建CGLIB代理。
 * PropertySourceOrderingPostProcessor:将defaultProperties优先级调至最低。
 * ProperttSourcesPlaceHolderConfigurer: 替换${...}。
