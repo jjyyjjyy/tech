@@ -1,8 +1,7 @@
-= Spring
+= Spring Boot
 :icons: font
 :source-highlighter: highlightjs
 :highlightjs-theme: idea
-:hardbreaks:
 :sectlinks:
 :sectnums:
 :stem:
@@ -10,241 +9,166 @@
 :toclevels: 3
 :toc-title: 目录
 :tabsize: 4
+:docinfo: shared
 
-== IoC Demo
+== 文档
 
-=== Bean
+https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 
-[source,java]
-.CallbackBean.java
-----
-public class CallbackBean implements InitializingBean, DisposableBean, Lifecycle, BeanPostProcessor {
+== 启动流程
 
-    private boolean running = false;
+=== 初始化SpringApplication对象
 
-    public CallbackBean() {
-        System.out.println("CallbackBean constructor");
-    }
+. 初始化 `primarySources` , 并将命令行参数加入到 `primarySources` 中.
+. 确定ApplicationType: None Web/Servlet/Reactive
+. 获取 `META-INF/spring.factories` 中的 `ApplicationContextInitializer` 并设置到 `SpringApplication` 成员变量中.
+* DelegatingApplicationContextInitializer
+* SharedMetadataReaderFactoryContextInitializer
+* ContextIdApplicationContextInitializer
+* ConfigurationWarningsApplicationContextInitializer
+* RSocketPortInfoApplicationContextInitializer
+* ServerPortInfoApplicationContextInitializer
+* ConditionEvaluationReportLoggingListener
+. 获取 `META-INF/spring.factories` 中的 `ApplicationListener` 并设置到 `SpringApplication` 成员变量中.
+* CloudFoundryVcapEnvironmentPostProcessor
+* ConfigFileApplicationListener
+* AnsiOutputApplicationListener
+* LoggingApplicationListener
+* ClasspathLoggingApplicationListener
+* BackgroundPreinitializer
+* DelegatingApplicationListener
+* ParentContextCloserApplicationListener
+* ClearCachesApplicationListener
+* FileEncodingApplicationListener
+* LiquibaseServiceLocatorApplicationListener
+. 设置启动类class对象.
 
-    @Override
-    public void afterPropertiesSet() {
-        System.out.println("DisposableBean.afterPropertiesSet");
-    }
+=== 读取配置初始化Environment
 
-    @Override
-    public void destroy() {
-        System.out.println("DisposableBean.destroy");
-    }
+. 从 `META-INF/spring.factories` 中获取 `SpringApplicationRunListener` (EventPublishRunListener).
+. 发布 *ApplicationStartingEvent*
+* LoggingApplicationListener: 设置log system,默认logback.
+* BackgroundPreInitializer: 执行内置bean的构造函数.
+. 根据 `webApplicationType` 初始化 `Environment` 对象.
+** SERVLET: `StandardServletEnvironment`
+** REACTIVE: `StandardReactiveWebEnvironment`
+** NONE: `StandardEnvironment`
+* 添加系统属性:
+** springApplicationCommandLineArgs(启动命令行参数)
+** servletConfigInitParams
+** servletContextInitParams
+** systemProperties
+** systemEnvironment
+** defaultProperties(SpringApplication::defaultProperties)
+. 根据命令行参数设置active profiles.
+. 发布 *ApplicationEnvironmentPreparedEvent*
+* ConfigFileApplicationListener: 调用 `EnvironmentPostProcessor::postProcessEnvironment` .
+** SystemEnvironmentPropertySourceEnvironmentPostProcessor: 把systemEnvironment包装成OriginAwareSystemEnvironmentPropertySource.
+** SpringApplicationJsonEnvironmentPostProcessor: 解析 `spring.application.json` 中的配置, 比systemProperties优先级高.
+** CloudFoundryVcapEnvironmentPostProcessor: 设置vcap属性配置.
+** ConfigFileApplicationListener:
+*** 加入一个优先级最低的 `RandomValuePropertySource` .
+*** 从 `META-INF/spring.factories` 中获取 `PropertySourceLoader` 并读取配置文件(properties/xml/yaml/yml).
+** DebugAgentEnvironmentPostProcessor: 调用 `reactor.tools.agent.ReactorDebugAgent.init` 方法.
+* AnsiOutputApplicationListener: 设置 `spring.output.ansi.enabled` 和 `spring.output.ansi.console-available` .
+* LoggingApplicationListener: 初始化 `Log properties/system` .
+* ClassPathLoggingApplicationListener: 打印 `classpath` 路径.
+* BackgroundPreinitializer
+* DelegatingApplicationListener: 向 `context.listener.classes` 中的listeners发送 `ApplicationEnvironmentPreparedEvent` 事件.
+* FileEncodingApplicationListener: 比较 `file.encoding` 和 `spring.mandatory-file-encoding` 是否相同, 如果不同则抛出异常.
+. bindToSpringApplication: 设置 `spring.main` 为 `SpringApplication` 对象.
+. 包装 `Environment::propertySources` 为 `ConfigurationPropertySourcesPropertySource(key为configurationProperties)` .
+. 设置 `spring.beaninfo.ignore=true` .
+. 打印banner日志.
 
-    @PostConstruct
-    public void PostConstruct() {
-        System.out.println("PostConstruct");
-    }
+=== 初始化ApplicationContext
 
-    @PreDestroy
-    public void preDestroy() {
-        System.out.println("PreDestroy");
-    }
+. 根据ApplicationType创建对应的context:
+* None-Web: `AnnotationConfigApplicationContext`
+* Servlet: `AnnotationConfigServletWebServerApplicationContext`
+* Reactive: `AnnotationConfigReactiveWebServerApplicationContext`
+. 初始化AnnotatedBeanDefinitionReader.
+* 设置BeanFactory属性.
+** AnnotationAwareOrderComparator
+** ContextAnnotationAutowireCandidateResolver
+* 注册spring内置BeanFactoryPostProcessor
+** ConfigurationClassPostProcessor
+** AutowiredAnnotationBeanPostProcessor
+** RequiredAnnotationBeanPostProcessor
+** CommonAnnotationBeanPostProcessor
+** PersistenceAnnotationBeanPostProcessor
+** EventListenerMethodProcessor
+** DefaultEventListenerFactory
+. 初始化ClassPathBeanDefinitionScanner.
+* 初始化 `includeFilters` .
+* 读取 `META-INF/spring.components` 文件获取bean解析缓存.
+. 调用 `ApplicationContextInitializer::initialize` .
+* DelegatingApplicationContextInitializer: 调用 `context.initializer.classes的initialize方法` .
+* SharedMetadataReaderFactoryContextInitializer: 注册BeanDefinitionRegistryPostProcessor `CachingMetadataReaderFactoryPostProcessor` .
+* ContextIdApplicationContextInitializer: 设置ApplicationContext的Id为 `spring.application.name || "application"` .
+* ConfigurationWarningsApplicationContextInitializer: 注册BeanDefinitionRegistryPostProcessor `ConfigurationWarningsPostProcessor` .
+* RSocketPortInfoApplicationContextInitializer: 注册ApplicationListener `org.springframework.boot.rsocket.context.RSocketPortInfoApplicationContextInitializer.Listener` .
+* ServerPortInfoApplicationContextInitializer: 将自己注册到ApplicationListener中.
+* ConditionEvaluationReportLoggingListener: 注册ApplicationListener `ConditionEvaluationReportListener` .
+. 发布 *ApplicationContextInitializedEvent* .
+. 打印启动日志.
+. 如果设置了 `lazyInitialization` 为true, 则注册BeanFactoryPostProcessor `LazyInitializationBeanFactoryPostProcessor` .
+. 封装主启动类为 `AnnotatedGenericBeanDefinition` , 注册到BeanFactory中.
+. 将SpringApplication中的listener添加到ApplicationContext中.
+. 发布 *ApplicationPreparedEvent* .
+* ConfigFileApplicationListener: 注册BeanFactoryPostProcessor `PropertySourceOrderingPostProcessor` .
 
-    public void init() {
-        System.out.println("init...");
-    }
+=== AbstractApplicationContext::refresh
 
-    public void close() {
-        System.out.println("close...");
-    }
+. prepareRefresh: 初始化 `earlyApplicationListeners` .
+. prepareBeanFactory:
+* 设置 `classLoader/beanExpressionResolver/SPEL/ResourceEditorRegistrar` 属性.
+* 注册BeanPostProcessor `ApplicationContextAwareProcessor/ApplicationListenerDetector` .
+* 注册 `environment/systemProperties/systemEnvironment` Bean.
+. postProcessBeanFactory: 注册 `WebApplicationContextServletContextAwareProcessor` .
+. invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/Regular顺序调用 `BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&&postProcessBeanFactory` , 再按顺序调用 `BeanFactoryPostProcessor#postProcessBeanFactory`
+* CachingMetadataReadFactoryPostProcessor: 注册 `SharedMetadataReaderFactoryBean` 并设置 `ConfigurationClassPostProcessor` 的 `metadataReaderFactory` 属性为 `SharedMetadataReaderFactoryBean` .
+* ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以 `org/org.springframework` 开头.
+* ConfigurationClassPostProcessor:
+** 根据Configuration类扫描并注册BeanDefinition.
+** 为Configuration类创建CGLIB代理.
+** 注册 `ImportAwareBeanPostProcessor` .
+* PropertySourceOrderingPostProcessor: 将defaultProperties优先级调至最低。
+* ConfigurationPropertiesBeanDefinitionValidator: 校验 `@ConstructorBinding` 必须和 `@EnableConfigurationProperties或@ConfigurationPropertiesScan` 一起使用.
+* EventListenerMethodProcessor: 初始化 `eventListenerFactories` 属性.
+* PropertySourcesPlaceHolderConfigurer: 替换 `${...}` .
+* ConfigurationBeanMetaData: 获取所有的bean method.
+* PreserverErrorControllerTargetClassPostProcessor: 设置BasicErrorController为CGLIB代理.
+. registerBeanPostProcessors: 设置beanPostProcessors属性
+* `org.springframework.context.annotation.internalAutowiredAnnotationProcessor`
+* `org.springframework.context.annotation.internalCommonAnnotationProcessor`
+* `org.springframework.aop.config.internalAutoProxyCreator`
+* `org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor`
+* `org.springframework.context.support.ApplicationListenerDetector`
+. initMessageSource: 注册MessageSource bean. `DelegatingMessageSource`
+. initApplicationEventMulticaster: 注册applicationEventMulticaster. `SimpleApplicationEventMulticaster`
+. onRefresh: 创建WebServer,将 `servletContext` 设置到 `servletContextInitParams` 中.
+. registerListeners: 设置 `applicationEventMulticaster` 的applicationListener(Bean)属性.
+. finishBeanFactoryInitialization: 初始化Singleton的BeanDefinition.
+. finishRefresh:
+* 注册lifeCycleProcessor bean 为 `DefaultLifeCycleProcessor` .
+* 调用实现了 `SmartLifeCycle` 接口的bean的start方法.
+* 发布 *ContextRefreshedEvent* .
+* 启动WebServer .
+* 发布 *ServletWebServerInitializedEvent* .
+. 清空cache.
 
-    @Override
-    public void start() {
-        System.out.println("Lifecycle start...");
-        running = true;
-    }
+=== 后置处理
 
-    @Override
-    public void stop() {
-        System.out.println("Lifecycle stop...");
-    }
+. 注册ShutdownHook.
+. 打印启动日志.
+. 发布 *ApplicationStartedEvent* .
+. 调用 `ApplicationRunner和CommandLineRunner` .
+. 发布 *ApplicationReadyEvent* .
 
-    @Override
-    public boolean isRunning() {
-        return running;
-    }
+== ConfigurationClass解析过程
 
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) {
-        System.out.println("postProcessBeforeInitialization");
-        return bean;
-    }
-
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) {
-        System.out.println("postProcessAfterInitialization");
-        return bean;
-    }
-}
-----
-
-=== Configuration
-
-[source,java]
-.BeanConfiguration.java
-----
-@Configuration
-@ComponentScan("me.jy.bean")
-public class BeanConfiguration {
-}
-----
-
-=== Main方法
-
-[source,java]
-.Bootstrap.java
-----
-public class Bootstrap {
-
-    public static void main(String[] args) {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(BeanConfiguration.class); // <1>
-        applicationContext.start();
-        applicationContext.close();
-    }
-}
-----
-<1> 初始化 `ApplicationContext` , 注册 `BeanConfiguration` 配置类.
-
-== IoC启动过程
-
-=== ApplicationContext初始化
-
-[source,java]
-.AnnotationConfigApplicationContext.java
-----
-    public AnnotationConfigApplicationContext() {
-		this.reader = new AnnotatedBeanDefinitionReader(this); // <1>
-		this.scanner = new ClassPathBeanDefinitionScanner(this); // <2>
-	}
-
-    public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
-		this();
-		register(annotatedClasses); // <3>
-		refresh();
-	}
-----
-
-<1> 初始化 `AnnotatedBeanDefinitionReader`, 创建一个 `Environment` 对象.
-注册一些 `BeanDefinitionRegistryPostProcessor`/`BeanPostProcessor`/`BeanFactoryPostProcessor`.
-<2> 初始化 `ClassPathBeanDefinitionScanner`.
-<3> 使用 `AnnotatedBeanDefinitionReader` 注册配置类.
-
-=== 注册BeanDefinition
-
-[source,java]
-.AnnotatedBeanDefinitionReader.java
-----
-    <T> void doRegisterBean(Class<T> annotatedClass, @Nullable Supplier<T> instanceSupplier, @Nullable String name,
-			@Nullable Class<? extends Annotation>[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) {
-
-		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(annotatedClass); // <1>
-		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) { // <2>
-			return;
-		}
-
-		abd.setInstanceSupplier(instanceSupplier);
-		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd); // <3>
-		abd.setScope(scopeMetadata.getScopeName());
-		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
-
-		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd); // <4>
-		if (qualifiers != null) {
-			for (Class<? extends Annotation> qualifier : qualifiers) {
-				if (Primary.class == qualifier) {
-					abd.setPrimary(true);
-				}
-				else if (Lazy.class == qualifier) {
-					abd.setLazyInit(true);
-				}
-				else {
-					abd.addQualifier(new AutowireCandidateQualifier(qualifier));
-				}
-			}
-		}
-		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
-			customizer.customize(abd);
-		}
-
-		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
-		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry); // <5>
-		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry); // <6>
-	}
-----
-
-<1> 配置类包装成 `AnnotatedGenericBeanDefinition` 对象.
-<2> 判断是否满足注册bean的条件.
-<3> 解析scope.
-<4> 解析bean类上的 `@Lazy/@Primary/@DependsOn/@Role/@Description` 注解.
-<5> 根据 `scopeMode` 判断生成对应的代理类.
-<6> 注册beanDefinition(将 `definitionHolder` 放到 `BeanFactory` 的 `beanDefinitionMap` 中).
-
-=== refresh
-
-[source,java]
-.AbstractApplicationContext.java
-----
-    @Override
-	public void refresh() throws BeansException, IllegalStateException {
-		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
-			prepareRefresh(); // <1>
-			// Tell the subclass to refresh the internal bean factory.
-			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
-			// Prepare the bean factory for use in this context.
-			prepareBeanFactory(beanFactory); // <2>
-			try {
-				// Allows post-processing of the bean factory in context subclasses.
-				postProcessBeanFactory(beanFactory);
-				// Invoke factory processors registered as beans in the context.
-				invokeBeanFactoryPostProcessors(beanFactory); // <3>
-				// Register bean processors that intercept bean creation.
-				registerBeanPostProcessors(beanFactory); // <4>
-				// Initialize message source for this context.
-				initMessageSource(); // <5>
-				// Initialize event multicaster for this context.
-				initApplicationEventMulticaster(); // <6>
-				// Initialize other special beans in specific context subclasses.
-				onRefresh();
-				// Check for listener beans and register them.
-				registerListeners();
-				// Instantiate all remaining (non-lazy-init) singletons.
-				finishBeanFactoryInitialization(beanFactory); // <7>
-				// Last step: publish corresponding event.
-				finishRefresh(); // <8>
-			}
-			catch (BeansException ex) {
-				if (logger.isWarnEnabled()) {
-					logger.warn("Exception encountered during context initialization - " + "cancelling refresh attempt: " + ex);
-				}
-				// Destroy already created singletons to avoid dangling resources.
-				destroyBeans();
-				// Reset 'active' flag.
-				cancelRefresh(ex);
-				// Propagate exception to caller.
-				throw ex;
-			}
-			finally {
-				// Reset common introspection caches in Spring's core, since we
-				// might not ever need metadata for singleton beans anymore...
-				resetCommonCaches();
-			}
-		}
-	}
-----
-<1> 子类自定义初始化一些 `properties` , 校验必填属性.
-<2> 设置 `BeanFactory` 的一些属性, 注册 `environment/systemProperties/systemEnvironment` .
-<3> 调用 `ConfigurationClassPostProcessor.processConfigBeanDefinitions` 解析 `Configuration` 类并生成CGLIB代理, 根据 `@ComponentScan` 扫描包下面的bean注册到 `BeanFactory` 中.
-<4> 注册 `beanPostProcessor` 到 `BeanFactory` 中.
-<5> 注册 `DelegatingMessageSource` .
-<6> 注册 `ApplicationEventMulticaster` .
-<7> 调用 `BeanFactory.getBean()` 初始化所有非懒加载的bean.
-<8> 注册 `LifecycleProcessor` , 执行 `onRefresh` 方法, 发布 `ContextRefreshedEvent` .
+== getBean过程
 
 == Spring AOP
 
@@ -322,7 +246,7 @@ args(java.io.Serializable) // 匹配参数只有一个并且类型为Serializabl
 .. 根据 `AopUtils.findAdvisorsThatCanApply` 找到每个bean的advisor.
 .. 使用 `CGLIB` 生成代理类, 使用 `sun.reflect.ReflectionFactory` 创建代理对象.
 
-== 事务
+== Spring TX
 
 === Spring Transaction切面注册流程
 
@@ -390,85 +314,22 @@ TIP: `PROPAGATION_REQUIRED/PROPAGATION_REQUIRES_NEW/PROPAGATION_NESTED` 下如�
 
 image::http://assets.processon.com/chart_image/5d89b05ce4b0feb0086f5c6c.png?_=1569308531062[]
 
-== QA
+== SpringBoot属性配置优先级
 
-[qanda]
-IoC?::
-对象自身生命周期的控制以及与其他对象的依赖关系交由Spring容器管理.
-
-依赖注入的方式?::
-* 构造函数注入
-* setter方法注入
-* 接口注入
-
-ApplicationContext与BeanFactory的区别?::
-* BeanFactory在spring-beans包中, ApplicationContext在spring-context包中.
-* ApplicationContext扩展了BeanFactory的功能:
-** MessageSource:
-实现国际化功能.
-** EventPublisher:
-实现事件订阅发布功能.
-** LifeCycle:
-管理生命周期.
-** 集成AOP.
-** 新增一些应用层context, 如 `WebApplicationContext` .
-** ...
-
-如何手动注册bean?::
-* BeanFactory.registerBeanDefinition:
-通过BeanFactory注册
-* ApplicationContext.register:
-通过ApplicationContext注册
-* ApplicationContext.scan: 扫描包下所有的bean
-
-如何实例化bean?::
-* 构造函数
-* static factory method
-* instance factory method
-
-单例bean中如何注入prototype型bean?::
-* `@Lookup` 一个抽象方法
-* `ObjectFactory/Provider`
-
-bean的生命周期?::
-. @PostConstruct
-. DisposableBean.afterPropertiesSet
-. initMethod
-. BeanPostProcessor.postProcessBeforeInitialization
-. BeanPostProcessor.postProcessAfterInitialization
-. LifeCycle.start
-. LifeCycle.stop
-. @PreDestroy
-. DisposableBean.destroy
-. destroyMethod
-
-Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?::
-Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.
-
-什么情况下会发生Bean循环引用?::
-* 两个bean互相在构造函数中注入
-* 两个prototype类型的bean互相注入
-
-Spring如何检测Bean循环引用?::
-参见 `DefaultSingletonBeanRegistry.beforeSingletonCreation` 方法. 每个bean在创建前 `beanName` 会放到 `singletonsCurrentlyInCreation` 这个set中, bean创建完会从这个set中移出.
-解析构造函数上 `@Autowired` 注解时会看需要注入的bean在不在这个set中, 如果在, 则抛出循环引用异常.
-
-Bean循环引用如何解决?::
-`@Autowired` 时添加 `@Lazy` 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.
-*原理* :
-如果注入时有 `@Lazy` 注解, 则会注入一个代理, 只有当使用这个字段时才会从 `BeanFactory` 中获取真正的bean.
-
-为什么JDK动态代理调用同类中方法时不走切面?::
-JDK动态代理会生成一个子类, 调用这个子类的方法时会直接调用 `InvocationHandler` 中的invoke方法, 并且传递对象的是原被代理的对象.
-所以在被代理的对象中直接调用同类的方法不会调用切面的代码.
-
-使用CGLIB代理有什么要求?::
-* 被代理的类不能是 `final` 类.
-* 被代理的方法不能是私有方法.
-
-Spring配置的placeholder占位符是如何替换的, 有什么办法可以自定义替换方式?::
-依靠 `Environment` 对象的 `propertyResolver` 解析:
-替换掉 `${}` 占位符, 再从 `Environment` 的 `propertySources` 中获取该属性名对应的值.
-
-Configuration类中@Bean方法定义成static有什么作用?::
-static方法不会被代理, 所以每次调用这个方法返回的都是不同的普通对象.
+. Devtools global settings properties on your home directory (~/.spring-boot-devtools.properties when devtools is active).
+. @TestPropertySource annotations on your tests.
+. @SpringBootTest#properties annotation attribute on your tests.
+. Command line arguments.
+. Properties from SPRING_APPLICATION_JSON (inline JSON embedded in an environment variable or system property).
+. ServletConfig init parameters.
+. ServletContext init parameters.
+. JNDI attributes from java:comp/env.
+. Java System properties (System.getProperties()).
+. OS environment variables.
+. A RandomValuePropertySource that has properties only in random.*.
+. Profile-specific application properties outside of your packaged jar (application-\{profile}.properties and YAML variants).
+. Profile-specific application properties packaged inside your jar (application-\{profile}.properties and YAML variants).
+. Application properties outside of your packaged jar (application.properties and YAML variants).
+. Application properties packaged inside your jar (application.properties and YAML variants).
+. @PropertySource annotations on your @Configuration classes.
+. Default properties (specified by setting SpringApplication.setDefaultProperties).

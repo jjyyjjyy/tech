@@ -9,9 +9,8 @@ image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 * link:Java.html[Java]
 * link:JMH.html[JMH]
 * link:DesignPattern.html[Design Pattern]
-* link:Spring.html[Spring]
 * link:Mybatis.html[Mybatis]
-* link:Spring-Boot.html[Spring Boot]
+* link:Spring.html[Spring]
 * link:Mockito.html[Mockito]
 
 .Math

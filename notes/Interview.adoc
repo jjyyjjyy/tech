@@ -581,10 +581,71 @@ MyBatis的Mapper方法执行过程?::
 == Spring
 
 [qanda]
-Spring的事务隔离性?::
-Spring的事务传播行为?::
-Spring MVC处理请求的过程?::
-Spring Bean的装配过程?::
+IoC?::
+对象自身生命周期的控制以及与其他对象的依赖关系交由Spring容器管理.
+依赖注入的方式?::
+* 构造函数注入
+* setter方法注入
+* 接口注入
+ApplicationContext与BeanFactory的区别?::
+* BeanFactory在spring-beans包中, ApplicationContext在spring-context包中.
+* ApplicationContext扩展了BeanFactory的功能:
+** MessageSource:
+实现国际化功能.
+** EventPublisher:
+实现事件订阅发布功能.
+** LifeCycle:
+管理生命周期.
+** 集成AOP.
+** 新增一些应用层context, 如 `WebApplicationContext` .
+** ...
+如何手动注册bean?::
+* BeanFactory.registerBeanDefinition:
+通过BeanFactory注册
+* ApplicationContext.register:
+通过ApplicationContext注册
+* ApplicationContext.scan: 扫描包下所有的bean
+如何实例化bean?::
+* 构造函数
+* static factory method
+* instance factory method
+单例bean中如何注入prototype型bean?::
+* `@Lookup` 一个抽象方法
+* `ObjectFactory/Provider`
+bean的生命周期?::
+. @PostConstruct
+. DisposableBean.afterPropertiesSet
+. initMethod
+. BeanPostProcessor.postProcessBeforeInitialization
+. BeanPostProcessor.postProcessAfterInitialization
+. LifeCycle.start
+. LifeCycle.stop
+. @PreDestroy
+. DisposableBean.destroy
+. destroyMethod
+Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?::
+Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.
+什么情况下会发生Bean循环引用?::
+* 两个bean互相在构造函数中注入
+* 两个prototype类型的bean互相注入
+Spring如何检测Bean循环引用?::
+参见 `DefaultSingletonBeanRegistry.beforeSingletonCreation` 方法. 每个bean在创建前 `beanName` 会放到 `singletonsCurrentlyInCreation` 这个set中, bean创建完会从这个set中移出.
+解析构造函数上 `@Autowired` 注解时会看需要注入的bean在不在这个set中, 如果在, 则抛出循环引用异常.
+Bean循环引用如何解决?::
+`@Autowired` 时添加 `@Lazy` 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.
+*原理* :
+如果注入时有 `@Lazy` 注解, 则会注入一个代理, 只有当使用这个字段时才会从 `BeanFactory` 中获取真正的bean.
+为什么JDK动态代理调用同类中方法时不走切面?::
+JDK动态代理会生成一个子类, 调用这个子类的方法时会直接调用 `InvocationHandler` 中的invoke方法, 并且传递对象的是原被代理的对象.
+所以在被代理的对象中直接调用同类的方法不会调用切面的代码.
+使用CGLIB代理有什么要求?::
+* 被代理的类不能是 `final` 类.
+* 被代理的方法不能是私有方法.
+Spring配置的placeholder占位符是如何替换的, 有什么办法可以自定义替换方式?::
+依靠 `Environment` 对象的 `propertyResolver` 解析:
+替换掉 `${}` 占位符, 再从 `Environment` 的 `propertySources` 中获取该属性名对应的值.
+Configuration类中@Bean方法定义成static有什么作用?::
+static方法不会被代理, 所以每次调用这个方法返回的都是不同的普通对象.
 ...
 
 == Redis
