@@ -1,0 +1,36 @@
+= Nacos
+:icons: font
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+
+== 目录
+
+[plantuml,nacos-dir,svg]
+....
+!include charts/global/stylesheet.iuml
+note as N1
+nacos
+|_address <color:gray>地址
+|_api <color:gray>接口定义
+|_client <color:gray>接口实现
+|_cmdb <color:gray>标签/元数据
+|_common <color:gray>工具类
+|_config <color:gray>配置服务业务实现
+|_consistency <color:gray>一致性
+|_console <color:gray>管理后台
+|_core <color:gray>核心工具
+|_distribution <color:gray>构建目录
+|_istio <color:gray>istio集成
+|_naming <color:gray>服务注册发现
+end note
+....
+
+== 功能列表
+
+* 服务注册
+* 服务发现
+* 服务心跳
+* 服务健康检查
+* 服务同步

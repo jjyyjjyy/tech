@@ -13,11 +13,11 @@
 
     <properties>
 
-        <spring-doc-resources.version>0.2.1.RELEASE</spring-doc-resources.version>
+        <spring-doc-resources.version>0.2.2.RELEASE</spring-doc-resources.version>
 
         <!-- plugins -->
         <asciidoctor.version>2.0.0-RC.1</asciidoctor.version>
-        <asciidoctorj-diagram>2.0.1</asciidoctorj-diagram>
+        <asciidoctorj-diagram>2.0.2</asciidoctorj-diagram>
     </properties>
 
     <dependencies>

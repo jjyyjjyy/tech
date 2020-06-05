@@ -18,6 +18,7 @@
         <module>spring-aop-demo</module>
         <module>spring-tx-demo</module>
         <module>mybatis-demo</module>
+        <module>spring-cloud-discovery-demo</module>
     </modules>
 
     <artifactId>framework-demo</artifactId>
