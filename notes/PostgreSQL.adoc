@@ -117,34 +117,6 @@ TYPE  DATABASE  USER  ADDRESS  METHOD
 * \set VAR_NAME VALUE: 设置变量, :VAR_NAME 使用
 * \timing: 开启sql计时
 
-== Monitor
-
-> https://www.postgresql.org/docs/current/monitoring-stats.html
-
-[source,postgresql]
-----
--- 查看活动会话
-select pid, client_addr, query_start, state, query, wait_event, wait_event_type
-from pg_stat_activity
-where datid is not null
-  and pid <> pg_backend_pid()
-order by query_start desc;
-
--- 查看数据库连接数
-select datname, client_addr, count(*)
-from pg_stat_activity
-where pid <> pg_backend_pid()
-group by datname, client_addr
-order by 1, 2, 3 desc;
-----
-
-.state字段含义
-* active: 后台进程正在执行该SQL.
-* idle: 后台进程处于空闲状态, 等待后续客户端发出命令.
-* idle in transaction: 后台进程正在事务中.
-* idle in transaction(aborted): 事务中的部分SQL异常.
-* fastpath function call: 正在执行fast-path函数.
-
 == 数据类型
 
 === 数字类型
@@ -292,6 +264,240 @@ insert into ... on conflict do {NOTHING | update set <colName> = EXCLUDED.colNam
 ** last_value(field): 取分组最后一行数据
 ** nth_value(field,line): 取分组指定行数据
 ** 别名: select ...[rank() over NAME] from <table> WINDOW <NAME> AS ()
+
+== Monitor
+
+> https://www.postgresql.org/docs/current/monitoring-stats.html
+
+=== pg_stat_activity
+
+查看实时连接.
+
+.pg_stat_activity schema
+|===
+| 列名 | 描述
+
+| datid
+| 数据库id
+
+| datname
+| 数据库名称
+
+| pid
+| 服务于这个连接的进程id
+
+| usesysid
+| 连接的用户id
+
+| usename
+| 连接的用户名
+
+| application_name
+| 应用名称
+
+| client_addr
+| 客户端ip
+
+| client_hostname
+| 客户端主机名
+
+| client_port
+| 客户端端口号
+
+| backend_start
+| 连接何时被启动
+
+| xact_start
+| 事务何时被启动
+
+| query_start
+| 连接查询起始时间
+
+| state_change
+| state列修改时间
+
+| wait_event_type
+|
+
+| wait_event
+|
+
+| state
+| 连接状态:
+* active: 后台进程正在执行该SQL.
+* idle: 后台进程处于空闲状态, 等待后续客户端发出命令.
+* idle in transaction: 后台进程正在事务中.
+* idle in transaction(aborted): 事务中的部分SQL异常.
+* fastpath function call: 正在执行fast-path函数.
+
+| query
+| 当前或上一次的sql语句
+
+| backend_xid
+|
+
+| backend_xmin
+|
+
+| backend_type
+|
+
+|===
+
+[source,postgresql]
+----
+-- 查看活动会话
+select pid, client_addr, query_start, state, query, wait_event, wait_event_type
+from pg_stat_activity
+where datid is not null
+  and pid <> pg_backend_pid()
+order by query_start desc;
+
+-- 查看数据库连接数
+select datname, client_addr, count(*)
+from pg_stat_activity
+where pid <> pg_backend_pid()
+group by datname, client_addr
+order by 1, 2, 3 desc;
+
+-- 查看会话状态统计
+select datname,
+       count(*)                                                AS open,
+       count(*) filter ( where state = 'active' )              AS active,
+       count(*) filter ( where state = 'idle' )                AS idle,
+       count(*) filter ( where state = 'idle in transaction' ) AS idle_in_tx
+from pg_stat_activity
+where backend_type = 'client backend'
+group by rollup (1);
+
+-- 查看当前事务
+select pid, xact_start, now() - xact_start AS duration
+from pg_stat_activity
+where state like '%transaction%'
+order by 3 desc;
+----
+
+=== pg_stat_database
+
+查看数据库统计信息.
+
+.pg_stat_database schema
+|===
+| 列名 | 描述
+
+| datid
+| 数据库id
+
+| datname
+| 数据库名
+
+| numbackends
+| 当前打开的数据库连接数
+
+| xact_commit
+| 倾向于事务提交
+
+| xact_rollback
+| 倾向于事务回滚
+
+| blks_read
+| 缓冲未命中数
+
+| blks_hit
+| 缓冲命中数
+
+| tup_returned
+| 返回行数
+
+| tup_fetched
+| 查询行数
+
+| tup_inserted
+| 插入行数
+
+| tup_updated
+| 更新行数
+
+| tup_deleted
+| 删除行数
+
+| conflicts
+|
+
+| temp_files
+| 磁盘临时文件数
+
+| temp_bytes
+| 磁盘临时文件大小
+
+| deadlocks
+| 死锁次数
+
+| blk_read_time
+| IO读操作花费时间
+
+| blk_write_time
+| IO写操作花费时间
+
+|===
+
+blk_read_time/blk_write_time默认为空, 需要打开 `track_io_time` 参数, 可以使用 `pg_test_timing` 命令测试计时性能.
+
+=== pg_stat_user_tables
+
+显示各个表的活动.
+
+.pg_stat_user_tables schema
+|===
+| 列名 | 描述
+
+| relid
+| 表id
+
+| schemaname
+| schema名
+
+| relname
+| 表名
+
+| seq_scan
+| 顺序扫描次数
+
+| seq_tup_read
+| 顺序扫描时元组读取个数
+
+| idx_scan
+| 索引使用次数
+
+| idx_tup_fetch
+| 索引元组返回个数
+
+|===
+
+[source,sql]
+.检测哪些表可能需要索引
+----
+select schemaname, relname, seq_scan, seq_tup_read, seq_tup_read / seq_scan as avg, idx_scan
+from pg_stat_user_tables
+where seq_scan > 0
+order by seq_tup_read desc
+limit 25;
+----
+
+=== pg_stat_statements
+
+[source,sql]
+.查看耗時最多的sql
+----
+select round((100 * total_time / sum(total_time) over ())::numeric, 2) AS percent,
+       round(total_time::numeric, 2)                                   AS total,
+       calls,
+       round(mean_time::numeric, 2)                                    AS mean,
+       query
+from pg_stat_statements
+order by total_time desc
+limit 10;
+----
 
 == 体系结构
 
