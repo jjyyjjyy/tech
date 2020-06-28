@@ -6,9 +6,9 @@ package me.jy._15_command;
 public class Keyboard implements Player {
 
     private final Player player;
-    private PlayCommand playCommand = new PlayCommand();
-    private StopCommand stopCommand = new StopCommand();
-    private RewindCommand rewindCommand = new RewindCommand();
+    private final PlayCommand playCommand = new PlayCommand();
+    private final StopCommand stopCommand = new StopCommand();
+    private final RewindCommand rewindCommand = new RewindCommand();
 
     public Keyboard(Player player) {
         this.player = player;

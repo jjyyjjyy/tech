@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class SubStringSearchTest {
 
-    private BF bf = new BF();
+    private final BF bf = new BF();
 
-    private RK rk = new RK();
+    private final RK rk = new RK();
 
-    private KMP kmp = new KMP();
+    private final KMP kmp = new KMP();
 
     @ParameterizedTest
     @CsvSource({"'abc','vc',-1", "'abcdefg','fg',5", "'dsaawdwa','aa',2"})

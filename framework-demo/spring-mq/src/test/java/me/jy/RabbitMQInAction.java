@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 class RabbitMQInAction {
 
     private static final String EXCHANGE = "demo.exchange";
-    private ConnectionFactory connectionFactory;
+    private final ConnectionFactory connectionFactory;
 
     {
         connectionFactory = new ConnectionFactory();

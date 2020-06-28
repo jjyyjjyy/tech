@@ -68,7 +68,7 @@ public class SingletonProduct {
         }
 
         private static class S5Holder {
-            private static S5 INSTANCE = new S5();
+            private static final S5 INSTANCE = new S5();
         }
     }
     // end::singleton-inner-static-class[]

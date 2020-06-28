@@ -41,7 +41,7 @@ class StringTests {
      */
     @Test
     void testStringSame1() {
-        String s1 = new String("testStringSame1 123");
+        String s1 = "testStringSame1 123";
         String s2 = "testStringSame1 123";
         assertNotSame(s1, s2);
     }
@@ -54,14 +54,14 @@ class StringTests {
      */
     @Test
     void testStringSame2() {
-        String s1 = new String("testStringSame2 123").intern(); // String对象创建时会在常量池放入一个"123"常量, intern方法返回该常量引用(非String对象)
+        String s1 = "testStringSame2 123".intern(); // String对象创建时会在常量池放入一个"123"常量, intern方法返回该常量引用(非String对象)
         String s2 = "testStringSame2 123";
         assertSame(s1, s2);
     }
 
     @Test
     void testStringSame3() {
-        String s1 = new String("testStringSame3 123");
+        String s1 = "testStringSame3 123";
         s1.intern();
         String s2 = "testStringSame3 123";
         assertNotSame(s1, s2);
@@ -79,7 +79,7 @@ class StringTests {
      */
     @Test
     void testStringSame4() {
-        String s1 = new String("testStringSame4 123").intern();
+        String s1 = "testStringSame4 123".intern();
         String s2 = "testStringSame4 " + "123";
 
         assertSame(s1, s2);
@@ -93,7 +93,7 @@ class StringTests {
      */
     @Test
     void testStringSame5() {
-        String s1 = new String("testStringSame5 ") + new String("123");
+        String s1 = "testStringSame5 " + "123";
         s1.intern();
         String s2 = "testStringSame5 123";
         assertSame(s1, s2);
@@ -101,7 +101,7 @@ class StringTests {
 
     @Test
     void testStringSame6() {
-        String s1 = new String("testStringSame6 ") + new String("123");
+        String s1 = "testStringSame6 " + "123";
         String s2 = "testStringSame6 123";
         s1.intern();
         assertNotSame(s1, s2);
@@ -119,7 +119,7 @@ class StringTests {
      */
     @Test
     void testStringSame7() {
-        String s1 = "testStringSame7 " + new String("123");
+        String s1 = "testStringSame7 " + "123";
         String s2 = "testStringSame7 123";
         assertNotSame(s1, s2);
         assertSame(s1.intern(), s2);

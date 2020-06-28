@@ -133,11 +133,11 @@ class ThreadPool {
         private final int capacity;
         private final Deque<E> deque;
 
-        private Lock lock = new ReentrantLock();
+        private final Lock lock = new ReentrantLock();
 
-        private Condition emptyCondition = lock.newCondition();
+        private final Condition emptyCondition = lock.newCondition();
 
-        private Condition fullCondition = lock.newCondition();
+        private final Condition fullCondition = lock.newCondition();
 
         private BlockingQueue(int capacity) {
             this.capacity = capacity;

@@ -12,11 +12,11 @@ import java.util.stream.IntStream;
 public class FilterLock implements Lock {
 
     // 线程数
-    private int n;
+    private final int n;
 
-    private int[] level;
+    private final int[] level;
 
-    private int[] victim;
+    private final int[] victim;
 
     public FilterLock(int n) {
         this.n = n;

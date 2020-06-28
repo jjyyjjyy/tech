@@ -5,7 +5,7 @@ package me.jy._12_fly_weight;
  */
 public abstract class FlyWeight {
 
-    private String internalState;
+    private final String internalState;
 
     public FlyWeight(String internalState) {
         this.internalState = internalState;

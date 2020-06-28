@@ -32,7 +32,7 @@ public class EqualsTests {
     @Test
     public void testStringEq() {
         String s1 = "Programming";
-        String s2 = new String("Programming");
+        String s2 = "Programming";
         String s3 = "Program" + "ming";
         assertFalse(s1 == s2);
         assertTrue(s1 == s3);

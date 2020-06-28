@@ -22,11 +22,11 @@ public class ProductConsumerDemo {
 
         private volatile int capacity;
 
-        private Lock lock = new ReentrantLock();
+        private final Lock lock = new ReentrantLock();
 
-        private Condition fullCondition = lock.newCondition();
+        private final Condition fullCondition = lock.newCondition();
 
-        private Condition emptyCondition = lock.newCondition();
+        private final Condition emptyCondition = lock.newCondition();
 
         public void push(int size) {
 

@@ -11,9 +11,9 @@ import java.util.concurrent.atomic.AtomicStampedReference;
  */
 public class ABAProblem {
 
-    private AtomicReference<Integer> ar = new AtomicReference<>(100);
+    private final AtomicReference<Integer> ar = new AtomicReference<>(100);
 
-    private AtomicStampedReference<Integer> asr = new AtomicStampedReference<>(100, 1);
+    private final AtomicStampedReference<Integer> asr = new AtomicStampedReference<>(100, 1);
 
     private static void testAtomicReference() {
         ABAProblem abaProblem = new ABAProblem();

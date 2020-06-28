@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Lock;
  */
 public class JUCLock implements Lock {
 
-    private Sync sync = new Sync();
+    private final Sync sync = new Sync();
 
     @Override
     public void lock() {

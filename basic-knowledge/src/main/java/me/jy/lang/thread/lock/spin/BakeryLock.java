@@ -14,8 +14,8 @@ import java.util.stream.IntStream;
  */
 public class BakeryLock implements Lock {
 
-    private AtomicBoolean[] flag;
-    private int[] label;
+    private final AtomicBoolean[] flag;
+    private final int[] label;
 
     public BakeryLock(int n) {
         this.flag = IntStream.range(0, n).mapToObj(i -> new AtomicBoolean()).toArray(AtomicBoolean[]::new);

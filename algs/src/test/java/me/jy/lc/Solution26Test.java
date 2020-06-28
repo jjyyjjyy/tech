@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DisplayName("#26")
 class Solution26Test {
 
-    private RemoveDuplicates solution26 = new RemoveDuplicates();
+    private final RemoveDuplicates solution26 = new RemoveDuplicates();
 
     @Test
     void removeDuplicates() {

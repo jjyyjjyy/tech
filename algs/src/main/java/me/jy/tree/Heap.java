@@ -9,11 +9,11 @@ public class Heap<T extends Comparable<T>> {
 
     private static final int DEFAULT_CAPACITY = 15;
 
-    private Object[] data;
+    private final Object[] data;
 
     private int size;
 
-    private int capacity;
+    private final int capacity;
 
     public Heap() {
         this(DEFAULT_CAPACITY);

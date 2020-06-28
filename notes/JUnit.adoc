@@ -1,0 +1,82 @@
+= JUnit
+:icons: font
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+
+文档: https://junit.org/junit5/docs/current/user-guide[window="_blank"]
+
+== Maven导入
+
+[source,xml]
+.pom.xml
+----
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+----
+
+== assert和assume
+
+* assert: *断言* 一个测试用例跑完后的结果与预期结果 *保持一致* .
+* assume: 测试用例执行前 *需要达到一定的条件* 才会执行, 如果条件没有达成, 则测试用例会被跳过.
+
+== per-class和per-method
+
+* per-class: 同一个类里的每次测试方法执行都在同一个实例中执行.
+* per-method(默认): 每次测试方法执行都会创建一个新的实例.
+
+per-class模式下 `@BeforeAll` 和 `@AfterAll` 都可以声明为实例方法或者接口里的default方法.
+
+== concurrent配置
+
+=== 并行执行配置方法
+
+* `@Execution` 注解
+* `junit-platform.properties` 配置 `junit.jupiter.execution.parallel.enabled=true` .
+
+=== 测试类并行执行但同一类方法顺序执行
+
+[source,properties]
+----
+junit.jupiter.execution.parallel.enabled = true
+junit.jupiter.execution.parallel.mode.default = same_thread
+junit.jupiter.execution.parallel.mode.classes.default = concurrent
+----
+
+=== 测试类顺序执行但同一类方法并行执行
+
+[source,properties]
+----
+junit.jupiter.execution.parallel.enabled = true
+junit.jupiter.execution.parallel.mode.default = concurrent
+junit.jupiter.execution.parallel.mode.classes.default = same_thread
+----
+

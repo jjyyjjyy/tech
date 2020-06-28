@@ -15,7 +15,7 @@ public class CLHLock implements Lock {
     // 所以在释放锁的时候需要将当前node重新赋值. pre的作用仅仅是复用Node对象.
     private final ThreadLocal<Node> pre = new ThreadLocal<>();
 
-    private AtomicReference<Node> tail = new AtomicReference<>(new Node());
+    private final AtomicReference<Node> tail = new AtomicReference<>(new Node());
 
     @Override
     public void lock() {

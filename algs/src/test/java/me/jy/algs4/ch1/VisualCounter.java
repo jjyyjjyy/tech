@@ -9,7 +9,7 @@ public class VisualCounter {
 
     private int n;
 
-    private int max;
+    private final int max;
 
     private int value;
 

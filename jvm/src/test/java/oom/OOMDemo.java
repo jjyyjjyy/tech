@@ -83,6 +83,6 @@ public class OOMDemo {
 
 
     private static class HugeClass {
-        private byte[] bytes = new byte[1 * 1024 * 1024];
+        private final byte[] bytes = new byte[1 * 1024 * 1024];
     }
 }

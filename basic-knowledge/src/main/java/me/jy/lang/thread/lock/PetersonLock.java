@@ -13,7 +13,7 @@ public class PetersonLock implements Lock {
 
     private final boolean[] flags = new boolean[LIMIT + 1];
 
-    private AtomicInteger victim = new AtomicInteger();
+    private final AtomicInteger victim = new AtomicInteger();
 
     @Override
     public void lock() {

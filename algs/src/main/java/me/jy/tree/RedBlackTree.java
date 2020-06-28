@@ -308,7 +308,7 @@ public class RedBlackTree<K extends Comparable<K>, V> implements Map<K, V> {
 
     // public modifier for unit tests
     public static final class RBEntry<K, V> implements Map.Entry<K, V> {
-        private K key;
+        private final K key;
         private V value;
         private RBEntry<K, V> parent;
         private RBEntry<K, V> leftChild;

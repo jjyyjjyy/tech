@@ -1,0 +1,132 @@
+= ClickHouse
+:icons: font
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+
+== 安装
+
+[source,yaml]
+.docker-compose.yml
+----
+version: '3'
+services:
+  clickhouse:
+    container_name: clickhouse
+    image: yandex/clickhouse-server
+    ports:
+      - 39000:9000
+      - 38123:8123
+    networks:
+      - clickhouse
+    volumes:
+      - ~/volumes/clickhouse/:/var/lib/clickhouse
+      - ./users.xml:/etc/clickhouse-server/users.xml
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+networks:
+  clickhouse:
+
+----
+
+[source,xml]
+.users.xml
+----
+<?xml version="1.0"?>
+<yandex>
+    <profiles>
+        <default>
+            <max_memory_usage>10000000000</max_memory_usage>
+            <use_uncompressed_cache>0</use_uncompressed_cache>
+            <load_balancing>random</load_balancing>
+        </default>
+        <readonly>
+            <readonly>1</readonly>
+        </readonly>
+    </profiles>
+    <users>
+        <default>
+            <password>123123</password>
+            <networks incl="networks" replace="replace">
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+        </default>
+    </users>
+    <quotas>
+        <default>
+            <interval>
+                <duration>3600</duration>
+                <queries>0</queries>
+                <errors>0</errors>
+                <result_rows>0</result_rows>
+                <read_rows>0</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </default>
+    </quotas>
+</yandex>
+----
+
+== 数据类型
+
+=== 数值
+
+* 整数
+** Int8
+** Int16
+** Int32
+** Int64
+** UInt8
+** UInt16
+** UInt32
+** UInt64
+
+* 浮点数
+** Float32
+** Float64
+
+* 定点数
+** Decimal32
+** Decimal64
+** Decimal128
+
+=== 字符串
+
+* String
+* FixedString
+* UUID
+
+=== 时间
+
+* DateTime
+* DateTime64
+* Date
+
+=== 特殊类型
+
+* Array
+* Tuple
+* Enum
+* Nested
+* Nullable
+* IPv4
+* IPv6
+
+== DDL
+
+=== 创建数据库
+
+[source,sql]
+----
+create database if not exists <db_name> [ENGINE = <engine>]
+----
+
+.数据库Engine
+* Ordinary
+* Dictionary

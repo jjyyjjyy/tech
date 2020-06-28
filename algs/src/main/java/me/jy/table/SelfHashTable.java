@@ -19,7 +19,7 @@ public class SelfHashTable<K, V> extends AbstractMap<K, V> {
 
     private int elementSize;
 
-    private Set<Map.Entry<K, V>> cachedEntries = new HashSet<>();
+    private final Set<Map.Entry<K, V>> cachedEntries = new HashSet<>();
 
     public SelfHashTable() {
         this.table = new LinkedList[tableSize];

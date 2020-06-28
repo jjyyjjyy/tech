@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class LettuceTests {
 
-    private static GenericContainer redis = new GenericContainer("redis:alpine")
+    private static final GenericContainer redis = new GenericContainer("redis:alpine")
         .withExposedPorts(6379);
 
     private static RedisClient redisClient;

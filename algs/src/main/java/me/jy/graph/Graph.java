@@ -10,12 +10,12 @@ import java.util.stream.IntStream;
 public class Graph {
 
     // 顶点数
-    private int v;
+    private final int v;
 
     // 边数
     private int e;
 
-    private Map<Integer, List<Integer>> adj;
+    private final Map<Integer, List<Integer>> adj;
 
     public Graph(int v) {
         this.v = v;

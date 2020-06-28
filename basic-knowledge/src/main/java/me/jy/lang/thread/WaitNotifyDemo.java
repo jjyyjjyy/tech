@@ -7,7 +7,7 @@ public class WaitNotifyDemo {
 
     private int currentFlag;
 
-    private int loop = 5;
+    private final int loop = 5;
 
     public static void main(String[] args) {
         WaitNotifyDemo waitNotifyDemo = new WaitNotifyDemo();

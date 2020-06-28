@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
  */
 public class DiningPhilosopherProblem {
 
-    private Semaphore[] chopsticks;
+    private final Semaphore[] chopsticks;
 
     public DiningPhilosopherProblem(int num) {
         this.chopsticks = IntStream.range(0, num)
@@ -46,12 +46,12 @@ public class DiningPhilosopherProblem {
 
     public static class Philosopher implements Runnable {
 
-        private int no;
+        private final int no;
 
-        private int leftNo;
-        private int rightNo;
+        private final int leftNo;
+        private final int rightNo;
 
-        private Semaphore[] chopsticks;
+        private final Semaphore[] chopsticks;
 
         public Philosopher(Semaphore[] chopsticks, int no) {
             this.chopsticks = chopsticks;

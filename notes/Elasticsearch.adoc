@@ -272,10 +272,10 @@ POST /_analyze
 
 [source,properties]
 ----
-node.master: true
-node.data: false
-node.ingest: false
-cluster.remote.connect: false
+node.master= true
+node.data= false
+node.ingest= false
+cluster.remote.connect= false
 ----
 
 可以设置 `node.voting_only: true` 表示该节点只参与master选举, 但不会成为master.
@@ -284,38 +284,38 @@ cluster.remote.connect: false
 
 [source,properties]
 ----
-node.master: false
-node.data: true
-node.ingest: false
-cluster.remote.connect: false
+node.master= false
+node.data= true
+node.ingest= false
+cluster.remote.connect= false
 ----
 
 * *ingest节点*: 负责执行ingest pipeline的节点
 
 [source,properties]
 ----
-node.master: false
-node.data: false
-node.ingest: true
-cluster.remote.connect: false
+node.master= false
+node.data= false
+node.ingest= true
+cluster.remote.connect= false
 ----
 
 * *coordinating节点*: 将请求路由分发到其他节点.
 
 [source,properties]
 ----
-node.master: false
-node.data: false
-node.ingest: false
-cluster.remote.connect: false
+node.master= false
+node.data= false
+node.ingest= false
+cluster.remote.connect= false
 ----
 
 * *ml节点*: 负责执行机器学习Job/处理机器学习请求的节点
 
 [source,properties]
 ----
-node.ml: true
-xpack.ml.enabled: true
+node.ml= true
+xpack.ml.enabled= true
 ----
 
 == 索引操作API

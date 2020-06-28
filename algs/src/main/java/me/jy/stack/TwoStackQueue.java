@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 public class TwoStackQueue {
 
     // tag::twoStackQueue[]
-    private Deque<Integer> dataStack = new ArrayDeque<>();
-    private Deque<Integer> tmpStack = new ArrayDeque<>();
+    private final Deque<Integer> dataStack = new ArrayDeque<>();
+    private final Deque<Integer> tmpStack = new ArrayDeque<>();
 
     public void add(Integer e) {
         dataStack.push(e);

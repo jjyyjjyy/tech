@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class ButtonGroup extends Component {
 
-    private List<Button> buttons = new ArrayList<>();
+    private final List<Button> buttons = new ArrayList<>();
 
     public ButtonGroup(String name) {
         super(name);

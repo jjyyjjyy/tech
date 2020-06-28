@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Panel extends Component {
 
-    private List<Component> components = new ArrayList<>();
+    private final List<Component> components = new ArrayList<>();
 
 
     public Panel(String name) {

@@ -132,7 +132,7 @@ public class AVLTree<T extends Comparable<T>> {
 
     private class Node {
 
-        private T value;
+        private final T value;
         private Node left;
         private Node right;
 

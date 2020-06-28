@@ -8,7 +8,7 @@ import java.util.Stack;
  */
 public class Calculator {
 
-    private Expression expression;
+    private final Expression expression;
 
     public Calculator(String expr) {
         Stack<Expression> expressions = new Stack<>();

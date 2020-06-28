@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author jy
@@ -28,7 +29,7 @@ public class BioClient {
         for (int i = 0; i < 20_000; i++) {
             sb.append("hel");
         }
-        byte[] request = sb.toString().getBytes("utf-8");
+        byte[] request = sb.toString().getBytes(StandardCharsets.UTF_8);
         output.write(request);
         long start = System.currentTimeMillis();
         socket.close();

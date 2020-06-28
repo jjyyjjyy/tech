@@ -11,9 +11,9 @@ import java.util.concurrent.atomic.LongAdder;
  */
 class LongAddrTest {
 
-    private AtomicLong counter1 = new AtomicLong();
+    private final AtomicLong counter1 = new AtomicLong();
 
-    private LongAdder counter2 = new LongAdder();
+    private final LongAdder counter2 = new LongAdder();
 
     @Test
     void testAtomicLong() {

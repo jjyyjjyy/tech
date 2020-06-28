@@ -5,8 +5,8 @@ package me.jy.lang.inner;
  */
 public class MemberClassDemo {
 
-    private static int f = 12;
-    private int modCount = 0;
+    private static final int f = 12;
+    private final int modCount = 0;
 
     public static void main(String[] args) {
         new MemberClassDemo().test();
@@ -34,7 +34,7 @@ public class MemberClassDemo {
 
     private class ParentInner {
         //        private static int si = 10; // sad
-        private int exceptedModCount = modCount;// reachable
+        private final int exceptedModCount = modCount;// reachable
     }
 
     private abstract class d {

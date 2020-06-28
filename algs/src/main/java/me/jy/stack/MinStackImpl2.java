@@ -8,8 +8,8 @@ import java.util.Deque;
  */
 public class MinStackImpl2 implements MinStack {
 
-    private Deque<Integer> dataStack = new ArrayDeque<>();
-    private Deque<Integer> minStack = new ArrayDeque<>();
+    private final Deque<Integer> dataStack = new ArrayDeque<>();
+    private final Deque<Integer> minStack = new ArrayDeque<>();
 
     // tag::minStack[]
     @Override

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 class BinarySearchTest {
 
-    private BinarySearch binarySearch = new BinarySearch();
+    private final BinarySearch binarySearch = new BinarySearch();
 
     @Test
     void search() {

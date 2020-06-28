@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class BookSelf implements Aggregate<Book> {
 
-    private List<Book> books = new ArrayList<>();
+    private final List<Book> books = new ArrayList<>();
 
     @Override
     public Book get(int index) {

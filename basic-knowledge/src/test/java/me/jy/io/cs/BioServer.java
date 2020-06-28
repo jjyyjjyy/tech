@@ -19,7 +19,7 @@ public class BioServer {
     private static final int DEFAULT_PORT = 8080;
     protected final ServerSocket serverSocket;
     protected ExecutorService threadPool = Executors.newCachedThreadPool();
-    private byte[] MESSAGE = ("HTTP/1.1 200 OK\n" +
+    private final byte[] MESSAGE = ("HTTP/1.1 200 OK\n" +
         "Date: Sat, 31 Dec 2005 23:59:59 GMT\n" +
         "Content-Type: text/html;charset=ISO-8859-1\n" +
         "Content-Length: 122\n" +

@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FlyWeightFactory {
 
-    private Map<String, FlyWeight> flyWeights = new ConcurrentHashMap<>();
+    private final Map<String, FlyWeight> flyWeights = new ConcurrentHashMap<>();
 
     public FlyWeight get(String key) {
         return flyWeights.putIfAbsent(key, new ConcreteFlyWeight(key));

@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
  */
 public class LockDemo implements Lock {
 
-    private SyncDemo sync = new SyncDemo();
+    private final SyncDemo sync = new SyncDemo();
 
     public static void main(String[] args) {
         TestCase testCase = new TestCase();

@@ -12,8 +12,8 @@ public class ArrayLock implements Lock {
 
     private final ThreadLocal<Integer> slot = ThreadLocal.withInitial(() -> 0);
     private final int size;
-    private AtomicInteger tail = new AtomicInteger();
-    private AtomicReferenceArray<Boolean> flags;
+    private final AtomicInteger tail = new AtomicInteger();
+    private final AtomicReferenceArray<Boolean> flags;
 
     public ArrayLock(int size) {
         this.size = size;

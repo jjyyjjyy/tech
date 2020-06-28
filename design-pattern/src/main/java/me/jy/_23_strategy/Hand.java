@@ -30,6 +30,6 @@ public class Hand {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Hand && this.value == Hand.class.cast(obj).getValue();
+        return obj instanceof Hand && this.value == ((Hand) obj).getValue();
     }
 }

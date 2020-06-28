@@ -63,7 +63,7 @@ public class EnumTests {
             }
         };
 
-        private int value;
+        private final int value;
 
         // 枚举类只能用private修饰符(默认)
         Gender(int value) {
