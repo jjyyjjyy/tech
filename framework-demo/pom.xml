@@ -19,6 +19,7 @@
         <module>spring-tx-demo</module>
         <module>mybatis-demo</module>
         <module>spring-cloud-discovery-demo</module>
+        <module>spring-cloud-stream-demo</module>
     </modules>
 
     <artifactId>framework-demo</artifactId>

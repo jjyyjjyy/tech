@@ -122,11 +122,40 @@ networks:
 
 === 创建数据库
 
-[source,sql]
+[source,clickhouse]
 ----
 create database if not exists <db_name> [ENGINE = <engine>]
 ----
 
 .数据库Engine
-* Ordinary
-* Dictionary
+* Ordinary: 默认引擎
+* Dictionary: 字典引擎
+* Memory: 内存引擎, 用于存放临时数据. 数据库重启后数据会被清除.
+* Lazy: 日志引擎.
+* MySQL: MySQL引擎, 自动拉取远端MySQL中的数据, 为它们创建MySQL表引擎的数据表.
+
+=== 创建表
+
+==== 定义表
+
+[source, clickhouse]
+----
+create table if not exists [<database.]<table_name> (
+    <name> [<type>] [DEFAULT|MATERIALIZED|ALIAS <expr>]
+) ENGINE = <engine>
+----
+
+==== 复制表结构
+
+[source, clickhouse]
+----
+create table if not exists [<database>.]<table_name> AS [<source_database>.]<source_table> [ENGINE = <engine>]
+----
+
+==== select创建
+
+[source, clickhouse]
+----
+create table if not exists [<database>.]<table_name> ENGINE = <engine> AS select * from <source_table>
+----
+
