@@ -80,3 +80,47 @@ junit.jupiter.execution.parallel.mode.default = concurrent
 junit.jupiter.execution.parallel.mode.classes.default = same_thread
 ----
 
+== Extension功能
+
+* 实例化测试类对象时后置处理
+* 测试类执行条件判断
+* 生命周期回调
+* 自定义参数解析
+* 异常处理
+
+== 注册Extension的方式
+
+=== 注解
+
+[source,java]
+----
+@ExtendWith(DemoExtension.class)
+class ExtensionTest {
+}
+----
+
+=== SPI
+
+. `/META-INF/services/org.junit.jupiter.api.extension.Extension` 文件里添加自定义的Extension类的全限定名.
+. `junit-platform.properties` 里添加 `junit.jupiter.extensions.autodetection.enabled=true` .
+
+=== @RegisterExtension注解
+
+* `@RegisterExtension` 注解static字段.
+* `@RegisterExtension` 注解实例字段.
+
+== Extension生命周期
+
+. BeforeAllCallback
+. @BeforeAll
+. TestInstancePostProcessor
+. BeforeEachCallback
+. @BeforeEach
+. BeforeTestExecutionCallback
+. @Test
+. AfterTestExecutionCallback
+. @AfterEach
+. AfterEachCallback
+. @AfterAll
+. AfterAllCallback
+

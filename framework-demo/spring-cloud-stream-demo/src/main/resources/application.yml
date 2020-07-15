@@ -6,6 +6,11 @@ spring:
   cloud:
     stream:
       bindings:
-        default:
-          consumer:
-            concurrency: 10
+        demoConsumerA-in-0:
+          destination: demo.topic
+          group: groupA
+        demoConsumerB-in-0:
+          destination: demo.topic
+          group: groupB
+      function:
+        definition: demoConsumerA;demoConsumerB
