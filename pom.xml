@@ -37,7 +37,7 @@
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>8.19</nimbus-jose-jwt.version>
         <netty.version>4.1.51.Final</netty.version>
-        <jol.version>0.10</jol.version>
+        <jol.version>0.11</jol.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
