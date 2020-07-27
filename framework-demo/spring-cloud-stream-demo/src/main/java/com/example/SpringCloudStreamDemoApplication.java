@@ -17,6 +17,10 @@ import java.util.function.Consumer;
 @SpringBootApplication
 public class SpringCloudStreamDemoApplication {
 
+    public static void main(String[] args) {
+        SpringApplication.run(SpringCloudStreamDemoApplication.class, args);
+    }
+
     @Bean
     public Consumer<String> demoConsumerA() {
         return s -> log.info("ConsumeA: {}", s);
@@ -24,7 +28,10 @@ public class SpringCloudStreamDemoApplication {
 
     @Bean
     public Consumer<String> demoConsumerB() {
-        return s -> log.info("ConsumeB: {}", s);
+        return s -> {
+            log.info("ConsumeB: {}", s);
+            throw new RuntimeException(s);
+        };
     }
 
     @Bean
@@ -33,9 +40,5 @@ public class SpringCloudStreamDemoApplication {
             TimeUnit.SECONDS.sleep(5L);
             streamBridge.send("demo.topic", "I am from streamBridge");
         };
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SpringCloudStreamDemoApplication.class, args);
     }
 }
