@@ -66,9 +66,10 @@ JUnit5提供了自己各个模块版本的pom包, 所以直接引入junit-bom来
 标有 `@Test/@RepeatedTest/@ParameterizedTest/@TestFactory/@TestTemplate` 注解的方法为测试方法, JUnit会在启动的时候执行这些方法. 测试方法访问修饰符可以为default.
 
 测试类就是包含了一系列测试方法的Java类, 测试类可以有三种表现形式:
-. 标准的Java Class.
-. 静态内部类.
-. 标有@Nested注解的成员内部类.
+
+* 标准的Java Class.
+* 静态内部类.
+* 标有@Nested注解的成员内部类.
 
 // TODO: 原因
 测试类只能有一个构造方法, 且不能为抽象类. 测试类访问修饰符可以为default.
@@ -101,6 +102,7 @@ class JUnitHelloWorld {
 @ParameterizedTest用来给测试方法注入预定义的一些参数去执行, 实现了测试参数与测试代码的职责分离.
 
 参数有三种注入形式:
+
 * `ArgumentsProvider` : 字面量和参数属于一对一的映射关系, JUnit预先提供了 `@xxxSource` 类注解来配和 `@ParameterizedTest` 使用.
 * `ArgumentsAccessor` : 测试方法里手动根据字面量和其索引来创建参数需要的对象.
 * `ParameterResolver` : 运行时动态注入参数需要的对象.
@@ -110,6 +112,7 @@ class JUnitHelloWorld {
 ===== @ValueSource
 
 `@ValueSource` 可以声明以下类型的字面量参数:
+
 * 基本数据类型: `byte/short/int/long/boolean/char/float/double`
 * `String`
 * `Class`
@@ -147,6 +150,7 @@ class JUnitHelloWorld {
 ===== @EmptySource
 
 `@EmptySource` 可以为参数创建一个空的值, 具体表现为:
+
 * String: 初始化为一个空的字符串.
 * 数组: 初始化为一个长度为0的数组.
 * 集合: 初始化为Collections.emptyXXX()方法返回的空集合, 如 `List` 参数会被初始化为 `Collections.emptyList()` 方法返回的对象.
@@ -316,6 +320,7 @@ aaa,3
 ===== 参数类型转换
 
 字面量和参数的类型转换分为隐式类型转换和显示类型转换.
+
 * 隐式类型转换: JUnit内置的转换机制.
 ** 字面量的转换: 支持的类型见文档: https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests-argument-conversion-implicit[, role="external", window="_blank"]
 ** 如果目标类型不在支持范围内, JUnit会尝试调用类型里的static方法/构造方法(方法有且仅有一个String参数)来创建实例.
@@ -351,6 +356,7 @@ aaa,3
 
 `ArgumentAccessor` 可以通过获取指定位置的参数来在方法内部获取参数值.
 有两种使用方式:
+
 * 将 `ArgumentAccessor` 作为参数, 然后在方法内部使用.
 * 实现 `ArgumentsAggregator` 接口, 使用 `@AggregateWith` 注解指定 `ArgumentsAggregator` 来实现参数类型转换.
 
@@ -398,26 +404,56 @@ aaa,3
 
 === @TestFactory
 
-== assert和assume
+`@TestFactory` 可以像 `@MethodSource` 一样以编程式的方式执行测试用例.
+定义一个方法, 返回Stream/Collection/Iterator/Iterable/数组类型, 泛型类型需要为 `DynamicTest` .
 
-* assert: *断言* 一个测试用例跑完后的结果与预期结果 *保持一致* .
-* assume: 测试用例执行前 *需要达到一定的条件* 才会执行, 如果条件没有达成, 则测试用例会被跳过.
+[source,java]
+.@TestFactory例子
+----
+    @TestFactory
+    Stream<DynamicTest> dynamicTestStream() {
+        return Stream.of("a", "b", "c")
+            .map(text -> DynamicTest.dynamicTest(text, () -> assertTrue(true)));
+    }
+----
 
-== per-class和per-method
+=== @TestMethodOrder
 
-* per-class: 同一个类里的每次测试方法执行都在同一个实例中执行.
-* per-method(默认): 每次测试方法执行都会创建一个新的实例.
+`@TestMethodOrder` 可以指定测试方法的执行顺序:
 
-per-class模式下 `@BeforeAll` 和 `@AfterAll` 都可以声明为实例方法或者接口里的default方法.
+* `Alphanumeric` : 按照测试方法名和参数列表字母排序执行.
+* `OrderAnnotation` : 按照测试方法上的 `@Order` 注解指定的顺序执行, 如果没有注解则默认为 `Integer.MAX_VALUE / 2`.
+* `Random` : 随机顺序执行.
 
-== concurrent配置
+=== @TestInstance
 
-=== 并行执行配置方法
+默认情况下, 每次执行测试方法时都会新创建测试类的一个实例, 等同于 `@TestInstance(PER_METHOD)`
 
-* `@Execution` 注解
-* `junit-platform.properties` 配置 `junit.jupiter.execution.parallel.enabled=true` .
+[source,java]
+----
+class JUnitApiTest {
 
-=== 测试类并行执行但同一类方法顺序执行
+    private int i;
+
+    @RepeatedTest(10)
+    void testPerMethod1() {
+        i++;
+        // 每次都会在一个新的实例中执行该方法, 所以i++均为1.
+        assertEquals(1, i);
+    }
+}
+----
+
+`@TestInstance(PER_CLASS)` 情况下, 测试类只会实例化一次.
+此外 `PER_CLASS 下 `@BeforeAll` 和 `@AfterAll` 注解可以用在类的实例方法或者接口的default方法上.
+
+=== @Execution
+
+`@Execution` 可以设置测试方法在同一个线程中执行, 还是使用ForkJoin线程池并行执行.
+
+除了使用 `@Execution` 注解, 还可以在 `junit-platform.properties` 中全局配置.
+
+==== 测试类并行执行但同一类方法顺序执行
 
 [source,properties]
 ----
@@ -426,7 +462,7 @@ junit.jupiter.execution.parallel.mode.default = same_thread
 junit.jupiter.execution.parallel.mode.classes.default = concurrent
 ----
 
-=== 测试类顺序执行但同一类方法并行执行
+==== 测试类顺序执行但同一类方法并行执行
 
 [source,properties]
 ----
@@ -435,17 +471,36 @@ junit.jupiter.execution.parallel.mode.default = concurrent
 junit.jupiter.execution.parallel.mode.classes.default = same_thread
 ----
 
-== Extension功能
+=== 条件执行
 
-* 实例化测试类对象时后置处理
-* 测试类执行条件判断
-* 生命周期回调
-* 自定义参数解析
-* 异常处理
+可以指定测试方法在特定环境下才执行.
 
-== 注册Extension的方式
+[source,java]
+.ExecutionCondition例子
+----
+    @Test
+    @EnabledOnJre(JAVA_8)
+    void onlyOnJava8() {
+    // Java8 才执行
+    }
+----
 
-=== 注解
+本质上是执行了 `ExecutionCondition::evaluateExecutionCondition` 方法来判断是否执行.
+
+== Extension机制
+
+JUnit 提供了扩展接口, 来在测试方法执行前后执行一些自定义的回调.
+Extension的功能主要包括:
+
+* 对实例化测试类对象时后置处理.
+* 测试类执行条件判断.
+* 生命周期回调.
+* 自定义参数解析.
+* 异常处理.
+
+=== 注册Extension的方式
+
+==== 注解
 
 [source,java]
 ----
@@ -454,17 +509,17 @@ class ExtensionTest {
 }
 ----
 
-=== SPI
+==== SPI
 
 . `/META-INF/services/org.junit.jupiter.api.extension.Extension` 文件里添加自定义的Extension类的全限定名.
 . `junit-platform.properties` 里添加 `junit.jupiter.extensions.autodetection.enabled=true` .
 
-=== @RegisterExtension注解
+==== @RegisterExtension注解
 
 * `@RegisterExtension` 注解static字段.
 * `@RegisterExtension` 注解实例字段.
 
-== Extension生命周期
+=== Extension的生命周期
 
 . BeforeAllCallback
 . @BeforeAll
