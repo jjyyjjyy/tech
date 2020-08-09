@@ -20,6 +20,7 @@
         <module>mybatis-demo</module>
         <module>spring-cloud-discovery-demo</module>
         <module>spring-cloud-stream-demo</module>
+        <module>spring-ioc-demo</module>
     </modules>
 
     <artifactId>framework-demo</artifactId>
