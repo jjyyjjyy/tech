@@ -29,7 +29,7 @@
         <spring-cloud-alibaba.version>2.2.1.RELEASE</spring-cloud-alibaba.version>
         <project-reactor.version>Dysprosium-SR11</project-reactor.version>
         <mybatis.version>3.5.5</mybatis.version>
-        <mybatis-plus.version>3.3.2</mybatis-plus.version>
+        <mybatis-plus.version>3.4.0</mybatis-plus.version>
         <guava.version>29.0-jre</guava.version>
         <algs4.version>1.0.4</algs4.version>
         <jmh.version>1.25</jmh.version>
