@@ -388,6 +388,49 @@ aaa,3
     }
 ----
 
+==== ParameterResolver
+
+`JUnit5` 允许使用外部扩展的方式来注入参数值.
+
+[source,java]
+.RandomInt.java
+----
+    @Target(ElementType.PARAMETER)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @Documented
+    public @interface RandomInt {
+    }
+----
+
+[source,java]
+.DemoExtension.java
+----
+public class DemoExtension implements ParameterResolver {
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return parameterContext.isAnnotated(RandomInt.class);
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return ThreadLocalRandom.current().nextInt();
+    }
+}
+----
+
+[source,java]
+.DemoTest.java
+----
+@ExtendWith(DemoExtension.class)
+public class DemoTest {
+    @Test
+    void testRandomInt(@RandomInt int i) {
+        // i被设置成随机数
+    }
+}
+----
+
 === @RepeatedTest
 
 `@RepeatedTest` 可以让JUnit重复执行测试方法.

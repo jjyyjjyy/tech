@@ -1,0 +1,15 @@
+= Spring Initializr
+:icons: font
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+
+== Initializr C/S 交互过程
+
+plantuml::charts/initializr/api.puml[format=svg,scale=0.5]
+
+== 项目创建过程
+
+plantuml::charts/initializr/project-creation.puml[format=svg,scale=0.5]
+
