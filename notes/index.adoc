@@ -23,8 +23,8 @@ image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 .CS
 * link:Algorithm.html[Algorithm]
 * link:Network.html[Computer Network]
+* link:OperatingSystem.html[Operating System]
 * link:Assembly.html[Assembly]
-* link:ComputerScience.html[Computer Science]
 
 .Ops
 * link:Ubuntu.html[Ubuntu]
@@ -45,6 +45,5 @@ image::http://resources-1252259164.file.myqcloud.com/images/kongfu.jpeg[]
 * link:Vue.html[Vue]
 * link:CSS.html[CSS]
 * link:ES6.html[ES6]
-* link:rrweb.html[RRweb]
 * link:JetBrains.html[JetBrains IDE tips]
 * link:Sketch.html[Sketches]
