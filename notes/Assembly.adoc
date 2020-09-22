@@ -83,9 +83,9 @@ demo ends
 end
 ----
 
+[#bx]
 === bx
 
-[bx]
 表示将bx寄存器中的值作为一个偏移地址
 `mov ax,[bx]` : *ds:bx* 中的值送入到ax中
 

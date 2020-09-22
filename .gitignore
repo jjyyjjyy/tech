@@ -126,3 +126,4 @@ Desktop.ini
 .eslintcache
 
 .vagrant
+!lib/
