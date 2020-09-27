@@ -12,3 +12,23 @@ image::http://assets.processon.com/chart_image/5f6c331cf346fb166d09132d.png[]
 == Tomcat启动过程
 
 plantuml::charts/tomcat/TomcatStartup.puml[format=svg,scale=0.5]
+
+== 组件职责
+
+=== Server
+
+=== Service
+
+=== Connector
+
+==== Endpoint
+
+=== Container
+
+==== Engine
+
+==== Host
+
+==== Context
+
+==== Wrapper

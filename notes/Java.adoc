@@ -355,8 +355,7 @@ start方法不能重复调用.
 
 NOTE: 注意事项:
 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
-线程内异常无法在外层try-catch, 只能设置Thread的UncaughtExceptionHandler
-wait()释放对象锁,sleep()不释放.
+线程内异常无法在外层try-catch, 只能设置Thread的UncaughtExceptionHandler wait()释放对象锁,sleep()不释放.
 
 === volatile
 
@@ -430,7 +429,7 @@ Monitor锁对象组成:
 
 ===== 偏向锁
 
-对象初始化时, MarkWord最后三位设置为 stem:[101], 第一次竞争锁时线程id存储在MarkWord的前54位里. 下一次该线程竞争锁时可以直接进入代码同步块.
+对象初始化时, MarkWord最后三位设置为 stem:[101], 第一次竞争锁时线程id存储在MarkWord的前54位里, 下一次该线程竞争锁时可以直接进入代码同步块.
 
 * `-XX:BiasedLockingStartupDelay=0` 设置偏向锁不延迟打开.
 
@@ -564,7 +563,9 @@ include::../basic-knowledge/src/main/java/me/jy/lang/thread/ShutdownDemo.java[ta
 * ReentrantLock支持多个条件变量.
 
 ==== Semaphore
+
 ==== CountDownLatch
+
 ==== CyclicBarrier
 
 === CompletableFuture
@@ -636,20 +637,33 @@ Stream中使用Stage的概念来描述一个完整的操作, 并用某种实例�
 
 == NIO
 
+=== Channel
+
+Channel代表程序和某一个文件描述符的连接, 可以是文件(FileChannel), 或者是套接字(DatagramChannel/SocketChannel/ServerSocketChannel).
+
+==== Channel和Stream的区别
+
+* Stream只能是单向的, 分为InputStream和OutputStream, 而Channel可以使双向的.
+* Stream的read和write是阻塞的, 而Channel支持非阻塞模式.
+
 === Buffer
 
 Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属性/方法:
 
-* capacity:
-容器长度
-* limit:
-能够写入的长度
-* position:
-下一个被写入的位置
-* flip(): 将position赋值给limit, 再将position设置为0, 重置mark
-* rewind(): 将position设置为0, 重置mark
-* mark(): 将position赋值给mark
-* reset(): 将mark赋值给position
+* capacity: Buffer总的容量.
+* position: 当前可以写入的位置.
+* limit: 能够写入的最后一个位置.
+* mark: 记录上一次读写开始的位置(position).
+* flip(): 将position赋值给limit, 再将position设置为0, 重置mark, 用于读取Buffer内容.
+* rewind(): 将position设置为0, 重置mark, 用于重新读取Buffer内容, 如读取同一个Buffer然后写入多个Channel时.
+* mark(): 将position赋值给mark, 记录一下当前position.
+* reset(): 重置position为上一次的position.
+* clear(): 重置所有变量: position=0, mark=-1, limit=capacity.
+* compact(): 将position和limit中间的数据拷贝到Buffer开头, 然后将position指向这段数据的下一个位置.
+
+=== Selector
+
+Selector负责收集通道的事件.
 
 == 多处理器编程
 
@@ -663,8 +677,8 @@ Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属
 如果 stem:[a_1->b_0],则 stem:[I_A->I_B].多个不存在 stem:[->]的关系称为 *并发的*.
 
 * *互斥*: 对于线程A,B, 以及整数j,k, 都有 stem:[CS_A^j->CS_B^i]或者stem:[CS_B^j->CS_A^i].
-* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁. 如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
-* *无饥饿*: 每个尝试获得锁的线程最终都能成功. (无饥饿意味着无死锁)
+* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁, 如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
+* *无饥饿*: 每个尝试获得锁的线程最终都能成功.(无饥饿意味着无死锁)
 
 === 互斥
 
@@ -1160,7 +1174,7 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 
 * Minor GC/Young GC: 新生代的收集.
 * Major GC/Old GC: 老年代的收集.(CMS)
-* Mixed GC: 收集整个新生代和部分老年代的过程. (G1)
+* Mixed GC: 收集整个新生代和部分老年代的过程.(G1)
 * Full GC: 整个Java堆和方法区的收集.
 
 === 垃圾收集器
@@ -1172,10 +1186,10 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 堆内存被划分为 *新生代* (Young Generation)和 *老年代* (Old Generation或Tenured Generation), 默认空间占比 1:2. 新生代又被分为一个Eden区和两个Survivor区.
 默认空间占比 8:1:1.
 
-* 对象首先在新生代Eden区分配, *Eden区填满时* , 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW** (stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代. 这一过程称为 *Minor GC* . 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
+* 对象首先在新生代Eden区分配, *Eden区填满时* , 垃圾收集器会暂停所有应用线程回收新生代(垃圾收集时所有应用线程停止运行所产生的停顿称为 **STW** (stop-the-world)).此时不再使用的对象会被回收, 仍在使用的对象会移动到Survivor区或老年代, 这一过程称为 *Minor GC* . 由于所有的存活对象都被移走, 此时相当于在新生代做了一次整理.
 * 单独回收老年代的过程称为 *Major GC* . (CMS)
 * 回收新生代和一部分老年代的过程称为 *Mixed GC* .(G1)
-* 对象不断移动到老年代, 等到 *老年代空间占满* , JVM会回收整个堆. 这一过程称为 *Full GC* .
+* 对象不断移动到老年代, 等到 *老年代空间占满* , JVM会回收整个堆, 这一过程称为 *Full GC* .
 
 ==== Serial
 
@@ -1183,7 +1197,7 @@ _Minor GC_ 之前, 虚拟机会先检查老年代最大可用的连续空间是�
 Serial垃圾收集器使用 *单线程* 回收内存, 垃圾回收时会暂停所有的应用线程.
 使用 `-XX:+UseSerialGC` 启用Serial垃圾收集器.
 
-* 新生代 `Serial` 使用复制算法. 暂停所有用户线程.
+* 新生代 `Serial` 使用复制算法, GC时会暂停所有用户线程.
 * 老年代 `Serial Old` 使用标记-整理算法, 暂停所有线程.
 
 ==== ParNew
@@ -1218,7 +1232,7 @@ Parallel收集器关注吞吐量.
 
 WARNING: JDK14被移除.
 
-CMS使用多线程并发回收老年代内存. 使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
+CMS使用多线程并发回收老年代内存, 使用 `-XX:+UseConcMarkSweepGC` 启用CMS收集器.
 
 .CMS回收流程
 . 初始标记: 标记一下 `GC Roots` 对象. `单线程` `STW`
