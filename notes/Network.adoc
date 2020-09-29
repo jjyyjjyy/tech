@@ -247,6 +247,12 @@ TIME-WAIT 状态存在的意义?::
 为什么是两个MSL?::
 * 1个MSL保证 `ACK` 包能发送到对方.
 * 1个MSL保证对方如果没有收到 `ACK` 包, 那么可以收到对方重传的 `FIN` 包.
+发送方对一个ACK应该等待多长时间?::
+TODO
+如果ACK丢失改怎么办?::
+TODO
+如果分组被接收到了, 但是里面有错该怎么办?::
+TODO
 
 === TCP timestamp option header
 
@@ -282,6 +288,10 @@ struct linger {
 * `l_onoff` 为非0时表示启用该特性.
 ** `l_linger` 为0, close函数会立即返回，不执行正常的四次挥手, 操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
 ** `l_linger` 为非0, 那么此时close函数在l_linger时间内发送数据, 之后操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.
+
+=== OOB_INLINE
+
+=== TCP_NO_DELAY
 
 == 网络查看命令行工具
 

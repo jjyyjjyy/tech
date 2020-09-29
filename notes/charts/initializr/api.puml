@@ -5,7 +5,7 @@
 autonumber
 
 Client -> Server: GET /metadata/client
-Server -> Server: 合并配置文件和SpringBoot官方最新依赖版本信息
+Server -> Server: 获取配置信息
 Server -> Client
 Client -> Server: POST /starter.zip
 Server -> Server: 根据请求参数创建临时项目目录及文件

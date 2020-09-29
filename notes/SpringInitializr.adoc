@@ -5,11 +5,55 @@
 :sectnums:
 :stem:
 
-== Initializr C/S 交互过程
+[.lead]
+Spring Initializr提供了生成JVM平台代码的类库.
+
+== 项目地址
+
+* https://github.com/spring-io/initializr[initializr, role="external", window="_blank"] : 核心类库
+* https://github.com/spring-io/start.spring.io[start.spring.io, role="external", window="_blank"] : 前端和服务端代码
+
+== 接口交互过程
 
 plantuml::charts/initializr/api.puml[format=svg,scale=0.5]
+
+== 核心类库功能
+
+=== ProjectRequest
+
+* 前端的项目创建请求参数对象.
+
+=== ProjectGenerationController
+
+* 将请求参数转换成ProjectRequest对象.
+* 提供了生成项目压缩包或者build文件(pom.xml/build.gradle)的接口.
+
+=== InitializrMetadata
+
+* 服务端的application.yml配置信息对象.
+
+=== ProjectDescription
+
+* 待创建的项目配置对象.
+
+=== ProjectRequestToDescriptionConverter
+
+* 将ProjectRequest请求信息和InitializrMetadata配置信息合并, 生成待用的ProjectDescription对象.
+
+=== ProjectGenerator
+
+创建项目的主流程类
+
+* 每次接收到创建请求, 就会创建一个新的ApplicationContext用于生成项目.
+* 注册创建项目需要用到的bean到ApplicationContext里, 如ProjectDescription/InitializrMetadata对象等.
+* 加载spring.factories文件里的ProjectGenerationConfiguration注解类.
+* 使用ProjectAssetGenerator来创建项目文件.
+
+=== ProjectAssetGenerator
+
+* 创建一个项目临时文件夹.
+* 获取所有的ProjectContributor, 调用contribute方法修改项目.
 
 == 项目创建过程
 
 plantuml::charts/initializr/project-creation.puml[format=svg,scale=0.5]
-
