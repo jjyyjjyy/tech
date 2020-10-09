@@ -38,7 +38,7 @@
         <nimbus-jose-jwt.version>9.0</nimbus-jose-jwt.version>
         <netty.version>4.1.51.Final</netty.version>
         <jol.version>0.13</jol.version>
-        <fastjson.version>1.2.73</fastjson.version>
+        <fastjson.version>1.2.74</fastjson.version>
         <cglib.versin>3.3.0</cglib.versin>
         <mapstruct.version>1.3.1.Final</mapstruct.version>
 
