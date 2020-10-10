@@ -1,0 +1,18 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+autonumber
+
+Client -> Server : GET /index.html HTTP/1.1
+Server -> Client :
+note right
+HTTP/1.1 200 OK
+Set-Cookie: sessionId=12345;
+end note
+Client -> Server
+note top
+GET /index.html HTTP/1.1
+Cookie: sessionId=12345;
+end note
+@enduml
