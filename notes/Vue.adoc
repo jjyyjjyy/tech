@@ -81,10 +81,13 @@ v2.6.11
 [#vue-patch]
 == patch
 
-NOTE: *判断两个VNode是否相同:*
-① key相同.
-② 如果是文本节点, 则文本内容相同.
-③ 如果是input标签, 则type相同.
+[NOTE]
+====
+.判断两个VNode是否相同:
+. key相同.
+. 如果是文本节点, 则文本内容相同.
+. 如果是input标签, 则type相同.
+====
 
 === patchVNode
 

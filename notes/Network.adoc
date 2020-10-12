@@ -24,7 +24,7 @@
  路由器通过路由表来确定用于转发数据包的最佳路径.
  当网络向不同IP网络中的设备发送数据包时, 数据包会先被转发到默认网关.
 
-== PDU
+== TCP/IP协议
 
 |===
 | 协议 | PDU | 英文名 | 标识
@@ -83,7 +83,7 @@
 * RARP: 0x80
 * Q标签帧: 0x8100
 
-超度超过1500时为Ethernet2协议, 否则为802.3协议.
+*MTU*: 以太网帧大小范围为64~1518字节, 首部占14字节, CRC校验和占4字节, 所以数据部分大小范围为46~1500字节, 最大传输限制称为 _MTU_ .
 
 === ARP帧格式
 
@@ -216,7 +216,7 @@ IP数据包最大为65535字节, 当一个IP数据包大于以太网的MTU时, I
 
 === MSS
 
-TCP MSS = MTU - IP header头大小 - TCP 头大小 (stem:[1500-20-20=1460])
+TCP数据段最大值 = MTU - IP头大小 - TCP头大小 (stem:[1500-20-20=1460])
 
 === 端口号
 
@@ -226,6 +226,18 @@ TCP MSS = MTU - IP header头大小 - TCP 头大小 (stem:[1500-20-20=1460])
 * 已登记的端口（1024~49151）
 * 临时端口号（49152~65535), 运行 `cat /proc/sys/net/ipv4/ip_local_port_range` 命令可以查看机器上可用的端口范围.
 
+[TIP]
+====
+* 查看使用端口号的进程id:
+** sudo netstat -ltpn | grep :<PORT>
+** sudo lsof -n -P -i:<PORT>
+
+* 查看进程使用的端口号:
+** sudo netstat -atpn | grep <PID>
+** sudo lsof -n -P -p <PID> | grep TCP
+
+====
+
 === 三次握手
 
 . [C]客户端发送SYN包. `SYN-SENT`
@@ -234,8 +246,11 @@ TCP MSS = MTU - IP header头大小 - TCP 头大小 (stem:[1500-20-20=1460])
 . [C]客户端接收到服务端的SYN包加一, 作为ACK包发送给服务端. `ESTABLISHED`
 .. 服务端收到客户端的ACK包后会将这个连接信息移动到 _全连接队列_ `(Accept队列)` . 此时socket处于 `ESTABLISHED` 状态,每次调用 `accept` 函数会移除队列头的连接. 如果队列为空, 则会阻塞 `accept` 函数.
 
-NOTE: * 如果发送SYN包没有收到ACK, 则会经过 stem:[x] 秒后重传, 如果依然没有收到则会经过 stem:[2x] 秒后重传, 以此类推, 可以通过系统变量 `net.ipv4.tcp_syn_retries` 设置最大SYN包重传次数, `net.ipv4.tcp_synack_retries` 设置最大SYN+ACK包重传次数.
+[NOTE]
+====
+* 如果发送SYN包没有收到ACK, 则会经过 stem:[x] 秒后重传, 如果依然没有收到则会经过 stem:[2x] 秒后重传, 以此类推, 可以通过系统变量 `net.ipv4.tcp_syn_retries` 设置最大SYN包重传次数, `net.ipv4.tcp_synack_retries` 设置最大SYN+ACK包重传次数.
 * 当服务端收到SYN包后, 会检查系统参数 `net.ipv4.tcp_max_syn_backlog` , 如果处于 `SYN_RCVD` 状态的连接数超过了这一阈值, 会拒绝该连接.
+====
 
 === 四次挥手
 
