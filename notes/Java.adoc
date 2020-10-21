@@ -842,9 +842,9 @@ HotSpot内置多种编译器:
 
 ==== 获取类加载器的方法
 
-* `Class::getClassLoader()`
-* `Thread.currentThread().getContextClassLoader()`
-* `ClassLoader.getSystemClassLoader()`
+* 获取某一个类所属的类加载器: `Class::getClassLoader()`
+* 获取APP类加载器: `ClassLoader.getSystemClassLoader()`
+* 获取当前线程上下文使用的类加载器: `Thread.currentThread().getContextClassLoader()`
 
 ==== BootstrapClassLoader
 
@@ -883,6 +883,10 @@ HotSpot内置多种编译器:
 .优点
 * 避免类的重复加载.
 * 防止jdk核心类的篡改.
+
+.打破双亲委派机制的案例:
+* DriverManager属于JDK下的类, 但从线程上下文取到去加载数据库厂商的JDBC Driver.
+* Tomcat使用WebAppClassLoader自己先尝试加载类, 加载不到再去找父类加载.
 
 === 类加载的过程
 
@@ -998,7 +1002,11 @@ include::../jvm/src/test/java/oom/OOMDemo.java[tag=StackOOM]
 
 查看系统运行的所有Java进程的pid
 
-`jps -l`
+.jps选项:
+* `-q` 只打印JVM进程id.
+* `-m` 打印main方法执行参数.
+* `-l` 打印启动类全限定名或者启动jar包的文件路径.
+* `-v` 打印JVM启动参数.
 
 ==== jinfo
 
@@ -1017,21 +1025,32 @@ include::../jvm/src/test/java/oom/OOMDemo.java[tag=StackOOM]
 
 ==== jstat
 
-查看指定进程的内存概况. 如: jstat -gcutil 1 1000 每隔1秒输出1进程的概况
+查看指定进程的内存使用及GC概况. 如: `jstat -gcutil 6451 1000` 每隔1秒输出进程6451的概况
 
-`jstat [option] <pid> [interval]`
+`jstat [option] <pid> [interval] [times]`
 
 .各列含义
-* `S0` 第一个survivor区容量
-* `S1` 第二个survivor区容量
-* `E` Eden区容量
-* `O` Old区容量
-* `M` Metaspace区容量
+* `S0` 第一个survivor区容量使用率
+* `S1` 第二个survivor区容量使用率
+* `E` Eden区容量使用率
+* `O` Old区容量使用率
+* `M` Metaspace区容量使用率
 * `YGC` young gc次数
 * `YGCT` young gc总耗时
 * `FGC` full gc次数
 * `FGCT` full gc总耗时
 * `GCT` gc总耗时
+
+==== jmap
+
+查看指定进程的堆内存使用情况.
+
+`jmap [option] <pid>`
+
+.jmap选项:
+* `-heap` 查看堆内存的配置和使用信息.
+* `-histo` 查看各个类实例的数量和占用的内存大小.
+* `-dump:format=b;file=xxx.hprof` dump堆内存.
 
 ==== javap
 
