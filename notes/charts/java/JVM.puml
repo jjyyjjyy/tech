@@ -21,10 +21,12 @@
 ***** 指针碰撞
 ***** 空闲列表
 **** OOM类型
-***** java.lang.OutOfMemoryError: Java heap space
-***** java.lang.OutOfMemoryError: unable to create new native thread
-***** java.lang.OutOfMemoryError: Metaspace
-***** java.lang.OutOfMemoryError: Direct buffer memory
+***** Java heap space
+***** GC overhead limit exceeded
+***** Requested array size exceeds VM limit
+***** Metaspace
+***** unable to create new native thread
+***** Direct buffer memory
 *** 内存回收
 **** 引用分类
 ***** 强引用: =赋值的引用对象.
