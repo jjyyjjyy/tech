@@ -24,7 +24,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+        <spring-boot.version>2.3.5.RELEASE</spring-boot.version>
         <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
         <spring-cloud-alibaba.version>2.2.3.RELEASE</spring-cloud-alibaba.version>
         <project-reactor.version>Dysprosium-SR12</project-reactor.version>
