@@ -11,20 +11,21 @@
 :tabsize: 4
 :docinfo: shared
 
-== 系统配置:
+== 安装
+
+=== 系统配置:
 
 [source,bash]
 ----
-systemctl disable firewalld
+# 关闭防火墙
 systemctl stop firewalld
-sudo vim /etc/sysconfig/selinux -> SELINUX=disabled
+systemctl disable firewalld
+# 关闭selinux
+sudo sed -i 's/enforcing/disabled/' /etc/selinux/config
 # 关闭交换分区
-sudo vim /etc/fstab -> 注释/swapfile行
+sudo sed -ri 's/.*swap.*/#&/' /etc/fstab
 sudo mount -a
-sudo swapoff -a
 ----
-
-== 安装
 
 === 使用kubeadm安装
 
@@ -32,25 +33,23 @@ sudo swapoff -a
 ----
 include::sh/k8s-install.sh[]
 
-sudo kubeadm init --kubernetes-version=`kubeadm version -o short` --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
-# 安装成功后,创建kubectl配置文件
+# master
+sudo kubeadm init --image-repository="registry.cn-hangzhou.aliyuncs.com/google_containers" --kubernetes-version=$(kubeadm version -o short) --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # network插件
-kubectl apply -f https://cloud.weave.works/k8s/v1.10/net.yaml
-# bash补全
-source <(kubectl completion bash)
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
-# kube单机 (Optional)
-# kubectl taint nodes --all node-role.kubernetes.io/master-
-
-# check finally
+# check
 kubectl get nodes
 kubectl get pods --all-namespaces
 
 # Trouble shooting:
 # kubectl -n kube-system describe TYPE NAME
+
+# 创建join token
+# kubeadm token create --print-join-command
 
 # 清除安装:
 # sudo kubeadm reset -f
@@ -81,9 +80,15 @@ include::k8s/vagrant/init.sh[]
 ----
 
 [source,bash]
-.kubeadm-init.sh
 ----
-include::k8s/vagrant/kubeadm-init.sh[]
+# master节点执行
+sudo kubeadm init --image-repository="registry.cn-hangzhou.aliyuncs.com/google_containers" --apiserver-advertise-address="192.168.124.110" --kubernetes-version=$(kubeadm version -o short) --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ----
 
 == 插件安装
@@ -127,8 +132,9 @@ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashb
 openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
 kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
 kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
-# 安装metrics-server监控
-helm install metrics-server stable/metrics-server --namespace kubernetes-dashboard --set args={"--kubelet-insecure-tls=true,--kubelet-preferred-address-types=InternalIP\,Hostname\,ExternalIP"} --set image.repository=registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64
+
+# 获取登录token
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
 ----
 
 == kubernetes各个组件功能

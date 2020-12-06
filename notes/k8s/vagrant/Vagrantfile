@@ -1,11 +1,11 @@
 Vagrant.configure("2") do |config|
 
-    config.vm.box = "ubuntu/bionic64"
+    config.vm.box = "ubuntu/focal64"
     config.vm.box_check_update = false
 
     config.vm.define "k8s-master" do |master|
         master.vm.hostname = "k8s-master"
-        config.vm.provider "virtualbox" do |vb|
+        master.vm.provider "virtualbox" do |vb|
             vb.name = "k8s-master"
             vb.memory = "4096"
             vb.cpus = 2
@@ -16,16 +16,16 @@ Vagrant.configure("2") do |config|
     end
 
     (1..3).each {|i|
-        config.vm.define "k8s-node#{i}" do |box|
-            box.vm.hostname = "k8s-node#{i}"
-            config.vm.provider "virtualbox" do |vb|
+        config.vm.define "k8s-node#{i}" do |node|
+            node.vm.hostname = "k8s-node#{i}"
+            node.vm.provider "virtualbox" do |vb|
                 vb.name = "k8s-node#{i}"
-                vb.memory = "2048"
-                vb.cpus = 1
+                vb.memory = "4096"
+                vb.cpus = 2
                 vb.gui = false
             end
-            box.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.11#{i}"
-            box.vm.provision "shell", path: "./init.sh"
+            node.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.11#{i}"
+            node.vm.provision "shell", path: "./init.sh"
         end
     }
 
