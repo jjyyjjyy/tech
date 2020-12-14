@@ -1,0 +1,38 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+hide empty description
+
+[*] --> NEW
+NEW --> RUNNING : start
+RUNNING -up-> BLOCKED : synchronized争取锁
+BLOCKED --> RUNNING : synchronized获取到锁
+RUNNING -right-> WAITING
+note on link
+  * Object.wait()
+  * Thread.join()
+  * LockSupport.lock()
+end note
+WAITING --> RUNNING
+note on link
+  * Object.notify()
+  * Object.notifyAll()
+  * LockSupport.unpark(Thread)
+end note
+RUNNING --> TERMINATED : run方法运行结束
+RUNNING --> TIMED_WAITING
+note on link
+  * Object.wait(long)
+  * Thread.join(long)
+  * Thread.sleep(long)
+  * LockSupport.lock(long)
+end note
+TIMED_WAITING --> RUNNING
+note on link
+  * Object.notify()
+  * Object.notifyAll()
+  * LockSupport.unpark(Thread)
+end note
+TERMINATED --> [*]
+
+@enduml

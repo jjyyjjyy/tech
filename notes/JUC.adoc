@@ -13,24 +13,133 @@
 :docinfo: shared
 
 .Java并发思维导图
-plantuml::charts/java/JUC.puml[format=svg,scale=0.5]
+plantuml::charts/java/JUC.puml[format=svg]
 
-== 创建线程的方式
+== 多线程基础
 
-* 继承Thread然后实例化这个对象.
-* 创建Runnable对象, 使用 `new Thread(Runnable)` 构造函数创建线程对象.
-* 创建Callable对象, 使用 `new FutureTask(Callable)` 构造函数创建线程对象.
+=== 创建线程的方式
 
-== 线程状态
+==== 继承Thread
+
+[source,java]
+----
+public class ThreadA extends Thread {
+    @Override
+    public void run() {
+    }
+    public static void main(String[] args){
+      new ThreadA().start();
+    }
+}
+----
+
+==== 实现Runnable接口, 创建Thread对象
+
+[source,java]
+----
+public class ThreadB implements Runnable {
+    @Override
+    public void run() {
+    }
+    public static void main(String[] args){
+      new Thread(new ThreadB()).start();
+    }
+}
+----
+
+==== 实现Callable接口, 创建FutureTask对象
+
+[source,java]
+----
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
+public class ThreadC implements Callable<String> {
+    @Override
+    public String call() {
+        return "Callable";
+    }
+    public static void main(String[] args) throws Exception {
+      FutureTask<String> task = new FutureTask<>(new ThreadC());
+      task.run();
+      task.get();
+    }
+}
+----
+
+=== 关闭线程的方式
+
+==== 设置关闭标志位
+
+维护一个成员变量标识当前线程是否处于运行状态, 如果当前状态为停止, 则结束任务.
+
+[source,java]
+----
+public class ThreadStopDemo1 extends Thread {
+
+    private volatile boolean stopped = false;
+
+    @Override
+    public void run() {
+        while (!stopped){
+            // working here. // <1>
+        }
+    }
+
+    public void stopWork() {
+        this.stopped = true;
+    }
+}
+----
+<1> 如果内部一直busy或阻塞住, 那么就会无法响应外部的停止信号.
+
+==== 中断线程
+
+[source,java]
+----
+public class ThreadStopDemo2 extends Thread {
+
+    @Override
+    public void run() {
+        try {
+            Thread.sleep(10000L);
+        } catch (InterruptedException e) {
+            // stop working. // <1>
+        }
+    }
+
+    public static void main(String[] args) {
+        Thread thread = new ThreadStopDemo2();
+        thread.start();
+        thread.interrupt(); // <2>
+    }
+}
+----
+<1> 通过catch住异常来中断当前的TIME_WAITING状态.
+<2> 唤醒指定线程.
+
+[NOTE]
+====
+只有方法签名里会抛出InterruptedException的方法才会抛出异常:
+
+* [Thread] `public static native void sleep(long millis) throws InterruptedException;`
+* [Thread] `public final void join() throws InterruptedException`
+* [Object] `public final void wait() throws InterruptedException`
+====
+
+=== 线程状态
 
 * NEW
 * RUNNABLE
-* BLOCKED
 * WAITING
 * TIMED_WAITING
+* BLOCKED
 * TERMINATED
 
-== Thread方法
+.线程状态流转图
+plantuml::charts/java/ThreadState.puml[format=svg]
+
+== 线程方法
 
 == run
 

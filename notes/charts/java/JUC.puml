@@ -7,10 +7,21 @@
 
 left
 
-** 多线程基础
-*** 开启线程
-*** 关闭线程
+** 1. 多线程基础
+*** 创建线程的方式
+**** 继承Thread
+**** 实现Runnable接口, 创建Thread对象
+**** 实现Callable接口, 创建FutureTask对象
+*** 关闭线程的方式
+**** 设置关闭标志位
+**** 中断线程
 *** 线程状态流转
+**** NEW
+**** RUNNABLE
+**** WAITING
+**** TIMED_WAITING
+**** BLOCKED
+**** TERMINATED
 *** volatile
 *** synchronized
 *** JMM

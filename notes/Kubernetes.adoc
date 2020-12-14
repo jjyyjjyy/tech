@@ -298,26 +298,16 @@ kubectl rollout undo
 
 * Deployment 自动调度
 * NodeSelector 定向调度
-
- 给node打标签: kubectl label node <node-name> <label-key>=<label-value>
- yml配置label: spec.template.spec.nodeSelector
-
-* NodeAffinity Node亲和力调度
-** RequiredDuringSchedulingIgnoredDuringExecution
-
- 必须满足指定的规则才可以调度Pod到Node上
-
-** PreferredDuringSchedulingIgnoredDuringExecution
-
- 优先满足指定规则即可
-
- spec.affinity.nodeAffinity 有一个条件满足即可, spec.affinity..nodeSelectorTerms必须满足所有条件
-
-* PodAffinity Pod亲和力调度
-* Taint & toleration
-
- kubectl taint nodes <node-name> k=v:NoSchedule
-
+** 给node打标签: `kubectl label node <node-name> <label-key>=<label-value>`
+** yml配置label: `spec.template.spec.nodeSelector`
+* NodeAffinity: Node亲和力调度
+** RequiredDuringSchedulingIgnoredDuringExecution: 必须满足指定的规则才可以调度Pod到Node上
+** PreferredDuringSchedulingIgnoredDuringExecution: 优先满足指定规则即可
+* PodAffinity: Pod亲和力调度
+* Taint: `kubectl taint node <node-name> <label-key>=<label-value>:<NoSchedule|PreferNoSchedule|NoExecute>`
+** NoSchedule: 该节点不会参与调度
+** PreferNoSchedule: 该节点尽量不会参与调度.
+** NoExecute: 该节点不会参与调度, 并且会驱逐该节点上已有的pod.
 * DaemonSet 每个node调度1个Pod
 * Job 批处理调度
 * Cronjob 定时任务

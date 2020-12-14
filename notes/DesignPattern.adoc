@@ -92,7 +92,7 @@
 * 结构型: 描述了对象的依赖方法.
 * 行为型: 描述一组对象协作来完成单个对象无法完成的任务.
 
-plantuml::charts/design-pattern/DesignPattern.puml[format=svg,scale=0.5]
+plantuml::charts/design-pattern/DesignPattern.puml[format=svg]
 
 == 创建型模式
 

@@ -13,7 +13,7 @@
 :docinfo: shared
 
 .JVM知识点思维导图
-plantuml::charts/java/JVM.puml[format=svg,scale=0.5]
+plantuml::charts/java/JVM.puml[format=svg]
 
 == JVM概述
 
