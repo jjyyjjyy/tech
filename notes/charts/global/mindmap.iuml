@@ -1,0 +1,12 @@
+@startuml
+
+<style>
+  mindmapDiagram {
+    node {
+      BackgroundColor #FFF
+      LineColor #000
+    }
+  }
+</style>
+
+@enduml

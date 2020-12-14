@@ -1,6 +1,7 @@
 @startmindmap
 
 !include ../global/stylesheet.iuml
+!include ../global/mindmap.iuml
 
 * JVM
 -- JVM发展历史

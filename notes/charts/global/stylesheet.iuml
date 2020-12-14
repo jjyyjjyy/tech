@@ -21,8 +21,6 @@ skinparam {
     ' Global Options
     DPI 200
     Shadowing false
-    DefaultFontName Roboto Condensed
-    DefaultMonospacedFontName Inconsolata
     DefaultFontColor STYLE_FGC
 
     ' Styles - Borders

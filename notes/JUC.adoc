@@ -1,0 +1,430 @@
+= JUC
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:hardbreaks:
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+.Java并发思维导图
+plantuml::charts/java/JUC.puml[format=svg,scale=0.5]
+
+== 创建线程的方式
+
+* 继承Thread然后实例化这个对象.
+* 创建Runnable对象, 使用 `new Thread(Runnable)` 构造函数创建线程对象.
+* 创建Callable对象, 使用 `new FutureTask(Callable)` 构造函数创建线程对象.
+
+== 线程状态
+
+* NEW
+* RUNNABLE
+* BLOCKED
+* WAITING
+* TIMED_WAITING
+* TERMINATED
+
+== Thread方法
+
+== run
+
+调用Runnable对象的run方法.
+如果使用继承Thread的方式来创建线程对象, 则会重写run方法.
+
+=== start
+
+start方法会运行当前创建出来的线程, 线程状态从 `NEW` 变为 `RUNNABLE` .
+start方法不能重复调用.
+
+=== _sleep_
+
+当前线程从 `RUNNABLE` 变为 `TIME_WAITING` 状态.
+
+如果调用方调用了这个线程的 `interrupt()` 方法, 则 `sleep` 方法会抛出 `InterruptedException` .
+
+=== _yield_
+
+当前线程从 `RUNNING` 变为 `RUNNABLE` 状态, 具体由操作系统实现, `Thread.State` 中均为 `RUNNABLE` 枚举值.
+
+=== join
+
+等待指定线程执行完.
+
+`join` 是使用 `wait` 来实现的.
+
+=== interrupt
+
+打断 `sleep/wait/join` 的线程, 设置 `interrupted` 标志位为true.
+
+=== _interrupted_
+
+返回当前线程的打断标志, 然后重置为false.
+
+=== Object::wait
+
+当前线程从 `RUNNABLE` 变为 `BLOCKED` 状态.
+
+=== Object::notify
+
+唤醒另外一个等待线程锁的代码块.
+
+[WARNING]
+====
+* 每一条线程都有自己的栈空间,拥有一份方法参数、局部变量和返回值的拷贝.每一个线程都有自己的一份标识信息,包括线程名、线程优先级、线程是否存活、线程执行状态、守护线程标识等.
+* 线程内异常无法在外层try-catch, 只能设置Thread的UncaughtExceptionHandler wait()释放对象锁,sleep()不释放.
+====
+
+== volatile
+
+* 保证有序性和可见性
+* 不保证原子性
+
+== synchronized
+
+=== 使用方式
+
+* 修饰成员方法
+* 修饰静态方法
+* 代码块指定修饰对象
+
+=== 实现原理
+
+synchronized基于Monitor实现. 在代码块前后和异常表 `to` 之后分别插入 `monitorenter/monitorexit` 指令.
+
+Monitor锁对象组成:
+* `Owner` 持有该Monitor锁的对象.
+* `EntryList` 保存竞争该Monitor锁的 `Blocked` 状态的对象.
+* `WaitSet` 保存竞争该Monitor锁的 `Waiting` 状态的对象.
+
+. 线程1竞争锁时发现Owner为空, 则设置Owner为线程1.
+. 线程2竞争锁, 发现Owner不为空, 则进入EntryList等待唤醒.
+. 线程1释放锁, Owner置为空, 唤醒EntryList里的一个线程, 设置为Owner.
+
+=== 锁升级的过程
+
+==== MarkWord
+
+无锁: stem:[ubrace("unused")_(25位) ubrace("hash")_(31位) ubrace("unused")_(1位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^0 ubrace("lock")_(2位)^01]
+偏向锁: stem:[ubrace("thread")_(54位) ubrace("epoch")_(2位) ubrace("unused")_(1位) ubrace("age")_(4位) ubrace("bias_lock")_(1位)^1 ubrace("lock")_(2位)^01]
+轻量级锁: stem:[ubrace("ptr_lock_record")_(62位) ubrace("lock")_(2位)^00]
+重量级锁: stem:[ubrace("ptr_monitor")_(62位) ubrace("lock")_(2位)^10]
+
+无锁 -> 偏向锁 -> 轻量级锁 -> 重量级锁
+
+==== 轻量级锁
+
+.加锁
+. 每次竞争锁时, 线程栈帧中都会生成一个新的 `LockRecord` 对象(`LockRecord地址 00` )和指向持有该线程锁的对象引用地址,
+. 第一次有对象竞争这个线程的锁时, 把 `LockRecord` 地址和对象的MarkWord( `hash age bias 01` )cas互换, 后面两位设置为 `00` , 将栈帧中的对象引用指向这个对象.
+. 如果cas失败:
+.. 锁竞争对象MarkWord中LockRecord地址指向当前线程, 则表示该次竞争属于锁重入, cas会设置自己的LockRecord地址为null, 将栈帧中的对象引用指向这个对象.
+.. 已经有其他线程持有了本线程的锁, 则进入 *锁膨胀* 的过程.
+
+.解锁
+. 每次释放锁时cas检测是否栈顶的LockRecord对象记录的值是否为null:
+.. 如果为null, 表示有重入, 将该LockRecord对象出栈.
+.. 如果不为null, 用cas更新对象的MarkWord为LockRecord中的hash.
+... 更新成功, 表示解锁成功, 出栈.
+... 更新失败, 表示该LockRecord指向对象持有的是重量级锁.
+
+==== 重量级锁
+
+.加锁
+. 线程cas更新对象MarkWord里的hash值为自己的LockRecord地址值失败, 则表示已经有其他线程持有了这个对象的轻量级锁, 此时进入锁膨胀的过程.
+. 申请一个Monitor对象
+.. 将Monitor的Owner地址指向此时MarkWord里的LockRecord地址.
+.. 将对象的MarkWord设置为Monitor对象的地址,
+.. 将当前线程放入Monitor的EntryList里.
+
+.解锁
+. 将Monitor的Owner置为null.
+. 从EntryList里唤醒一个线程让其持有这个Monitor锁, 设置为Owner.
+
+==== 自旋锁
+
+重量级锁加锁失败时, 会自旋尝试多次, 尝试失败后才会把自己加到EntryList里.
+
+==== 偏向锁
+
+对象初始化时, MarkWord最后三位设置为 stem:[101], 第一次竞争锁时线程id存储在MarkWord的前54位里, 下一次该线程竞争锁时可以直接进入代码同步块.
+
+* `-XX:BiasedLockingStartupDelay=0` 设置偏向锁不延迟打开.
+
+.偏向锁的撤销
+* JVM关闭偏向锁的功能. `-XX:-UseBiasedLocking`
+* 有其他线程竞争锁.
+* 调用wait/notify, 因为此时需要依赖Monitor对象的WaitSet.
+
+== Park
+
+每个线程都关联一个Parker对象, 由 `_counter, _cond, _mutex` 三部分组成.
+
+.LockSupport.park()
+* `_counter` 为0时, 进入阻塞状态.
+* `_counter` 为1时, 不进入阻塞状态, 继续运行.
+* 重置 `_counter` 为0.
+
+.LockSupport.unPark(Thread)
+* 如果线程处于阻塞状态, 就唤醒线程继续运行.
+* 如果线程处于运行状态, 则设置 `_counter` 为1, 线程继续运行.
+
+== CAS
+
+=== 实现原理
+
+基于CPU指令 `cmpxchg` 比较并交换, 如果提供的值与获取到的值相等则赋值成功, 否则赋值失败.
+
+== Executor
+
+=== 分类
+
+* ThreadPoolExecutor
+* ForkJoinPool
+* ScheduledThreadPoolExecutor
+
+=== 运行流程
+
+. 如果当前线程池中的线程数目小于corePoolSize，则每来一个任务，就会创建一个线程去执行这个任务；
+. 如果当前线程池中的线程数目大于等于corePoolSize，则每来一个任务，会尝试将其添加到任务缓存队列当中，若添加成功，则该任务会等待空闲线程将其取出去执行；若添加失败（一般来说是任务缓存队列已满），则会尝试创建新的线程去执行这个任务；
+. 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
+. 如果线程池中的线程数量大于corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
+
+== ThreadPoolExecutor
+
+=== 线程池状态
+
+|===
+| 状态名 | 标志 | 是否接收新任务 | 是否处理阻塞队列任务 | 说明
+
+| RUNNING
+| 111
+| √
+| √
+|
+
+| SHUTDOWN
+| 000
+| ×
+| √
+| 不会接收新的任务, 只会处理阻塞队列中剩余的任务.
+
+| STOP
+| 001
+| ×
+| ×
+| 中断正在执行的任务, 抛弃阻塞队列中的任务.
+
+| TIDYING
+| 010
+| ×
+| ×
+| 任务全部执行完毕, 活动线程为0, 即将进入终结状态.
+
+| TERMINATED
+| 011
+| ×
+| ×
+| 终结状态
+
+|===
+
+=== 使用
+
+* FixedThreadPool: 核心线程数等于最大线程数, 使用无界队列存储多余任务, 适用于任务量已知且耗时的场景.
+`new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>())`
+* CachedThreadPool: 没有核心线程数, 适用于任务执行时间短且密集的场景.
+`new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());`
+* SingleThreadPool: 核心线程数和最大线程数都为1, 适用于希望任务排队串行执行的场景.
+`new FinalizableDelegatedExecutorService(new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>()))`
+
+=== 关闭
+
+* `shutdown()`: 线程池状态更新为 `SHUTDOWN` , 只执行所有已提交的任务(包括阻塞队列里的任务), 不再接受新的任务.
+
+[source,java]
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/ShutdownDemo.java[tag=shutdown]
+----
+
+<1> 线程池状态变为SHUTDOWN, 只会执行已经提交的任务.
+<2> reject任务.
+<3> 等待任务1/2/3执行完
+
+* `shutdownNow()`: 调用所有核心线程的interrupt()方法, 并直接返回阻塞队列里的任务.
+
+[source,java]
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/ShutdownDemo.java[tag=shutdownNow]
+----
+
+<1> 调用所有核心线程的interrupt()方法, 并直接返回阻塞队列里的任务.
+<2> 返回任务3.
+<3> reject任务.
+<4> 等待任务1/2执行完
+
+== JUC工具类
+
+=== AbstractQueuedSynchronizer
+
+* `tryAcquire` 尝试获取锁
+* `tryRelease` 尝试释放锁
+
+=== ReentrantLock
+
+.ReentrantLock与synchronized对比
+* ReentrantLock和synchronized都支持可重入.
+* synchronized使用C++实现的, ReentrantLock是JDK类库实现的.
+* ReentrantLock可中断, synchronized需要手动判断 `interrupted` 标志位.
+* ReentrantLock可以设置超时时间.
+* ReentrantLock可以设置为公平锁.
+* ReentrantLock支持多个条件变量.
+
+=== Semaphore
+
+=== CountDownLatch
+
+=== CyclicBarrier
+
+== 多处理器
+
+=== 定义
+
+线程A产生一个事件序列 stem:[a_0,a_1,...].
+由于线程中往往包含循环, 因此一条程序语句可以产生多次事件.
+用 stem:[a_i^j] 表示事件 stem:[a_i] 的第 stem:[j] 次发生. 如果事件a在事件b之前发生, 则称a先于b, 记作 stem:[a->b] .
+
+令 stem:[a_0,a_1]表示事件, 且 stem:[a_0->a_1], stem:[I_A] =interval( stem:[a_0->a_1] )表示 stem:[a_0和a_1] 事件之间的间隔.
+如果 stem:[a_1->b_0],则 stem:[I_A->I_B].多个不存在 stem:[->]的关系称为 *并发的*.
+
+* *互斥*: 对于线程A,B, 以及整数j,k, 都有 stem:[CS_A^j->CS_B^i]或者stem:[CS_B^j->CS_A^i].
+* *无死锁*: 如果一个线程正在尝试获得一个锁, 那么总会成功地获取到锁, 如果暂时无法获得, 那么一定存在其他线程已经进入临界区.
+* *无饥饿*: 每个尝试获得锁的线程最终都能成功.(无饥饿意味着无死锁)
+
+=== 互斥
+
+[source,java]
+.Lock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/Lock.java[]
+----
+
+==== 双线程实现互斥
+
+[source,java]
+.LockOne.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/LockOne.java[]
+----
+
+[source,java]
+.LockTwo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/LockTwo.java[]
+----
+
+[source,java]
+.PetersonLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/PetersonLock.java[]
+----
+
+==== 多线程实现互斥
+
+[source,java]
+.FilterLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/FilterLock.java[]
+----
+
+[source,java]
+.BakeryLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/BakeryLock.java[]
+----
+
+=== 内存访问
+
+处理器和存储控制器之间通过总线通信, 同一时间只能有一个处理器在总线上广播, 但处理器可以和存储控制器同时广播.
+所有的处理器都可以监听.
+每一个处理器都有一个cache. 当处理器想从存储器读数据时, 首先检查该内存地址以及值是否已经在cache中. 如果在cache中, 那么处理器可以产生一个cache命中, 立即加载这个值.
+如果不在, 则产生一个 `cache miss` , 紧接着在总线上广播这个地址, 其他的处理器监听总线, 如果某个处理器在自己的cache中发现这个地址, 则广播该地址及其值做出响应.
+如果所有的处理器都没有发现该地址, 则从内存中加载.
+
+=== 自旋锁
+
+多线程竞争临界区, 如果不能获得锁, 有两种选择:
+
+* 让其继续尝试, 称为 *自旋锁* .
+* 挂起自己, 请求操作系统调度另外一个线程, 称为 *阻塞* .
+
+许多操作系统将这两种结合起来使用, 先旋转一个小的时间段再阻塞.
+
+==== TestAndSet
+
+[source,java]
+.TASLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TASLock.java[]
+----
+
+.TAS缺点:
+* 每个 `getAndSet` 对应总线上一次广播, 该广播会延迟所有的线程, 包括那些没有阻塞锁和准备释放锁的线程.
+* `getAndSet` 设置值后会导致所有处理器丢弃 `cache` .
+
+==== TestAndTestAndSet
+
+[source,java]
+.TTASLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TTASLock.java[]
+----
+
+.TTAS改进:
+* 自旋时只会读取本地的cache值, 不产生总线流量.
+
+==== Backoff TestAndTestAndSet
+
+[source,java]
+.Backoff.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/Backoff.java[]
+----
+
+[source,java]
+.TTASBackoffLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/TTASBackoffLock.java[]
+----
+
+.TTASBackoffLock改进:
+* 当有其他线程释放锁, 但当前线程没有竞争到锁后会后退一个随机的时间间隔再去争用锁, 减少CPU消耗.
+
+==== 队列锁(数组)
+
+[source,java]
+.ArrayLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/ArrayLock.java[]
+----
+
+==== 队列锁(CLH)
+
+[source,java]
+.CLHLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/CLHLock.java[]
+----
+
+==== 队列锁(MCS)
+
+[source,java]
+.MCSLock.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/lock/spin/MCSLock.java[]
+----
