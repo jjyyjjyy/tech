@@ -24,23 +24,24 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
-        <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
+        <spring-boot.version>2.4.1</spring-boot.version>
+        <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
         <spring-cloud-alibaba.version>2.2.3.RELEASE</spring-cloud-alibaba.version>
-        <project-reactor.version>Dysprosium-SR12</project-reactor.version>
+        <project-reactor.version>Dysprosium-SR15</project-reactor.version>
         <mybatis.version>3.5.6</mybatis.version>
-        <mybatis-plus.version>3.4.0</mybatis-plus.version>
+        <mybatis-plus.version>3.4.1</mybatis-plus.version>
         <guava.version>29.0-jre</guava.version>
         <algs4.version>1.0.4</algs4.version>
-        <jmh.version>1.26</jmh.version>
+        <jmh.version>1.27</jmh.version>
         <junit.version>5.7.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>9.0.1</nimbus-jose-jwt.version>
-        <netty.version>4.1.53.Final</netty.version>
+        <nimbus-jose-jwt.version>9.1.5</nimbus-jose-jwt.version>
+        <netty.version>4.1.55.Final</netty.version>
         <jol.version>0.14</jol.version>
-        <fastjson.version>1.2.74</fastjson.version>
+        <fastjson.version>1.2.75</fastjson.version>
         <cglib.versin>3.3.0</cglib.versin>
         <mapstruct.version>1.4.1.Final</mapstruct.version>
+        <testcontainer.version>1.15.1</testcontainer.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
@@ -81,6 +82,13 @@
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainer.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
