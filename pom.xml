@@ -35,7 +35,7 @@
         <jmh.version>1.27</jmh.version>
         <junit.version>5.7.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>9.1.5</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.2</nimbus-jose-jwt.version>
         <netty.version>4.1.55.Final</netty.version>
         <jol.version>0.14</jol.version>
         <fastjson.version>1.2.75</fastjson.version>
