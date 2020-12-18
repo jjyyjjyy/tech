@@ -113,15 +113,18 @@ helm repo add stable http://mirror.azure.cn/kubernetes/charts/
 
 https://docs.helm.sh/developing_charts/#charts
 
- helm search <chart>
- helm inspect [values] <chart>
- helm ls
- helm install {CHART|TAR|URL} [--name <name>]
- helm delete <chart>
- helm repo list
- helm repo add dev https://example.com/dev-charts
- helm create <new_chart>
- helm package <chart>
+[source,bash]
+----
+helm repo list
+helm repo add dev https://example.com/dev-charts
+helm ls
+helm search <chart>
+helm inspect [values] <chart>
+helm install {CHART|TAR|URL} [--name <name>]
+helm delete <chart>
+helm create <new_chart>
+helm package <chart>
+----
 
 === 安装Dashboard
 
@@ -135,6 +138,27 @@ kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n ku
 
 # 获取登录token
 kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+----
+
+=== 集群问题记录
+
+==== 容器一直部署不上去
+
+* 检查cpu/内存/磁盘使用量.
+* `kubectl describe node <node>` 查看node是否被打上了NoSchedule的污点.
+* `kubectl describe pod <pod> -n <namespace>` 查看pod具体失败原因.
+
+==== 集群证书过期
+
+> Unable to connect to the server: x509: certificate has expired or is not yet valid
+
+[source,bash]
+----
+sudo kubeadm alpha certs renew all
+rm -rf $HOME/.kube
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ----
 
 == kubernetes各个组件功能
