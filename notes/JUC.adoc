@@ -348,6 +348,117 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 <2> 尝试cas修改当前线程所属单元的变量值.
 <3> 操作cell数组, 设置值.
 
+
+[source,java]
+Striped64.java
+----
+    final void longAccumulate(long x, LongBinaryOperator fn,
+                              boolean wasUncontended) {
+        int h;
+        if ((h = getProbe()) == 0) {
+            ThreadLocalRandom.current(); // force initialization
+            h = getProbe();
+            wasUncontended = true;
+        }
+        boolean collide = false;                // True if last slot nonempty
+        done: for (;;) {
+            Cell[] cs; Cell c; int n; long v;
+            if ((cs = cells) != null && (n = cs.length) > 0) {
+                if ((c = cs[(n - 1) & h]) == null) {
+                    if (cellsBusy == 0) {       // Try to attach new Cell
+                        Cell r = new Cell(x);   // Optimistically create
+                        if (cellsBusy == 0 && casCellsBusy()) { // <3>
+                            try {               // Recheck under lock
+                                Cell[] rs; int m, j;
+                                if ((rs = cells) != null &&
+                                    (m = rs.length) > 0 &&
+                                    rs[j = (m - 1) & h] == null) {
+                                    rs[j] = r;
+                                    break done;
+                                }
+                            } finally {
+                                cellsBusy = 0;
+                            }
+                            continue;           // Slot is now non-empty
+                        }
+                    }
+                    collide = false;
+                }
+                else if (!wasUncontended)       // CAS already known to fail
+                    wasUncontended = true;      // Continue after rehash
+                else if (c.cas(v = c.value,
+                               (fn == null) ? v + x : fn.applyAsLong(v, x))) // <4>
+                    break;
+                else if (n >= NCPU || cells != cs)
+                    collide = false;            // At max size or stale
+                else if (!collide)
+                    collide = true;
+                else if (cellsBusy == 0 && casCellsBusy()) {
+                    try {
+                        if (cells == cs)        // Expand table unless stale
+                            cells = Arrays.copyOf(cs, n << 1); // <5>
+                    } finally {
+                        cellsBusy = 0;
+                    }
+                    collide = false;
+                    continue;                   // Retry with expanded table
+                }
+                h = advanceProbe(h); // <6>
+            }
+            else if (cellsBusy == 0 && cells == cs && casCellsBusy()) { // <1>
+                try {                           // Initialize table
+                    if (cells == cs) {
+                        Cell[] rs = new Cell[2];
+                        rs[h & 1] = new Cell(x);
+                        cells = rs;
+                        break done;
+                    }
+                } finally {
+                    cellsBusy = 0;
+                }
+            }
+            // Fall back on using base
+            else if (casBase(v = base,
+                             (fn == null) ? v + x : fn.applyAsLong(v, x))) // <2>
+                break done;
+        }
+    }
+----
+<1> cells默认为null, cellsBusy默认为0, 所以LongAddr里如果cas修改base失败, 就会走到这里初始化cells数组, 并将x加入到cell中.
+<2> 有其他线程在初始化cells, 所以当前线程无法在cells里面赋值, 只能尝试cas修改一次base.
+<3> 当前线程所属的cell为空, 初始化一个cell放到cells数组里.
+<4> 当前线程所属的cell不为空, 尝试cas修改该cell里的值.
+<5> 尝试扩容cells.
+<6> 修改当前线程存储的随机数, 使其归属到别的cell中, 避免竞争.
+
+== JUC工具类
+
+=== Lock类图
+
+plantuml::charts/java/Lock.puml[format=svg]
+
+=== ReentrantLock
+
+.ReentrantLock与synchronized对比
+* ReentrantLock和synchronized都支持可重入.
+* ReentrantLock和synchronized都属于阻塞式同步.
+* synchronized使用C++实现的, ReentrantLock是JDK类库实现的.
+* ReentrantLock可中断, synchronized需要手动判断 `interrupted` 标志位.
+* ReentrantLock尝试加锁时可以设置超时时间.
+* ReentrantLock可以设置为公平锁(默认非公平锁).
+* ReentrantLock支持多个条件变量.
+
+=== AbstractQueuedSynchronizer
+
+* `tryAcquire` 尝试获取锁
+* `tryRelease` 尝试释放锁
+
+=== Semaphore
+
+=== CountDownLatch
+
+=== CyclicBarrier
+
 == Executor
 
 === 分类
@@ -435,29 +546,6 @@ include::../basic-knowledge/src/main/java/me/jy/lang/thread/ShutdownDemo.java[ta
 <2> 返回任务3.
 <3> reject任务.
 <4> 等待任务1/2执行完
-
-== JUC工具类
-
-=== AbstractQueuedSynchronizer
-
-* `tryAcquire` 尝试获取锁
-* `tryRelease` 尝试释放锁
-
-=== ReentrantLock
-
-.ReentrantLock与synchronized对比
-* ReentrantLock和synchronized都支持可重入.
-* synchronized使用C++实现的, ReentrantLock是JDK类库实现的.
-* ReentrantLock可中断, synchronized需要手动判断 `interrupted` 标志位.
-* ReentrantLock可以设置超时时间.
-* ReentrantLock可以设置为公平锁.
-* ReentrantLock支持多个条件变量.
-
-=== Semaphore
-
-=== CountDownLatch
-
-=== CyclicBarrier
 
 == 多处理器
 

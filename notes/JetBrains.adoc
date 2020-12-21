@@ -235,7 +235,6 @@
 * Grep Console
 * Key Promoter X
 * Kubernetes
-* Lombok
 * PlantUML integration
 * Rainbow Brackets
 * RoboPOJOGenerator
