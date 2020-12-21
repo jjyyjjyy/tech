@@ -141,7 +141,7 @@ plantuml::charts/java/ThreadState.puml[format=svg]
 
 == 线程方法
 
-== run
+=== run
 
 调用Runnable对象的run方法.
 如果使用继承Thread的方式来创建线程对象, 则会重写run方法.
@@ -191,8 +191,21 @@ start方法不能重复调用.
 
 == volatile
 
-* 保证有序性和可见性
-* 不保证原子性
+* 保证有序性和可见性.
+* 修饰double/long时保证写入/读取的原子性, 但不保证代码块对字段操作的原子性.
+
+=== 读写屏障来实现volatile语义
+
+[source]
+----
+// StoreStoreFence
+写操作
+// StoreLoadFence
+
+读操作
+// LoadLoadFence
+// LoadStoreFence
+----
 
 == synchronized
 
@@ -270,7 +283,7 @@ Monitor锁对象组成:
 * 有其他线程竞争锁.
 * 调用wait/notify, 因为此时需要依赖Monitor对象的WaitSet.
 
-== Park
+== LockSupport
 
 每个线程都关联一个Parker对象, 由 `_counter, _cond, _mutex` 三部分组成.
 
@@ -288,6 +301,52 @@ Monitor锁对象组成:
 === 实现原理
 
 基于CPU指令 `cmpxchg` 比较并交换, 如果提供的值与获取到的值相等则赋值成功, 否则赋值失败.
+
+[source,java]
+.Unsafe.java
+----
+    public final int getAndAddInt(Object o, long offset, int delta) {
+        int v;
+        do {
+            v = getIntVolatile(o, offset); // <1>
+        } while (!weakCompareAndSetInt(o, offset, v, v + delta)); // <2>
+        return v;
+    }
+----
+<1> 获取变量最新的值.
+<2> CAS更新为最新的值.
+
+=== ABA问题
+
+如果另外一个线程把值从A改为B再改为A, 那么比较的时候会认为该值没有被修改过, 这种情况称之为ABA问题.
+
+.ABA问题的解决方案:
+* AtomicStampedReference: 用一个int变量标识当前值的版本号, 每次cas还需要提供新旧的版本号.
+* AtomicMarkableReference: 用boolean变量作为当前值的标志, 每次cas需要提供新旧的标志.
+
+=== LongAddr
+
+LongAddr内部维护一个base变量加多个单元, 并发高的情况下可以将CAS并发竞争的操作分摊到各个单元里.
+最后取值的时候, 再对base+这些单元求和.
+LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终一致性.
+
+[source,java]
+.LongAddr.java
+----
+    public void add(long x) {
+        Cell[] cs; long b, v; int m; Cell c;
+        if ((cs = cells) != null || !casBase(b = base, b + x)) { // <1>
+            boolean uncontended = true;
+            if (cs == null || (m = cs.length - 1) < 0 ||
+                (c = cs[getProbe() & m]) == null ||
+                !(uncontended = c.cas(v = c.value, v + x))) <2>
+                longAccumulate(x, null, uncontended); // <3>
+        }
+    }
+----
+<1> 尝试cas修改base的值.
+<2> 尝试cas修改当前线程所属单元的变量值.
+<3> 操作cell数组, 设置值.
 
 == Executor
 

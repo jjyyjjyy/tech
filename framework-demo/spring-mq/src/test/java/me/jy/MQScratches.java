@@ -1,20 +1,18 @@
 package me.jy;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author jy
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class MQScratches {
 
@@ -32,7 +30,7 @@ public class MQScratches {
         amqpAdmin.declareQueue(new Queue(NON_EXCHANGE_QUEUE, false)); // <1> 只声明队列, 不绑定任何exchange
         rabbitTemplate.convertAndSend(NON_EXCHANGE_QUEUE, 1); // <2> 发送消息时直接以queue的名字作为routing key
 
-        Assert.assertEquals(1, rabbitTemplate.receiveAndConvert(NON_EXCHANGE_QUEUE)); // <3> 可以收到消息
+        assertEquals(1, rabbitTemplate.receiveAndConvert(NON_EXCHANGE_QUEUE)); // <3> 可以收到消息
     }
 
     @Test
@@ -56,9 +54,9 @@ public class MQScratches {
         rabbitTemplate.convertAndSend(DIRECT_EXCHANGE_NAME, DIRECT_EXCHANGE_RK1, DIRECT_EXCHANGE_RK1); // <3> 发送消息到 dev.rk.demo1
         rabbitTemplate.convertAndSend(DIRECT_EXCHANGE_NAME, DIRECT_EXCHANGE_RK2, DIRECT_EXCHANGE_RK2); // <4> 发送消息到 dev.rk.demo2
 
-        Assert.assertEquals(DIRECT_EXCHANGE_RK1, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q1));
-        Assert.assertEquals(DIRECT_EXCHANGE_RK2, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q3));
-        Assert.assertEquals(DIRECT_EXCHANGE_RK1, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q2)); // <5> dev.queue.q2也能收到消息
+        assertEquals(DIRECT_EXCHANGE_RK1, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q1));
+        assertEquals(DIRECT_EXCHANGE_RK2, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q3));
+        assertEquals(DIRECT_EXCHANGE_RK1, rabbitTemplate.receiveAndConvert(DIRECT_EXCHANGE_Q2)); // <5> dev.queue.q2也能收到消息
     }
 
     @Test
@@ -75,8 +73,8 @@ public class MQScratches {
 
         rabbitTemplate.convertAndSend(FANOUT_EXCHANGE_NAME, "", "fanout"); // <2> 发送消息到fanout exchange时无视routing key
 
-        Assert.assertEquals("fanout", rabbitTemplate.receiveAndConvert(FANOUT_EXCHANGE_Q1));
-        Assert.assertEquals("fanout", rabbitTemplate.receiveAndConvert(FANOUT_EXCHANGE_Q2)); // <3> Q1/Q2都能收到消息
+        assertEquals("fanout", rabbitTemplate.receiveAndConvert(FANOUT_EXCHANGE_Q1));
+        assertEquals("fanout", rabbitTemplate.receiveAndConvert(FANOUT_EXCHANGE_Q2)); // <3> Q1/Q2都能收到消息
     }
 
     @Test
@@ -93,14 +91,14 @@ public class MQScratches {
         amqpAdmin.declareBinding(new Binding(TOPIC_EXCHANGE_Q2, Binding.DestinationType.QUEUE, TOPIC_EXCHANGE_NAME, "dev.topic.*", Collections.emptyMap()));
 
         rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, "dev.topic.wa", "q2");
-        Assert.assertEquals("q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q2)); // <2> dev.topic.* 与 dev.topic.wa 匹配
+        assertEquals("q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q2)); // <2> dev.topic.* 与 dev.topic.wa 匹配
 
         rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, "0.q1", "q1");
-        Assert.assertEquals("q1", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q1)); // <3> dev.topic.* 与 0.q1 匹配
+        assertEquals("q1", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q1)); // <3> dev.topic.* 与 0.q1 匹配
 
         rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, "dev.topic.q1", "q1+q2");
-        Assert.assertEquals("q1+q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q1));
-        Assert.assertEquals("q1+q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q2)); // <4> dev.topic.* 和 #.q1 都与 dev.topic.q1 匹配
+        assertEquals("q1+q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q1));
+        assertEquals("q1+q2", rabbitTemplate.receiveAndConvert(TOPIC_EXCHANGE_Q2)); // <4> dev.topic.* 和 #.q1 都与 dev.topic.q1 匹配
     }
 
     @Test

@@ -45,5 +45,11 @@
             <artifactId>jol-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.openjdk.jcstress</groupId>
+            <artifactId>jcstress-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>
