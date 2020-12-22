@@ -348,7 +348,6 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 <2> 尝试cas修改当前线程所属单元的变量值.
 <3> 操作cell数组, 设置值.
 
-
 [source,java]
 .Striped64.java
 ----
@@ -604,6 +603,48 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
 <7> 将当前节点设置成tail.
 <8> 当前节点已经进入队列, 调用LockSupport.park暂停当前线程.
 <9> 如果当前竞争锁成功, 并且当前节点是头节点, 那么通知调用LockSupport.unpark唤醒当前节点的next节点.
+
+==== unlock方法实现
+
+[source,java]
+.AbstractQueuedSynchronizer.java
+----
+    public final boolean release(int arg) {
+        if (tryRelease(arg)) {
+            signalNext(head);
+            return true;
+        }
+        return false;
+    }
+
+    private static void signalNext(Node h) {
+        Node s;
+        if (h != null && (s = h.next) != null && s.status != 0) {
+            s.getAndUnsetStatus(WAITING);
+            LockSupport.unpark(s.waiter); // <1>
+        }
+    }
+----
+<1> 唤醒队列下一个节点.
+
+[source,java]
+.Sync.java
+----
+        protected final boolean tryRelease(int releases) {
+            int c = getState() - releases;
+            if (getExclusiveOwnerThread() != Thread.currentThread())
+                throw new IllegalMonitorStateException();
+            boolean free = (c == 0);
+            if (free)
+                setExclusiveOwnerThread(null); // <1>
+            setState(c); // <2>
+            return free;
+        }
+----
+<1> 清空持有当前锁的线程记录.
+<2> 修改state值.
+
+总的来说, AQS实现了四个功能: 加锁、释放锁、等待、唤醒.
 
 === Semaphore
 

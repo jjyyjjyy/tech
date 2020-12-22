@@ -19,7 +19,7 @@ public class ReentrantLockDemo {
     public void synchronizedMethod() {
         lock.lock();
         try {
-            TimeUnit.HOURS.sleep(1L);
+            TimeUnit.SECONDS.sleep(1L);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
