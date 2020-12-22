@@ -350,7 +350,7 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 
 
 [source,java]
-Striped64.java
+.Striped64.java
 ----
     final void longAccumulate(long x, LongBinaryOperator fn,
                               boolean wasUncontended) {
@@ -448,10 +448,162 @@ plantuml::charts/java/Lock.puml[format=svg]
 * ReentrantLock可以设置为公平锁(默认非公平锁).
 * ReentrantLock支持多个条件变量.
 
-=== AbstractQueuedSynchronizer
+=== Sync实现
 
-* `tryAcquire` 尝试获取锁
-* `tryRelease` 尝试释放锁
+ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, 以实现公平锁和非公平锁.
+
+==== lock方法实现
+
+[source,java]
+.Sync.java
+----
+        final void lock() {
+            if (!initialTryLock()) // <1>
+                acquire(1);
+        }
+----
+<1> 首先尝试先获得锁, 如果获取失败则与其他线程竞争来获取锁.
+
+[source,java,role="primary"]
+.NonfairSync.java
+----
+        final boolean initialTryLock() {
+            Thread current = Thread.currentThread();
+            if (compareAndSetState(0, 1)) { // <1>
+                setExclusiveOwnerThread(current);
+                return true;
+            } else if (getExclusiveOwnerThread() == current) { // <2>
+                int c = getState() + 1;
+                if (c < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(c);
+                return true;
+            } else
+                return false;
+        }
+----
+<1> 非公平锁首先尝试修改state, 竞争锁.
+<2> 如果是锁重入则直接增加state, lock成功.
+
+[source,java,role="secondary-initialTryLock"]
+.FairSync.java
+----
+        final boolean initialTryLock() {
+            Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (!hasQueuedThreads() && compareAndSetState(0, 1)) { // <1>
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            } else if (getExclusiveOwnerThread() == current) { // <2>
+                if (++c < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(c);
+                return true;
+            }
+            return false;
+        }
+----
+<1> 公平锁只有当等待队列为空时才去尝试修改state竞争锁.
+<2> 如果是锁重入则直接增加state, lock成功.
+
+[source,java]
+.AbstractQueuedSynchronizer.java
+----
+        public final void acquire(int arg) {
+            if (!tryAcquire(arg)) // <1>
+                acquire(null, arg, false, false, false, 0L); // <2>
+        }
+
+        final int acquire(Node node, int arg, boolean shared,
+                      boolean interruptible, boolean timed, long time) {
+        Thread current = Thread.currentThread();
+        byte spins = 0, postSpins = 0;   // retries upon unpark of first thread
+        boolean interrupted = false, first = false;
+        Node pred = null;                // predecessor of node when enqueued
+        for (;;) {
+            if (!first && (pred = (node == null) ? null : node.prev) != null &&
+                !(first = (head == pred))) {
+                if (pred.status < 0) {
+                    cleanQueue();           // predecessor cancelled
+                    continue;
+                } else if (pred.prev == null) {
+                    Thread.onSpinWait();    // ensure serialization
+                    continue;
+                }
+            }
+            if (first || pred == null) {
+                boolean acquired;
+                try {
+                    if (shared)
+                        acquired = (tryAcquireShared(arg) >= 0);
+                    else
+                        acquired = tryAcquire(arg); // <3>
+                } catch (Throwable ex) {
+                    cancelAcquire(node, interrupted, false);
+                    throw ex;
+                }
+                if (acquired) {
+                    if (first) {
+                        node.prev = null;
+                        head = node;
+                        pred.next = null;
+                        node.waiter = null;
+                        if (shared)
+                            signalNextIfShared(node); // <9>
+                        if (interrupted)
+                            current.interrupt();
+                    }
+                    return 1;
+                }
+            }
+            if (node == null) {                 // allocate; retry before enqueue
+                if (shared)
+                    node = new SharedNode();
+                else
+                    node = new ExclusiveNode(); // <4>
+            } else if (pred == null) {          // try to enqueue <5>
+                node.waiter = current;
+                Node t = tail;
+                node.setPrevRelaxed(t);         // avoid unnecessary fence
+                if (t == null)
+                    tryInitializeHead(); // <6>
+                else if (!casTail(t, node)) // <7>
+                    node.setPrevRelaxed(null);  // back out
+                else
+                    t.next = node;
+            } else if (first && spins != 0) {
+                --spins;                        // reduce unfairness on rewaits
+                Thread.onSpinWait();
+            } else if (node.status == 0) {
+                node.status = WAITING;          // enable signal and recheck
+            } else {
+                long nanos;
+                spins = postSpins = (byte)((postSpins << 1) | 1);
+                if (!timed)
+                    LockSupport.park(this); // <8>
+                else if ((nanos = time - System.nanoTime()) > 0L)
+                    LockSupport.parkNanos(this, nanos);
+                else
+                    break;
+                node.clearStatus();
+                if ((interrupted |= Thread.interrupted()) && interruptible)
+                    break;
+            }
+        }
+        return cancelAcquire(node, interrupted, interruptible);
+    }
+----
+<1> tryAcquire与initialTryLock类似, 尝试去获取锁.
+<2> 竞争锁.
+<3> 尝试去竞争锁, 如果竞争成功则返回1.
+<4> 初始化Node.
+<5> 尝试将当前节点插入到等待队列末端, 并将当前tail的next指向成当前节点.
+<6> 如果head为null, 那么初始化head和tail为一个哑元节点.
+<7> 将当前节点设置成tail.
+<8> 当前节点已经进入队列, 调用LockSupport.park暂停当前线程.
+<9> 如果当前竞争锁成功, 并且当前节点是头节点, 那么通知调用LockSupport.unpark唤醒当前节点的next节点.
 
 === Semaphore
 
