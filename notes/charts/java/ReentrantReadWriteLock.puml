@@ -1,0 +1,35 @@
+@startuml
+
+!include ../../charts/global/stylesheet.iuml
+
+class AbstractQueuedSynchronizer
+
+class ReentrantReadWriteLock {
+  + ReentrantReadWriteLock.ReadLock  readLock();
+  + ReentrantReadWriteLock.WriteLock writeLock();
+}
+
+class ReentrantReadWriteLock.Sync {
+  # int tryAcquireShared(int);
+  # boolean tryReleaseShared(int);
+  # boolean tryAcquire(int);
+  # boolean tryRelease(int);
+  boolean readerShouldBlock();
+  boolean writerShouldBlock();
+}
+class ReentrantReadWriteLock.NonfairSync {
+  boolean readerShouldBlock();
+  boolean writerShouldBlock();
+}
+class ReentrantReadWriteLock.FairSync {
+  boolean readerShouldBlock();
+  boolean writerShouldBlock();
+}
+
+AbstractQueuedSynchronizer <|-- ReentrantReadWriteLock.Sync
+ReentrantReadWriteLock.Sync <|-- ReentrantReadWriteLock.NonfairSync
+ReentrantReadWriteLock.Sync <|-- ReentrantReadWriteLock.FairSync
+
+ReentrantReadWriteLock -> ReentrantReadWriteLock.Sync
+
+@enduml

@@ -15,14 +15,14 @@ Lock <.. ReentrantLock
 
 class AbstractOwnableSynchronizer
 class AbstractQueuedSynchronizer
-class Sync
-class NonfairSync
-class FairSync
+class ReentrantLock.Sync
+class ReentrantLock.NonfairSync
+class ReentrantLock.FairSync
 AbstractOwnableSynchronizer <|-- AbstractQueuedSynchronizer
-AbstractQueuedSynchronizer <|-- Sync
-Sync <|-- NonfairSync
-Sync <|-- FairSync
+AbstractQueuedSynchronizer <|-- ReentrantLock.Sync
+ReentrantLock.Sync <|-- ReentrantLock.NonfairSync
+ReentrantLock.Sync <|-- ReentrantLock.FairSync
 
-ReentrantLock -> Sync
+ReentrantLock -> ReentrantLock.Sync
 
 @enduml

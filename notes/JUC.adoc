@@ -432,11 +432,10 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 
 == JUC工具类
 
-=== Lock类图
-
-plantuml::charts/java/Lock.puml[format=svg]
-
 === ReentrantLock
+
+.ReentrantLock类图
+plantuml::charts/java/ReentrantLock.puml[format=svg]
 
 .ReentrantLock与synchronized对比
 * ReentrantLock和synchronized都支持可重入.
@@ -645,6 +644,54 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
 <2> 修改state值.
 
 总的来说, AQS实现了四个功能: 加锁、释放锁、等待、唤醒.
+
+=== ReentrantReadWriteLock
+
+`ReentrantReadWriteLock` 实现了读写互斥, 但是读读不互斥.
+
+.ReentrantReadWriteLock类图
+plantuml::charts/java/ReentrantReadWriteLock.puml[format=svg]
+
+`ReentrantReadWriteLock` 内部将state高16位维护持有共享锁线程的重入次数, 低16位维护持有排他锁线程的重入次数, 这是为了CAS无法同时对两个变量操作.
+
+[source,java]
+.ReentrantReadWriteLock.Sync.java
+----
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+        static final int SHARED_SHIFT   = 16;
+        static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
+        static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
+        static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
+        // state右移16位得到高16位的值.
+        static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
+        // 将高16位置0, 得到低16位的值.
+        static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
+    }
+----
+
+读写锁的加锁解锁分别依赖sync的方法来实现的, sync又分为公平锁和非公平锁, 所以一共有4种加锁解锁实现.
+
+[source,java]
+.ReentrantReadWriteLock.ReadLock.java
+----
+        public void lock() {
+            sync.acquireShared(1);
+        }
+        public void unlock() {
+            sync.releaseShared(1);
+        }
+----
+
+[source,java]
+.ReentrantReadWriteLock.WriteLock.java
+----
+        public void lock() {
+            sync.acquire(1);
+        }
+        public void unlock() {
+            sync.release(1);
+        }
+----
 
 === Semaphore
 
