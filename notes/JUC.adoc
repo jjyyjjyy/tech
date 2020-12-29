@@ -305,6 +305,7 @@ Monitor锁对象组成:
 [source,java]
 .Unsafe.java
 ----
+public final class Unsafe {
     public final int getAndAddInt(Object o, long offset, int delta) {
         int v;
         do {
@@ -312,6 +313,7 @@ Monitor锁对象组成:
         } while (!weakCompareAndSetInt(o, offset, v, v + delta)); // <2>
         return v;
     }
+}
 ----
 <1> 获取变量最新的值.
 <2> CAS更新为最新的值.
@@ -333,16 +335,18 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 [source,java]
 .LongAddr.java
 ----
+public class LongAddr extends Striped64 implements Serializable {
     public void add(long x) {
         Cell[] cs; long b, v; int m; Cell c;
         if ((cs = cells) != null || !casBase(b = base, b + x)) { // <1>
             boolean uncontended = true;
             if (cs == null || (m = cs.length - 1) < 0 ||
                 (c = cs[getProbe() & m]) == null ||
-                !(uncontended = c.cas(v = c.value, v + x))) <2>
+                !(uncontended = c.cas(v = c.value, v + x))) // <2>
                 longAccumulate(x, null, uncontended); // <3>
         }
     }
+}
 ----
 <1> 尝试cas修改base的值.
 <2> 尝试cas修改当前线程所属单元的变量值.
@@ -351,6 +355,7 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
 [source,java]
 .Striped64.java
 ----
+abstract class Striped64 extends Number {
     final void longAccumulate(long x, LongBinaryOperator fn,
                               boolean wasUncontended) {
         int h;
@@ -422,6 +427,7 @@ LongAddr求和的时候没有对单元加锁, 所以取值操作只满足最终�
                 break done;
         }
     }
+}
 ----
 <1> cells默认为null, cellsBusy默认为0, 所以LongAddr里如果cas修改base失败, 就会走到这里初始化cells数组, 并将x加入到cell中.
 <2> 有其他线程在初始化cells, 所以当前线程无法在cells里面赋值, 只能尝试cas修改一次base.
@@ -446,62 +452,85 @@ plantuml::charts/java/ReentrantLock.puml[format=svg]
 * ReentrantLock可以设置为公平锁(默认非公平锁).
 * ReentrantLock支持多个条件变量.
 
-=== Sync实现
+`ReentrantLock` 加锁释放锁都是通过内部继承了 `AbstractQueuedSynchronizer` 的 `Sync` 类来实现的, Sync又有公平锁和非公平锁区分, 默认为非公平锁.
 
-ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, 以实现公平锁和非公平锁.
+[source,java]
+.ReentrantLock.java
+----
+public class ReentrantLock implements Lock, java.io.Serializable {
+    public void lock() {
+        sync.lock();
+    }
+    public boolean tryLock() {
+        return sync.tryLock();
+    }
+    public void unlock() {
+        sync.release(1);
+    }
+    public Condition newCondition() {
+        return sync.newCondition();
+    }
+}
+----
 
 ==== lock方法实现
 
 [source,java]
-.Sync.java
+.ReentrantLock.Sync.java
 ----
-        final void lock() {
-            if (!initialTryLock()) // <1>
-                acquire(1);
-        }
+abstract static class Sync extends AbstractQueuedSynchronizer {
+    final void lock() {
+        if (!initialTryLock()) // <1>
+            acquire(1);
+    }
+}
 ----
 <1> 首先尝试先获得锁, 如果获取失败则与其他线程竞争来获取锁.
 
 [source,java,role="primary"]
-.NonfairSync.java
+.ReentrantLock.NonfairSync.java
 ----
-        final boolean initialTryLock() {
-            Thread current = Thread.currentThread();
-            if (compareAndSetState(0, 1)) { // <1>
-                setExclusiveOwnerThread(current);
-                return true;
-            } else if (getExclusiveOwnerThread() == current) { // <2>
-                int c = getState() + 1;
-                if (c < 0) // overflow
-                    throw new Error("Maximum lock count exceeded");
-                setState(c);
-                return true;
-            } else
-                return false;
-        }
+static final class NonfairSync extends Sync {
+    final boolean initialTryLock() {
+        Thread current = Thread.currentThread();
+        if (compareAndSetState(0, 1)) { // <1>
+            setExclusiveOwnerThread(current);
+            return true;
+        } else if (getExclusiveOwnerThread() == current) { // <2>
+            int c = getState() + 1;
+            if (c < 0) // overflow
+                throw new Error("Maximum lock count exceeded");
+            setState(c);
+            return true;
+        } else
+            return false;
+    }
+}
 ----
 <1> 非公平锁首先尝试修改state, 竞争锁.
 <2> 如果是锁重入则直接增加state, lock成功.
 
 [source,java,role="secondary-initialTryLock"]
-.FairSync.java
+.ReentrantLock.FairSync.java
 ----
-        final boolean initialTryLock() {
-            Thread current = Thread.currentThread();
-            int c = getState();
-            if (c == 0) {
-                if (!hasQueuedThreads() && compareAndSetState(0, 1)) { // <1>
-                    setExclusiveOwnerThread(current);
-                    return true;
-                }
-            } else if (getExclusiveOwnerThread() == current) { // <2>
-                if (++c < 0) // overflow
-                    throw new Error("Maximum lock count exceeded");
-                setState(c);
+static final class FairSync extends Sync {
+    final boolean initialTryLock() {
+        Thread current = Thread.currentThread();
+        int c = getState();
+        if (c == 0) {
+            if (!hasQueuedThreads() && compareAndSetState(0, 1)) { // <1>
+                setExclusiveOwnerThread(current);
                 return true;
             }
-            return false;
+        } else if (getExclusiveOwnerThread() == current) { // <2>
+            if (++c < 0) // overflow
+                throw new Error("Maximum lock count exceeded");
+            setState(c);
+            return true;
         }
+        return false;
+    }
+}
 ----
 <1> 公平锁只有当等待队列为空时才去尝试修改state竞争锁.
 <2> 如果是锁重入则直接增加state, lock成功.
@@ -509,6 +538,7 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
 [source,java]
 .AbstractQueuedSynchronizer.java
 ----
+public abstract class AbstractQueuedSynchronizer {
         public final void acquire(int arg) {
             if (!tryAcquire(arg)) // <1>
                 acquire(null, arg, false, false, false, 0L); // <2>
@@ -592,6 +622,7 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
         }
         return cancelAcquire(node, interrupted, interruptible);
     }
+}
 ----
 <1> tryAcquire与initialTryLock类似, 尝试去获取锁.
 <2> 竞争锁.
@@ -608,6 +639,7 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
 [source,java]
 .AbstractQueuedSynchronizer.java
 ----
+public abstract class AbstractQueuedSynchronizer {
     public final boolean release(int arg) {
         if (tryRelease(arg)) {
             signalNext(head);
@@ -623,27 +655,124 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
             LockSupport.unpark(s.waiter); // <1>
         }
     }
+}
 ----
 <1> 唤醒队列下一个节点.
 
 [source,java]
-.Sync.java
+.ReentrantLock.Sync.java
 ----
-        protected final boolean tryRelease(int releases) {
-            int c = getState() - releases;
-            if (getExclusiveOwnerThread() != Thread.currentThread())
-                throw new IllegalMonitorStateException();
-            boolean free = (c == 0);
-            if (free)
-                setExclusiveOwnerThread(null); // <1>
-            setState(c); // <2>
-            return free;
-        }
+abstract static class Sync extends AbstractQueuedSynchronizer {
+    protected final boolean tryRelease(int releases) {
+        int c = getState() - releases;
+        if (getExclusiveOwnerThread() != Thread.currentThread())
+            throw new IllegalMonitorStateException();
+        boolean free = (c == 0);
+        if (free)
+            setExclusiveOwnerThread(null); // <1>
+        setState(c); // <2>
+        return free;
+    }
+}
 ----
 <1> 清空持有当前锁的线程记录.
 <2> 修改state值.
 
 总的来说, AQS实现了四个功能: 加锁、释放锁、等待、唤醒.
+
+=== Condition
+
+[source,java]
+.AbstractQueuedSynchronizer.ConditionObject.java
+----
+public class ConditionObject implements Condition, java.io.Serializable {
+
+    private int enableWait(ConditionNode node) {
+        // 使用condition通信前必须加锁, 所以这里正常会返回true.
+        if (isHeldExclusively()) {
+            node.waiter = Thread.currentThread();
+            node.setStatusRelaxed(COND | WAITING);
+            // 将当前线程加入到队列中, 并更新尾结点.
+            ConditionNode last = lastWaiter;
+            if (last == null)
+                firstWaiter = node;
+            else
+                last.nextWaiter = node;
+            lastWaiter = node;
+            int savedState = getState();
+            // await释放锁
+            if (release(savedState))
+                return savedState;
+        }
+        node.status = CANCELLED;
+        throw new IllegalMonitorStateException();
+    }
+
+    public final void await() throws InterruptedException {
+        if (Thread.interrupted())
+            throw new InterruptedException();
+        // ConditionNode是一个双向链表
+        ConditionNode node = new ConditionNode();
+        int savedState = enableWait(node);
+        LockSupport.setCurrentBlocker(this);
+        boolean interrupted = false, cancelled = false;
+        while (!canReacquire(node)) {
+            if (interrupted |= Thread.interrupted()) {
+                if (cancelled = (node.getAndUnsetStatus(COND) & COND) != 0)
+                    break;
+            } else if ((node.status & COND) != 0) {
+                try {
+                    ForkJoinPool.managedBlock(node);
+                } catch (InterruptedException ie) {
+                    interrupted = true;
+                }
+            } else
+                Thread.onSpinWait();
+        }
+        LockSupport.setCurrentBlocker(null);
+        node.clearStatus();
+        acquire(node, savedState, false, false, false, 0L);
+        if (interrupted) {
+            if (cancelled) {
+                unlinkCancelledWaiters(node);
+                throw new InterruptedException();
+            }
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public final void signal() {
+        ConditionNode first = firstWaiter;
+        if (!isHeldExclusively())
+            throw new IllegalMonitorStateException();
+        if (first != null)
+            doSignal(first, false);
+    }
+
+    public final void signalAll() {
+        ConditionNode first = firstWaiter;
+        if (!isHeldExclusively())
+            throw new IllegalMonitorStateException();
+        if (first != null)
+            doSignal(first, true);
+    }
+
+    private void doSignal(ConditionNode first, boolean all) {
+        while (first != null) {
+            ConditionNode next = first.nextWaiter;
+            if ((firstWaiter = next) == null)
+                // 队列为空, 清空尾结点
+                lastWaiter = null;
+            if ((first.getAndUnsetStatus(COND) & COND) != 0) {
+                enqueue(first);
+                if (!all)
+                    break;
+            }
+            first = next;
+        }
+    }
+}
+----
 
 === ReentrantReadWriteLock
 
@@ -653,44 +782,172 @@ ReentrantLock内部声明了一个Sync类继承了AbstractQueuedSynchronizer, �
 plantuml::charts/java/ReentrantReadWriteLock.puml[format=svg]
 
 `ReentrantReadWriteLock` 内部将state高16位维护持有共享锁线程的重入次数, 低16位维护持有排他锁线程的重入次数, 这是为了CAS无法同时对两个变量操作.
-
-[source,java]
-.ReentrantReadWriteLock.Sync.java
-----
-    abstract static class Sync extends AbstractQueuedSynchronizer {
-        static final int SHARED_SHIFT   = 16;
-        static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
-        static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
-        static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
-        // state右移16位得到高16位的值.
-        static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
-        // 将高16位置0, 得到低16位的值.
-        static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
-    }
-----
-
 读写锁的加锁解锁分别依赖sync的方法来实现的, sync又分为公平锁和非公平锁, 所以一共有4种加锁解锁实现.
 
 [source,java]
 .ReentrantReadWriteLock.ReadLock.java
 ----
-        public void lock() {
-            sync.acquireShared(1);
-        }
-        public void unlock() {
-            sync.releaseShared(1);
-        }
+public static class ReadLock implements Lock, java.io.Serializable {
+    public void lock() {
+        sync.acquireShared(1);
+    }
+    public void unlock() {
+        sync.releaseShared(1);
+    }
+}
 ----
 
 [source,java]
 .ReentrantReadWriteLock.WriteLock.java
 ----
-        public void lock() {
-            sync.acquire(1);
+public static class WriteLock implements Lock, java.io.Serializable {
+    public void lock() {
+        sync.acquire(1);
+    }
+    public void unlock() {
+        sync.release(1);
+    }
+}
+----
+
+[source,java]
+.ReentrantReadWriteLock.java
+----
+abstract static class Sync extends AbstractQueuedSynchronizer {
+    static final int SHARED_SHIFT   = 16;
+    static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
+    static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
+    static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
+    // state右移16位得到高16位的值.
+    static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
+    // 将高16位置0, 得到低16位的值.
+    static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
+
+    abstract boolean readerShouldBlock();
+    abstract boolean writerShouldBlock();
+
+    // 竞争排他锁
+    protected final boolean tryAcquire(int acquires) {
+        Thread current = Thread.currentThread();
+        int c = getState();
+        int w = exclusiveCount(c);
+        if (c != 0) { // c不等于0, 代表当前有线程正在持有锁.
+            // w为0代表有读线程持有锁, 如果持有锁的线程不是自己, 直接返回false.
+            if (w == 0 || current != getExclusiveOwnerThread())
+                return false;
+            if (w + exclusiveCount(acquires) > MAX_COUNT)
+                throw new Error("Maximum lock count exceeded");
+            // 当前线程之前已经持有排他锁, 此时为重入锁, 增加state即可.
+            setState(c + acquires);
+            return true;
         }
-        public void unlock() {
-            sync.release(1);
+        if (writerShouldBlock() ||
+        // 尝试竞争
+            !compareAndSetState(c, c + acquires))
+            return false;
+        // CAS修改state成功, 设置自己为ExclusiveOwnerThread.
+        setExclusiveOwnerThread(current);
+        return true;
+    }
+
+    // 释放排他锁
+    protected final boolean tryRelease(int releases) {
+        if (!isHeldExclusively())
+            throw new IllegalMonitorStateException();
+        // 排他锁持有锁时, 不会有其他线程修改state, 且因为state是低16位保存了排他锁重入次数, 所以这里直接减state即可.
+        int nextc = getState() - releases;
+        boolean free = exclusiveCount(nextc) == 0;
+        if (free)
+            // 重入锁释放锁结束.
+            setExclusiveOwnerThread(null);
+        setState(nextc);
+        return free;
+    }
+
+    // 竞争共享锁
+    protected final int tryAcquireShared(int unused) {
+        Thread current = Thread.currentThread();
+        int c = getState();
+        // 排他锁去竞争共享锁的情况, 如果不是当前线程持有的排他锁则竞争失败.
+        if (exclusiveCount(c) != 0 &&
+            getExclusiveOwnerThread() != current)
+            return -1;
+        int r = sharedCount(c);
+        if (!readerShouldBlock() &&
+            r < MAX_COUNT &&
+            compareAndSetState(c, c + SHARED_UNIT)) { // 共享锁重入次数保存在state高16位, 每次需要增加1<<16.
+            // 统计每个线程竞争共享锁次数.
+            if (r == 0) {
+                // 当前是竞争共享锁的第一个线程
+                firstReader = current;
+                firstReaderHoldCount = 1;
+            } else if (firstReader == current) {
+                firstReaderHoldCount++;
+            } else {
+                HoldCounter rh = cachedHoldCounter;
+                if (rh == null ||
+                    rh.tid != LockSupport.getThreadId(current))
+                    cachedHoldCounter = rh = readHolds.get();
+                else if (rh.count == 0)
+                    readHolds.set(rh);
+                rh.count++;
+            }
+            return 1;
         }
+        // 不停重试尝试CAS修改state.
+        return fullTryAcquireShared(current);
+    }
+
+    // 释放共享锁
+    protected final boolean tryReleaseShared(int unused) {
+        Thread current = Thread.currentThread();
+        if (firstReader == current) {
+            if (firstReaderHoldCount == 1)
+                firstReader = null;
+            else
+                firstReaderHoldCount--;
+        } else {
+            HoldCounter rh = cachedHoldCounter;
+            if (rh == null ||
+                rh.tid != LockSupport.getThreadId(current))
+                rh = readHolds.get();
+            int count = rh.count;
+            if (count <= 1) {
+                readHolds.remove();
+                if (count <= 0)
+                    throw unmatchedUnlockException();
+            }
+            --rh.count;
+        }
+        for (;;) { // 因为会存在多个线程持有共享锁, 所以这里需要通过CAS修改state.
+            int c = getState();
+            int nextc = c - SHARED_UNIT;
+            // state减去1<<16. 如果state剩0, 则可以唤醒等待队列下一个线程.
+            if (compareAndSetState(c, nextc))
+                return nextc == 0;
+        }
+    }
+}
+
+static final class NonfairSync extends Sync {
+    final boolean writerShouldBlock() {
+        // 非公平锁会尝试竞争一次.
+        return false;
+    }
+    final boolean readerShouldBlock() {
+        return apparentlyFirstQueuedIsExclusive();
+    }
+}
+
+static final class FairSync extends Sync {
+    // 公平锁判断如果等待队列中有其他线程, 则放弃竞争.
+    final boolean writerShouldBlock() {
+        return hasQueuedPredecessors();
+    }
+    final boolean readerShouldBlock() {
+        return hasQueuedPredecessors();
+    }
+}
 ----
 
 === Semaphore
@@ -699,7 +956,23 @@ plantuml::charts/java/ReentrantReadWriteLock.puml[format=svg]
 
 === CyclicBarrier
 
-== Executor
+== 并发容器
+
+=== BlockingQueue
+
+=== BlockingDeque
+
+=== CopyOnWrite
+
+=== ConcurrentLinkedQueue
+
+=== ConcurrentLinkedDeque
+
+=== ConcurrentHashMap
+
+=== ConcurrentSkipListMap
+
+== 线程池
 
 === 分类
 
@@ -713,8 +986,6 @@ plantuml::charts/java/ReentrantReadWriteLock.puml[format=svg]
 . 如果当前线程池中的线程数目大于等于corePoolSize，则每来一个任务，会尝试将其添加到任务缓存队列当中，若添加成功，则该任务会等待空闲线程将其取出去执行；若添加失败（一般来说是任务缓存队列已满），则会尝试创建新的线程去执行这个任务；
 . 如果当前线程池中的线程数目达到maximumPoolSize，则会采取任务拒绝策略进行处理；
 . 如果线程池中的线程数量大于corePoolSize时，如果某线程空闲时间超过keepAliveTime，线程将被终止，直至线程池中的线程数目不大于corePoolSize；如果允许为核心池中的线程设置存活时间，那么核心池中的线程空闲时间超过keepAliveTime，线程也会被终止。
-
-== ThreadPoolExecutor
 
 === 线程池状态
 

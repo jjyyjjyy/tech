@@ -295,8 +295,6 @@ NOTE: Class#getDeclaredMethods不包含从父类继承过来的方法.
 include::../basic-knowledge/src/main/java/me/jy/lang/generic/GenericDemo.java[]
 ----
 
-== 多线程
-
 == ClassLoader
 
 * loadClass 实现双亲委托模型
