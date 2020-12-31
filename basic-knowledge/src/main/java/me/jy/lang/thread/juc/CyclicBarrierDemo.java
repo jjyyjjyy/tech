@@ -9,9 +9,6 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * 栅栏锁
- * 作用: 可以设置线程执行完后的回调.
- *
  * @author jy
  */
 @Slf4j

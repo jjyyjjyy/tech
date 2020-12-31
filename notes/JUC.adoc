@@ -436,7 +436,7 @@ abstract class Striped64 extends Number {
 <5> 尝试扩容cells.
 <6> 修改当前线程存储的随机数, 使其归属到别的cell中, 避免竞争.
 
-== JUC工具类
+== JUC锁
 
 === ReentrantLock
 
@@ -716,6 +716,7 @@ public class ConditionObject implements Condition, java.io.Serializable {
         int savedState = enableWait(node);
         LockSupport.setCurrentBlocker(this);
         boolean interrupted = false, cancelled = false;
+        // 判断是否在AQS的等待队列里(有其他线程notify时会将该node加入到等待队列里)
         while (!canReacquire(node)) {
             if (interrupted |= Thread.interrupted()) {
                 if (cancelled = (node.getAndUnsetStatus(COND) & COND) != 0)
@@ -731,7 +732,9 @@ public class ConditionObject implements Condition, java.io.Serializable {
         }
         LockSupport.setCurrentBlocker(null);
         node.clearStatus();
+        // 阻塞结束, 重新竞争锁.
         acquire(node, savedState, false, false, false, 0L);
+        // 如果是内部中断导致的唤醒, 则继续抛出中断异常.
         if (interrupted) {
             if (cancelled) {
                 unlinkCancelledWaiters(node);
@@ -764,7 +767,9 @@ public class ConditionObject implements Condition, java.io.Serializable {
                 // 队列为空, 清空尾结点
                 lastWaiter = null;
             if ((first.getAndUnsetStatus(COND) & COND) != 0) {
+                // 将当前第一个node加入到等待队列里, 从而唤醒一个await线程.
                 enqueue(first);
+                // 如果不是signalAll, 则只需要唤醒第一个node
                 if (!all)
                     break;
             }
@@ -776,7 +781,7 @@ public class ConditionObject implements Condition, java.io.Serializable {
 
 === ReentrantReadWriteLock
 
-`ReentrantReadWriteLock` 实现了读写互斥, 但是读读不互斥.
+`ReentrantReadWriteLock` 实现了读写/写写互斥, 但是读读不互斥.
 
 .ReentrantReadWriteLock类图
 plantuml::charts/java/ReentrantReadWriteLock.puml[format=svg]
@@ -950,11 +955,322 @@ static final class FairSync extends Sync {
 }
 ----
 
+=== StampedLock
+
+`StampedLock` 实现了写写互斥, 但是读读/读写不互斥.
+
+==== StampedLock例子
+
+[StampedLockDemo,java]
+.filename.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/StampedLockDemo.java[]
+----
+
+==== 实现
+
+`StampedLock` 的state变量维护了锁的版本号, 低7位标识了读锁状态, 第8位标识了写锁状态, 因为写锁标志只有1位, 所以写锁不能重入.
+
+* `state` : 默认为 stem:[1"<<"8] .
+* `WBIT` : 值为 stem:[1"<<"7] , 第8位为写锁标志.
+* `RBITS` : 值为 stem:[1"<<"7-1] , 低7位为读锁标志, RBITS减1即为读锁的数量.
+* `ABITS` : 值为 stem:["WBIT"|"RBITS"] (即8个1).
+* `SBITS` : 值为 stem:[~"RBITS"]
+
+[source,java]
+.StampedLock.java
+----
+public class StampedLock implements java.io.Serializable {
+
+    public long writeLock() {
+        // 重置低8位, 只有当低8位都为0的时候可以直接获得锁.
+        long s = U.getLongOpaque(this, STATE) & ~ABITS, nextState;
+        // 设置第8位为1.
+        if (casState(s, nextState = s | WBIT)) {
+            U.storeStoreFence();
+            return nextState;
+        }
+        return acquireWrite(false, false, 0L);
+    }
+
+    private long acquireWrite(boolean interruptible, boolean timed, long time) {
+        byte spins = 0, postSpins = 0;   // retries upon unpark of first thread
+        boolean interrupted = false, first = false;
+        WriterNode node = null;
+        Node pred = null;
+        for (long s, nextState;;) {
+            if (!first && (pred = (node == null) ? null : node.prev) != null &&
+                !(first = (head == pred))) {
+                if (pred.status < 0) {
+                    cleanQueue();           // predecessor cancelled
+                    continue;
+                } else if (pred.prev == null) {
+                    Thread.onSpinWait();    // ensure serialization
+                    continue;
+                }
+            }
+            if ((first || pred == null) && ((s = state) & ABITS) == 0L &&
+                casState(s, nextState = s | WBIT)) {
+                U.storeStoreFence();
+                if (first) {
+                    node.prev = null;
+                    head = node;
+                    pred.next = null;
+                    node.waiter = null;
+                    if (interrupted)
+                        Thread.currentThread().interrupt();
+                }
+                return nextState;
+            } else if (node == null) {          // retry before enqueuing
+                node = new WriterNode();
+            } else if (pred == null) {          // try to enqueue
+                Node t = tail;
+                node.setPrevRelaxed(t);
+                if (t == null)
+                    tryInitializeHead();
+                else if (!casTail(t, node))
+                    node.setPrevRelaxed(null);  // back out
+                else
+                    t.next = node;
+            } else if (first && spins != 0) {   // reduce unfairness
+                --spins;
+                Thread.onSpinWait();
+            } else if (node.status == 0) {      // enable signal
+                if (node.waiter == null)
+                    node.waiter = Thread.currentThread();
+                node.status = WAITING;
+            } else {
+                long nanos;
+                spins = postSpins = (byte)((postSpins << 1) | 1);
+                if (!timed)
+                    LockSupport.park(this);
+                else if ((nanos = time - System.nanoTime()) > 0L)
+                    LockSupport.parkNanos(this, nanos);
+                else
+                    break;
+                node.clearStatus();
+                if ((interrupted |= Thread.interrupted()) && interruptible)
+                    break;
+            }
+        }
+        return cancelAcquire(node, interrupted);
+    }
+
+    private long cancelAcquire(Node node, boolean interrupted) {
+        if (node != null) {
+            node.waiter = null;
+            node.status = CANCELLED;
+            cleanQueue();
+            if (node instanceof ReaderNode)
+                signalCowaiters((ReaderNode)node);
+        }
+        return (interrupted || Thread.interrupted()) ? INTERRUPTED : 0L;
+    }
+
+    private static void signalCowaiters(ReaderNode node) {
+        if (node != null) {
+            // 只要有一个ReadLock被唤醒, 就会唤醒所有的ReadLock.
+            for (ReaderNode c; (c = node.cowaiters) != null; ) {
+                if (node.casCowaiters(c, c.cowaiters))
+                    LockSupport.unpark(c.waiter);
+            }
+        }
+    }
+
+    private long releaseWrite(long s) {
+        long nextState = state = unlockWriteState(s);
+        // 唤醒等待队列第一个节点.
+        signalNext(head);
+        return nextState;
+    }
+
+    private static long unlockWriteState(long s) {
+        // 将state加上1<<7, 这样第8位就置0了.
+        return ((s += WBIT) == 0L) ? ORIGIN : s;
+    }
+
+    // 获取乐观锁
+    public long tryOptimisticRead() {
+        long s;
+        // state & WBIT 不为0时, 方法直接返回0, validate(0) 会返回false.
+        return (((s = state) & WBIT) == 0L) ? (s & SBITS) : 0L;
+    }
+
+    public boolean validate(long stamp) {
+        U.loadFence();
+        return (stamp & SBITS) == (state & SBITS);
+    }
+
+}
+----
+
+== JUC工具类
+
 === Semaphore
+
+==== 使用场景
+
+`Semaphore` 提供了资源的并发访问限制, 超过了并发量的线程将会阻塞一直到持有锁的线程释放锁.
+内部也是自己继承了AQS来实现竞争/释放锁的功能, 有公平锁和非公平锁之分.
+
+==== Semaphore例子
+
+[source,java]
+.SemaphoreDemo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/SemaphoreDemo.java[]
+----
+
+==== 实现
+
+[source,java]
+.AbstractQueuedSynchronizer.java
+----
+public abstract class AbstractQueuedSynchronizer {
+    public final void acquireSharedInterruptibly(int arg)
+        throws InterruptedException {
+        if (Thread.interrupted() ||
+            (tryAcquireShared(arg) < 0 &&
+             acquire(null, arg, true, true, false, 0L) < 0))
+            throw new InterruptedException();
+    }
+}
+----
+
+[source,java]
+.Semaphore.java
+----
+public class Semaphore implements java.io.Serializable {
+
+    public void acquire() throws InterruptedException {
+        sync.acquireSharedInterruptibly(1);
+    }
+
+    public void release() {
+        sync.releaseShared(1);
+    }
+
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+
+        Sync(int permits) {
+            setState(permits);
+        }
+
+        final int getPermits() {
+            return getState();
+        }
+
+        final int nonfairTryAcquireShared(int acquires) {
+            for (;;) {
+                int available = getState();
+                int remaining = available - acquires;
+                // CAS修改state, remaining小于0时代表剩余的state不够用了, 线程会去竞争锁.
+                if (remaining < 0 ||
+                    compareAndSetState(available, remaining))
+                    return remaining;
+            }
+        }
+
+        protected final boolean tryReleaseShared(int releases) {
+            for (;;) {
+                int current = getState();
+                int next = current + releases;
+                if (next < current)
+                    throw new Error("Maximum permit count exceeded");
+                // 因为有多个线程持有该锁, 所以释放锁时需要不停CAS修改state.
+                if (compareAndSetState(current, next))
+                    return true;
+            }
+        }
+    }
+}
+----
 
 === CountDownLatch
 
+==== 使用场景
+
+主线程需要等待其他工作线程执行完毕再去执行, 可以使用 `CountDownLatch` .
+
+==== CountDownLatch例子
+
+[source,java]
+.CountDownLatchDemo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/CountDownLatchDemo.java[]
+----
+
+==== 实现
+
+[source,java]
+.CountDownLatch.java
+----
+public class CountDownLatch {
+
+    public void await() throws InterruptedException {
+        sync.acquireSharedInterruptibly(1);
+    }
+
+    public void countDown() {
+        sync.releaseShared(1);
+    }
+
+    private static final class Sync extends AbstractQueuedSynchronizer {
+
+        Sync(int count) {
+            setState(count);
+        }
+
+        // 一直等到state为0时才能竞争到锁.
+        protected int tryAcquireShared(int acquires) {
+            return (getState() == 0) ? 1 : -1;
+        }
+
+        protected boolean tryReleaseShared(int releases) {
+            // 不停地CAS将state减1
+            for (;;) {
+                int c = getState();
+                if (c == 0)
+                    return false;
+                int nextc = c - 1;
+                if (compareAndSetState(c, nextc))
+                    // state减到0, 可以唤醒等待线程.
+                    return nextc == 0;
+            }
+        }
+    }
+}
+----
+
 === CyclicBarrier
+
+==== 使用场景
+
+==== CyclicBarrier例子
+
+[source,java]
+.CyclicBarrierDemo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/CyclicBarrierDemo.java[]
+----
+
+==== 实现
+
+=== Exchanger
+
+==== 使用场景
+
+==== Exchanger例子
+
+==== 实现
+
+=== Phaser
+
+==== 使用场景
+
+==== Phaser例子
+
+==== 实现
 
 == 并发容器
 
