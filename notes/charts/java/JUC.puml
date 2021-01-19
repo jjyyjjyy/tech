@@ -46,7 +46,7 @@ left
 
 right
 
-** 同步工具类
+** 并发工具类
 *** Semaphore
 *** CountDownLatch
 *** CyclicBarrier

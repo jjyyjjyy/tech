@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 /**
  * @author jy
@@ -22,24 +23,24 @@ public class CyclicBarrierDemo {
 
     public static void main(String[] args) {
         CyclicBarrier cyclicBarrier = new CyclicBarrier(THREAD_COUNT, () -> {
-            System.out.println("====== Result ======");
+            log.info("====== Result ======");
             PLAYERS.stream()
                 .sorted(Comparator.comparingLong(a -> a.finishedAt))
                 .forEach(System.out::println);
             THREAD_POOL.shutdownNow();
         });
-        for (int i = 1; i <= THREAD_COUNT; i++) {
-            int tmp = i;
-            THREAD_POOL.execute(() -> {
+
+        IntStream.rangeClosed(1, THREAD_COUNT)
+            .forEach(i -> THREAD_POOL.execute(() -> {
                 try {
                     log.info(" is running!");
-                    TimeUnit.SECONDS.sleep(tmp);
+                    TimeUnit.SECONDS.sleep(i);
                     PLAYERS.add(new Player().setName(Thread.currentThread().getName()).setFinishedAt(Instant.now().getEpochSecond()));
                     cyclicBarrier.await();
+                    log.info(" over!");
                 } catch (Exception ignored) {
                 }
-            });
-        }
+            }));
     }
 
     @Data
