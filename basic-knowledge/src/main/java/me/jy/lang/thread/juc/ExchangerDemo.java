@@ -3,6 +3,7 @@ package me.jy.lang.thread.juc;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Exchanger;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author jy
@@ -23,7 +24,7 @@ public class ExchangerDemo {
             }
         }, "A").start();
 
-        /*new Thread(() -> {
+        new Thread(() -> {
             try {
                 TimeUnit.SECONDS.sleep(3);
                 // 与线程A交换数据
@@ -32,6 +33,6 @@ public class ExchangerDemo {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }, "B").start();*/
+        }, "B").start();
     }
 }

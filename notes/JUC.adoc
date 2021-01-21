@@ -1511,9 +1511,199 @@ public class Exchanger<V> {
 
 ==== 使用场景
 
+* 可以当CountDownLatch或CyclicBarrier用.
+* 与CyclicBarrier不同的是, Phaser可以在使用时动态修改需要同步的线程个数.
+* 支持Phaser嵌套, 可以设置Phaser的父Phaser.
+
 ==== Phaser例子
 
+[source,java]
+.PhaserDemo.java
+----
+include::../basic-knowledge/src/main/java/me/jy/lang/thread/juc/PhaserDemo.java[]
+----
+
 ==== 实现
+
+[source,java]
+.Phaser.java
+----
+public class Phaser {
+
+    // 第1位标识是否同步完成, 第2~32为phase数, 第33~48位为总线程数, 第49~64位为未到达线程数.
+    private volatile long state;
+
+    private final Phaser parent;
+    private final Phaser root;
+
+    private final AtomicReference<QNode> evenQ;
+    private final AtomicReference<QNode> oddQ;
+
+    public Phaser(Phaser parent, int parties) {
+        if (parties >>> PARTIES_SHIFT != 0)
+            throw new IllegalArgumentException("Illegal number of parties");
+        int phase = 0;
+        this.parent = parent;
+        if (parent != null) {
+            final Phaser root = parent.root;
+            this.root = root;
+            this.evenQ = root.evenQ;
+            this.oddQ = root.oddQ;
+            if (parties != 0)
+                phase = parent.doRegister(1);
+        }
+        else {
+            this.root = this;
+            this.evenQ = new AtomicReference<QNode>();
+            this.oddQ = new AtomicReference<QNode>();
+        }
+        // 设置2~32位, 33~48位, 49~64位 为parties
+        this.state = (parties == 0) ? (long)EMPTY :
+            ((long)phase << PHASE_SHIFT) |
+            ((long)parties << PARTIES_SHIFT) |
+            ((long)parties);
+    }
+
+    public int awaitAdvance(int phase) {
+        final Phaser root = this.root;
+        long s = (root == this) ? state : reconcileState();
+        // 右移32位得到state里的phase数
+        int p = (int)(s >>> PHASE_SHIFT);
+        if (phase < 0)
+            return phase;
+        if (p == phase)
+            return root.internalAwaitAdvance(phase, null);
+        return p;
+    }
+
+    private int internalAwaitAdvance(int phase, QNode node) {
+        // 唤醒阻塞在前面phase阶段的线程
+        releaseWaiters(phase-1);          // ensure old queue clean
+        boolean queued = false;           // true when node is enqueued
+        int lastUnarrived = 0;            // to increase spins upon change
+        int spins = SPINS_PER_ARRIVAL;
+        long s;
+        int p;
+        while ((p = (int)((s = state) >>> PHASE_SHIFT)) == phase) {
+            if (node == null) {           // spinning in noninterruptible mode
+                int unarrived = (int)s & UNARRIVED_MASK;
+                if (unarrived != lastUnarrived &&
+                    (lastUnarrived = unarrived) < NCPU)
+                    spins += SPINS_PER_ARRIVAL;
+                boolean interrupted = Thread.interrupted();
+                // 如果被打断, 或者自旋结束, 则创建一个QNode
+                if (interrupted || --spins < 0) { // need node to record intr
+                    node = new QNode(this, phase, false, false, 0L);
+                    node.wasInterrupted = interrupted;
+                }
+                else
+                    // 首先空自旋
+                    Thread.onSpinWait();
+            }
+            else if (node.isReleasable()) // done or aborted
+                break;
+            else if (!queued) {           // push onto queue
+                AtomicReference<QNode> head = (phase & 1) == 0 ? evenQ : oddQ;
+                QNode q = node.next = head.get();
+                // 加入到队列头部, phase为奇数时加入到evenQ, phase为偶数时加入到oddQ.
+                if ((q == null || q.phase == phase) &&
+                    (int)(state >>> PHASE_SHIFT) == phase) // avoid stale enq
+                    queued = head.compareAndSet(q, node);
+            }
+            else {
+                try {
+                    // 将当前node阻塞.
+                    ForkJoinPool.managedBlock(node);
+                } catch (InterruptedException cantHappen) {
+                    node.wasInterrupted = true;
+                }
+            }
+        }
+
+        if (node != null) {
+            if (node.thread != null)
+                node.thread = null;       // avoid need for unpark()
+            if (node.wasInterrupted && !node.interruptible)
+                Thread.currentThread().interrupt();
+            if (p == phase && (p = (int)(state >>> PHASE_SHIFT)) == phase)
+                return abortWait(phase); // possibly clean up on abort
+        }
+        // 唤醒阻塞在当前phase阶段的线程
+        releaseWaiters(phase);
+        return p;
+    }
+
+    private void releaseWaiters(int phase) {
+        QNode q;   // first element of queue
+        Thread t;  // its thread
+        AtomicReference<QNode> head = (phase & 1) == 0 ? evenQ : oddQ;
+        while ((q = head.get()) != null &&
+               q.phase != (int)(root.state >>> PHASE_SHIFT)) {
+            if (head.compareAndSet(q, q.next) &&
+                (t = q.thread) != null) {
+                q.thread = null;
+                LockSupport.unpark(t);
+            }
+        }
+    }
+
+    public int arrive() {
+        // arrive后将未到达线程数减1.
+        return doArrive(1);
+    }
+
+    public int arriveAndDeregister() {
+        // arrive后将未到达线程数和总线程数都减1
+        return doArrive(65537);
+    }
+
+    private int doArrive(int adjust) {
+        final Phaser root = this.root;
+        for (;;) {
+            long s = (root == this) ? state : reconcileState();
+            int phase = (int)(s >>> PHASE_SHIFT);
+            if (phase < 0)
+                return phase;
+            int counts = (int)s;
+            int unarrived = (counts == EMPTY) ? 0 : (counts & UNARRIVED_MASK);
+            if (unarrived <= 0)
+                throw new IllegalStateException(badArrive(s));
+            // 将state减去adjust
+            if (STATE.compareAndSet(this, s, s-=adjust)) {
+                // 减到最后一个线程
+                if (unarrived == 1) {
+                    long n = s & PARTIES_MASK;
+                    // 将总线程数赋值到未到达的线程数, 从而实现Phaser复用
+                    int nextUnarrived = (int)n >>> PARTIES_SHIFT;
+                    if (root == this) {
+                        if (onAdvance(phase, nextUnarrived))
+                            n |= TERMINATION_BIT;
+                        else if (nextUnarrived == 0)
+                            n |= EMPTY;
+                        else
+                            n |= nextUnarrived;
+                        // 先将phase+1, 再修改当前state
+                        int nextPhase = (phase + 1) & MAX_PHASE;
+                        n |= (long)nextPhase << PHASE_SHIFT;
+                        STATE.compareAndSet(this, s, n);
+                        // 释放当前phase的线程
+                        releaseWaiters(phase);
+                    }
+                    // 当前Phaser总线程数为0, 说明当前线程已经全部取消注册, 所以通知父级Phaser减65537(反注册一个总线程同时将未到达线程数减一)
+                    else if (nextUnarrived == 0) { // propagate deregistration
+                        phase = parent.doArrive(ONE_DEREGISTER);
+                        STATE.compareAndSet(this, s, s | EMPTY);
+                    }
+                    else
+                        // 通知父级Phaser减1.
+                        phase = parent.doArrive(ONE_ARRIVAL);
+                }
+                return phase;
+            }
+        }
+    }
+}
+----
 
 === LockSupport
 
@@ -1523,13 +1713,904 @@ public class Exchanger<V> {
 
 === BlockingQueue
 
+==== api
+
+|===
+| 方法 | 抛出异常 | 返回特殊值 | 阻塞 | 超时时间控制
+
+| 插入
+a|
+boolean add(e) 队列满了抛出异常, 否则插入成功返回true.
+a|
+boolean offer(e) 队列满了返回false, 否则插入成功返回true.
+a|
+void put(e) 队列满了会一直阻塞, 一直到可以插入.
+a|
+boolean offer(e, time, unit) 队列满了会等待指定时间直到能插入.
+
+| 删除
+a|
+E remove() 队列如果为空抛出异常, 否则直接删除队列头部元素.
+a|
+E poll() 队列如果为空返回null, 否则直接删除队列头部元素.
+a|
+E take() 队列为空会一直阻塞, 一直到队列存在元素.
+a|
+poll(time, unit) 队列为空会等待指定时间直到能删除.
+
+| 查看头部元素
+a|
+E element() 队列如果为空抛出异常, 否则返回队列头部元素.
+a|
+E peek() 队列如果为空返回null, 否则返回队列头部元素.
+| -
+| -
+
+|===
+
+==== ArrayBlockingQueue
+
+`ArrayBlockingQueue` 是一个用数组实现的环形队列, 初始化时会指定数组的长度.
+插入和删除使用 `ReentrantLock` 实现加锁和释放锁了来实现线程安全.
+
+[source,java]
+.ArrayBlockingQueue.java
+----
+public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+
+    final Object[] items;
+    int takeIndex;
+    int putIndex;
+    int count;
+
+    final ReentrantLock lock;
+    private final Condition notEmpty;
+    private final Condition notFull;
+
+    public ArrayBlockingQueue(int capacity, boolean fair) {
+        if (capacity <= 0)
+            throw new IllegalArgumentException();
+        this.items = new Object[capacity];
+        lock = new ReentrantLock(fair);
+        notEmpty = lock.newCondition();
+        notFull =  lock.newCondition();
+    }
+
+    public boolean add(E e) {
+        if (offer(e))
+            return true;
+        else
+            // 队列满了抛出异常
+            throw new IllegalStateException("Queue full");
+    }
+
+    public boolean offer(E e) {
+        Objects.requireNonNull(e);
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            if (count == items.length)
+                return false;
+            else {
+                enqueue(e);
+                return true;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void enqueue(E e) {
+        final Object[] items = this.items;
+        // 将元素插入到items数组里
+        items[putIndex] = e;
+        // putIndex即为队列尾部索引
+        if (++putIndex == items.length) putIndex = 0;
+        count++;
+        notEmpty.signal();
+    }
+
+    public void put(E e) throws InterruptedException {
+        Objects.requireNonNull(e);
+        final ReentrantLock lock = this.lock;
+        lock.lockInterruptibly();
+        try {
+            // 如果数组满了则阻塞住
+            while (count == items.length)
+                notFull.await();
+            enqueue(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public E remove() {
+        E x = poll();
+        if (x != null)
+            return x;
+        // 如果数组满了则抛出异常
+        else
+            throw new NoSuchElementException();
+    }
+
+    public E poll() {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            return (count == 0) ? null : dequeue();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private E dequeue() {
+        final Object[] items = this.items;
+        @SuppressWarnings("unchecked")
+        E e = (E) items[takeIndex];
+        // 删除数组元素
+        items[takeIndex] = null;
+        // takeIndex即为队列头部索引
+        if (++takeIndex == items.length) takeIndex = 0;
+        count--;
+        if (itrs != null)
+            itrs.elementDequeued();
+        // 唤醒阻塞在notFull的线程
+        notFull.signal();
+        return e;
+    }
+
+    public E take() throws InterruptedException {
+        final ReentrantLock lock = this.lock;
+        lock.lockInterruptibly();
+        try {
+            // 数组为空时阻塞
+            while (count == 0)
+                notEmpty.await();
+            return dequeue();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public E element() {
+        E x = peek();
+        if (x != null)
+            return x;
+        // 数组为空时抛出异常
+        else
+            throw new NoSuchElementException();
+    }
+
+    public E peek() {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            // 直接返回takeIndex所在元素(队列头部)
+            return itemAt(takeIndex); // null when queue is empty
+        } finally {
+            lock.unlock();
+        }
+    }
+
+}
+----
+
+==== LinkedBlockingQueue
+
+`LinkedBlockingQueue` 是基于单向链表实现的阻塞队列, 默认最大容量为 `Integer.MAX_VALUE` .
+内部分别为put和take持有锁, 所以put和put互斥, take和take互斥, put和take不互斥.
+
+[source,java]
+.LinkedBlockingQueue.java
+----
+public class LinkedBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+
+    // 单向链表节点
+    static class Node<E> {
+        E item;
+        Node<E> next;
+        Node(E x) { item = x; }
+    }
+
+    private final int capacity;
+    private final AtomicInteger count = new AtomicInteger();
+    transient Node<E> head;
+    private transient Node<E> last;
+
+    private final ReentrantLock takeLock = new ReentrantLock();
+    private final ReentrantLock putLock = new ReentrantLock();
+    private final Condition notEmpty = takeLock.newCondition();
+    private final Condition notFull = putLock.newCondition();
+
+    public boolean offer(E e) {
+        if (e == null) throw new NullPointerException();
+        final AtomicInteger count = this.count;
+        if (count.get() == capacity)
+            return false;
+        final int c;
+        final Node<E> node = new Node<E>(e);
+        final ReentrantLock putLock = this.putLock;
+        putLock.lock();
+        try {
+            // 判断队列是否满了
+            if (count.get() == capacity)
+                return false;
+            // 加入到队尾
+            enqueue(node);
+            c = count.getAndIncrement();
+            if (c + 1 < capacity)
+                notFull.signal();
+        } finally {
+            putLock.unlock();
+        }
+        if (c == 0)
+            signalNotEmpty();
+        return true;
+    }
+
+    public void put(E e) throws InterruptedException {
+        if (e == null) throw new NullPointerException();
+        final int c;
+        final Node<E> node = new Node<E>(e);
+        final ReentrantLock putLock = this.putLock;
+        final AtomicInteger count = this.count;
+        putLock.lockInterruptibly();
+        try {
+            // 队列满了阻塞
+            while (count.get() == capacity) {
+                notFull.await();
+            }
+            enqueue(node);
+            c = count.getAndIncrement();
+            if (c + 1 < capacity)
+                // LinkedBlockingQueue的put也会唤醒其他的put操作
+                notFull.signal();
+        } finally {
+            putLock.unlock();
+        }
+        if (c == 0)
+            signalNotEmpty();
+    }
+
+    public E poll() {
+        final AtomicInteger count = this.count;
+        if (count.get() == 0)
+            return null;
+        final E x;
+        final int c;
+        final ReentrantLock takeLock = this.takeLock;
+        takeLock.lock();
+        try {
+            // 队列为空返回null
+            if (count.get() == 0)
+                return null;
+            x = dequeue();
+            c = count.getAndDecrement();
+            if (c > 1)
+                // LinkedBlockingQueue的poll也会唤醒其他的poll操作
+                notEmpty.signal();
+        } finally {
+            takeLock.unlock();
+        }
+        if (c == capacity)
+            // 唤醒阻塞在notFull的线程
+            signalNotFull();
+        return x;
+    }
+
+    private void enqueue(Node<E> node) {
+        last = last.next = node;
+    }
+
+    private E dequeue() {
+        Node<E> h = head;
+        Node<E> first = h.next;
+        h.next = h; // help GC
+        head = first;
+        // head为标识队列头的哑元节点, 此处将head.next变为head, 并将item清除
+        E x = first.item;
+        first.item = null;
+        return x;
+    }
+
+}
+----
+
+==== PriorityBlockingQueue
+
+`PriorityBlockingQueue` 会将元素排好序存放.
+
+[source,java]
+.PriorityBlockingQueue.java
+----
+public class PriorityBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+
+    private transient Object[] queue;
+
+    private transient Comparator<? super E> comparator;
+
+    private final ReentrantLock lock = new ReentrantLock();
+    // PriorityBlockingQueue因为会无限增长, 所以只会有notEmpty的等待条件
+    private final Condition notEmpty = lock.newCondition();
+
+    public PriorityBlockingQueue(int initialCapacity,
+                                 Comparator<? super E> comparator) {
+        if (initialCapacity < 1)
+            throw new IllegalArgumentException();
+        this.comparator = comparator;
+        this.queue = new Object[Math.max(1, initialCapacity)];
+    }
+
+    // 不存在插入不了的情况, 所以add/put都直接调用的offer
+    public boolean add(E e) {
+        return offer(e);
+    }
+
+    public void put(E e) {
+        offer(e); // never need to block
+    }
+
+    public boolean offer(E e) {
+        if (e == null)
+            throw new NullPointerException();
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        int n, cap;
+        Object[] es;
+        // 如果queue数组满了, 则扩容
+        while ((n = size) >= (cap = (es = queue).length))
+            tryGrow(es, cap);
+        try {
+            final Comparator<? super E> cmp;
+            if ((cmp = comparator) == null)
+                siftUpComparable(n, e, es);
+            else
+                siftUpUsingComparator(n, e, es, cmp);
+            size = n + 1;
+            notEmpty.signal();
+        } finally {
+            lock.unlock();
+        }
+        return true;
+    }
+
+    private void tryGrow(Object[] array, int oldCap) {
+        lock.unlock(); // must release and then re-acquire main lock
+        Object[] newArray = null;
+        if (allocationSpinLock == 0 &&
+            ALLOCATIONSPINLOCK.compareAndSet(this, 0, 1)) {
+            try {
+                // 扩容两倍或直接+2
+                int growth = oldCap < 64 ? oldCap + 2 : oldCap >> 1;
+                int newCap = ArraysSupport.newLength(oldCap, 1, growth);
+                if (queue == array)
+                    newArray = new Object[newCap];
+            } finally {
+                allocationSpinLock = 0;
+            }
+        }
+        if (newArray == null) // back off if another thread is allocating
+            Thread.yield();
+        lock.lock();
+        if (newArray != null && queue == array) {
+            queue = newArray;
+            System.arraycopy(array, 0, newArray, 0, oldCap);
+        }
+    }
+
+    public E remove() {
+        E x = poll();
+        if (x != null)
+            return x;
+        else
+            throw new NoSuchElementException();
+    }
+
+    public E poll() {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            return dequeue();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public E take() throws InterruptedException {
+        final ReentrantLock lock = this.lock;
+        lock.lockInterruptibly();
+        E result;
+        try {
+            // 如果队列没有元素, 则阻塞
+            while ( (result = dequeue()) == null)
+                notEmpty.await();
+        } finally {
+            lock.unlock();
+        }
+        return result;
+    }
+
+    // 二叉堆删除元素
+    private E dequeue() {
+        // assert lock.isHeldByCurrentThread();
+        final Object[] es;
+        final E result;
+
+        if ((result = (E) ((es = queue)[0])) != null) {
+            final int n;
+            final E x = (E) es[(n = --size)];
+            es[n] = null;
+            if (n > 0) {
+                final Comparator<? super E> cmp;
+                if ((cmp = comparator) == null)
+                    siftDownComparable(0, x, es, n);
+                else
+                    siftDownUsingComparator(0, x, es, n, cmp);
+            }
+        }
+        return result;
+    }
+
+}
+----
+
+==== DelayQueue
+
+`DelayQueue` 是一个按照延迟时间从小到大出队的优先队列.
+
+[source,java]
+.DelayQueue.java
+----
+public interface Delayed extends Comparable<Delayed> {
+    long getDelay(TimeUnit unit);
+}
+
+public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements BlockingQueue<E> {
+    private Thread leader;
+    private final PriorityQueue<E> q = new PriorityQueue<E>();
+    private final transient ReentrantLock lock = new ReentrantLock();
+    // queue非空的条件变量
+    private final Condition available = lock.newCondition();
+
+    // 与PriorityBlokingQueue一样, 没有容量的限制, 所以add/put都直接调用的offer
+    public boolean add(E e) {
+        return offer(e);
+    }
+
+    public void put(E e) {
+        offer(e);
+    }
+
+    public boolean offer(E e) {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            q.offer(e);
+            // 只有当堆顶的元素为新插入的元素才需要唤醒阻塞在take的线程
+            if (q.peek() == e) {
+                leader = null;
+                available.signal();
+            }
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public E remove() {
+        E x = poll();
+        if (x != null)
+            return x;
+        else
+            throw new NoSuchElementException();
+    }
+
+    public E poll() {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            E first = q.peek();
+            // 当第一个元素的超时时间大于0的时候, 直接返回null, 否则返回第一个元素
+            return (first == null || first.getDelay(NANOSECONDS) > 0)
+                ? null
+                : q.poll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public E take() throws InterruptedException {
+        final ReentrantLock lock = this.lock;
+        lock.lockInterruptibly();
+        try {
+            for (;;) {
+                // 取出延迟时间最小的元素
+                E first = q.peek();
+                // 如果为空则阻塞
+                if (first == null)
+                    available.await();
+                else {
+                    long delay = first.getDelay(NANOSECONDS);
+                    if (delay <= 0L)
+                        return q.poll();
+                    first = null; // don't retain ref while waiting
+                    if (leader != null)
+                        // 如果有其他线程在等待元素, 则阻塞住.
+                        available.await();
+                    else {
+                        Thread thisThread = Thread.currentThread();
+                        leader = thisThread;
+                        try {
+                            // 等待队列头部元素的delay时间
+                            available.awaitNanos(delay);
+                        } finally {
+                            if (leader == thisThread)
+                                leader = null;
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (leader == null && q.peek() != null)
+                // 取出队列头部的元素后, 唤醒其他阻塞在take的线程
+                available.signal();
+            lock.unlock();
+        }
+    }
+}
+----
+
+==== SynchronousQueue
+
+`SynchronousQueue` 本身不存储元素, 插入元素后会阻塞, 一直到有其他线程取出元素.
+存在非公平和公平两种模式(默认非公平), 公平下第一次take的元素为第一个put进去的元素, 非公平下第一次take的元素为最后一个put进去的元素.
+
+[source,java]
+.SynchronousQueue.java
+----
+public class SynchronousQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+    public SynchronousQueue() {
+        this(false);
+    }
+
+    public SynchronousQueue(boolean fair) {
+        // 默认为非公平
+        transferer = fair ? new TransferQueue<E>() : new TransferStack<E>();
+    }
+
+    public void put(E e) throws InterruptedException {
+        if (e == null) throw new NullPointerException();
+        // 插入元素时第一个参数传这个元素
+        if (transferer.transfer(e, false, 0) == null) {
+            Thread.interrupted();
+            throw new InterruptedException();
+        }
+    }
+
+    public boolean offer(E e) {
+        if (e == null) throw new NullPointerException();
+        return transferer.transfer(e, true, 0) != null;
+    }
+
+    public E poll() {
+        // 取出元素时第一个参数传null
+        return transferer.transfer(null, true, 0);
+    }
+
+    public E take() throws InterruptedException {
+        E e = transferer.transfer(null, false, 0);
+        if (e != null)
+            return e;
+        Thread.interrupted();
+        throw new InterruptedException();
+    }
+
+}
+----
+
 === BlockingDeque
+
+`BlockingDeque` 继承了 `BlockingQueue` , 增加了对队列头部和尾部元素操作的api.
+`BlockingDeque` 的实现类只有 `LinkedBlockingDeque` .
+
+==== LinkedBlockingDeque
+
+[source,java]
+.LinkedBlockingDeque.java
+----
+public class LinkedBlockingDeque<E> extends AbstractQueue<E> implements BlockingDeque<E>, java.io.Serializable {
+
+    // 双向链表节点
+    static final class Node<E> {
+        E item;
+        Node<E> prev;
+        Node<E> next;
+        Node(E x) {
+            item = x;
+        }
+    }
+
+    // 头节点
+    transient Node<E> first;
+    // 尾节点
+    transient Node<E> last;
+    // 节点总数
+    private transient int count;
+    // 链表容量
+    private final int capacity;
+
+    final ReentrantLock lock = new ReentrantLock();
+    private final Condition notEmpty = lock.newCondition();
+    private final Condition notFull = lock.newCondition();
+
+    public LinkedBlockingDeque() {
+        this(Integer.MAX_VALUE);
+    }
+
+    public LinkedBlockingDeque(int capacity) {
+        if (capacity <= 0) throw new IllegalArgumentException();
+        this.capacity = capacity;
+    }
+
+    public void putFirst(E e) throws InterruptedException {
+        if (e == null) throw new NullPointerException();
+        Node<E> node = new Node<E>(e);
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            // 队列满了会阻塞
+            while (!linkFirst(node))
+                notFull.await();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private boolean linkFirst(Node<E> node) {
+        if (count >= capacity)
+            return false;
+        Node<E> f = first;
+        // node的next为当前的头节点
+        node.next = f;
+        // 将头节点改为node
+        first = node;
+        if (last == null)
+            last = node;
+        else
+            f.prev = node;
+        ++count;
+        // 唤醒阻塞在notEmpty条件变量的线程
+        notEmpty.signal();
+        return true;
+    }
+
+    public E takeLast() throws InterruptedException {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            E x;
+            // 链表空时会阻塞
+            while ( (x = unlinkLast()) == null)
+                notEmpty.await();
+            return x;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private E unlinkLast() {
+        Node<E> l = last;
+        if (l == null)
+            return null;
+        Node<E> p = l.prev;
+        E item = l.item;
+        l.item = null;
+        // 改掉last.prev指针, 防止强引用无法回收last节点
+        l.prev = l;
+        // last = last.prev
+        last = p;
+        if (p == null)
+            first = null;
+        else
+            p.next = null;
+        --count;
+        // 唤醒阻塞在notFull条件变量的线程
+        notFull.signal();
+        return item;
+    }
+}
+----
 
 === CopyOnWrite
 
+`CopyOnWrite` 指的是在写数据的时候将源数据拷贝出来一份作修改, 然后将改后的数据作为源数据的引用.
+
+==== CopyOnWriteArrayList
+
+[source,java]
+.CopyOnWriteArrayList.java
+----
+public class CopyOnWriteArrayList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+
+    // 写操作的锁对象(synchronized锁)
+    final transient Object lock = new Object();
+
+    private transient volatile Object[] array;
+
+    public boolean add(E e) {
+        synchronized (lock) {
+            Object[] es = getArray();
+            int len = es.length;
+            // 先拷贝出来一份数组
+            es = Arrays.copyOf(es, len + 1);
+            // 写入到拷贝出来的数组
+            es[len] = e;
+            // 重新赋值数组
+            setArray(es);
+            return true;
+        }
+    }
+
+    public boolean addIfAbsent(E e) {
+        Object[] snapshot = getArray();
+        // 先不加锁判断数组是否包含该元素, 然后加锁再判断一次, 如果不存在则插入元素
+        return indexOfRange(e, snapshot, 0, snapshot.length) < 0
+            && addIfAbsent(e, snapshot);
+    }
+
+    public E remove(int index) {
+        synchronized (lock) {
+            Object[] es = getArray();
+            int len = es.length;
+            E oldValue = elementAt(es, index);
+            int numMoved = len - index - 1;
+            Object[] newElements;
+            if (numMoved == 0)
+                // 如果删除的是最后一个元素, 则直接复制数组的0~len-1位
+                newElements = Arrays.copyOf(es, len - 1);
+            else {
+                // 将删除位置的左右两侧复制到新的数组里
+                newElements = new Object[len - 1];
+                System.arraycopy(es, 0, newElements, 0, index);
+                System.arraycopy(es, index + 1, newElements, index,
+                                 numMoved);
+            }
+            setArray(newElements);
+            return oldValue;
+        }
+    }
+}
+----
+
+==== CopyOnWriteArraySet
+
+`CopyOnWriteArraySet` 内部还是使用的 `CopyOnWriteArrayList` , 只是添加元素的时候判断不存在才添加.
+
+[source,java]
+.CopyOnWriteArraySet.java
+----
+public class CopyOnWriteArraySet<E> extends AbstractSet<E> implements java.io.Serializable {
+
+    private final CopyOnWriteArrayList<E> al;
+
+    public CopyOnWriteArraySet() {
+        al = new CopyOnWriteArrayList<E>();
+    }
+
+    // 判断不存在则插入元素
+    public boolean add(E e) {
+        return al.addIfAbsent(e);
+    }
+}
+----
+
 === ConcurrentLinkedQueue
 
+`ConcurrentLinkedQueue` 通过对head和tail节点的next指针进行CAS操作实现入队和出队, 而非使用ReentrantLock悲观锁直接操作队列的head和tail节点.
+个人猜测是因为CAS只能操作一个变量, 没法同时更新tail和tail.next, 所以插入和删除时优先更新tail.next指针和head.item, 然后才尝试cas修改head和tail节点.
+
+[source,java]
+.ConcurrentLinkedQueue.java
+----
+public class ConcurrentLinkedQueue<E> extends AbstractQueue<E> implements Queue<E>, java.io.Serializable {
+
+    static final class Node<E> {
+        volatile E item;
+        volatile Node<E> next;
+
+        Node(E item) {
+            ITEM.set(this, item);
+        }
+        Node() {}
+
+        void appendRelaxed(Node<E> next) {
+            NEXT.set(this, next);
+        }
+
+        boolean casItem(E cmp, E val) {
+            return ITEM.compareAndSet(this, cmp, val);
+        }
+    }
+
+    public boolean offer(E e) {
+        final Node<E> newNode = new Node<E>(Objects.requireNonNull(e));
+
+        for (Node<E> t = tail, p = t;;) {
+            Node<E> q = p.next;
+            if (q == null) {
+                // 1. tail.next=newNode
+                if (NEXT.compareAndSet(p, null, newNode)) {
+                    if (p != t)
+                        // 3. 第二步操作后, p就不等于tail, 这时候更新tail=tail.next(newNode)
+                        TAIL.weakCompareAndSet(this, t, newNode);
+                    return true;
+                }
+            }
+            // 如果p==p.next, 说明有其他线程更新了head节点, 当前遍历的属于清空数据的脏节点(详见updateHead方法), 更新下p和t变量
+            else if (p == q)
+                p = (t != (t = tail)) ? t : head;
+            else
+                // 2. 第一次没有去更新tail, 只是设置了tail的next指针. 所以q!=null, 这时更新p=p.next
+                p = (p != t && t != (t = tail)) ? t : q;
+        }
+    }
+
+    public E poll() {
+        restartFromHead: for (;;) {
+            for (Node<E> h = head, p = h, q;; p = q) {
+                final E item;
+                // 第一次删除节点时, 只是将head.item设置为null
+                // 第二次删除节点时, 先将p=p.next, 然后将更新后p的next清空
+                if ((item = p.item) != null && p.casItem(item, null)) {
+                    // 第二次删除元素后, p=p.next, 所以此时p!=h
+                    if (p != h)
+                        // 如果p.next不为null, 则将head更新为p.next(存储数据的节点), 否则更新为p(哑元节点)
+                        updateHead(h, ((q = p.next) != null) ? q : p);
+                    return item;
+                }
+                // 如果p和p.next都为null, 代表整个队列都没节点, 可以直接返回null
+                else if ((q = p.next) == null) {
+                    updateHead(h, p);
+                    return null;
+                }
+                // 如果p==p.next, 说明有其他线程更新了head节点, 当前遍历的属于清空数据的脏节点(详见updateHead方法), 重新遍历来取到最新的head
+                else if (p == q)
+                    continue restartFromHead;
+            }
+        }
+    }
+
+    public boolean isEmpty() {
+        return first() == null;
+    }
+
+    Node<E> first() {
+        restartFromHead: for (;;) {
+            for (Node<E> h = head, p = h, q;; p = q) {
+                boolean hasItem = (p.item != null);
+                if (hasItem || (q = p.next) == null) {
+                    updateHead(h, p);
+                    return hasItem ? p : null;
+                }
+                // 如果p==p.next, 说明有其他线程更新了head节点, 当前遍历的属于清空数据的脏节点(详见updateHead方法), 重新遍历来取到最新的head
+                else if (p == q)
+                    continue restartFromHead;
+            }
+        }
+    }
+
+    final void updateHead(Node<E> h, Node<E> p) {
+        // 更新head为p
+        if (h != p && HEAD.compareAndSet(this, h, p))
+            // 将旧head节点的next指针指向自己, 防止旧head节点因为next指针指向新的head(强引用)导致不被GC
+            NEXT.setRelease(h, h);
+    }
+}
+----
+
 === ConcurrentLinkedDeque
+
+`ConcurrentLinkedDeque` 的实现与 `ConcurrentLinkedQueue` 类似, 区别是 `ConcurrentLinkedDeque` 使用双向链表存储节点.
 
 === ConcurrentHashMap
 
