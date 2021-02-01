@@ -24,19 +24,19 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- dependencies -->
-        <spring-boot.version>2.4.1</spring-boot.version>
+        <spring-boot.version>2.4.2</spring-boot.version>
         <spring-cloud.version>Hoxton.SR9</spring-cloud.version>
-        <spring-cloud-alibaba.version>2.2.3.RELEASE</spring-cloud-alibaba.version>
-        <project-reactor.version>Dysprosium-SR15</project-reactor.version>
+        <spring-cloud-alibaba.version>2.2.5.RELEASE</spring-cloud-alibaba.version>
+        <project-reactor.version>Dysprosium-SR16</project-reactor.version>
         <mybatis.version>3.5.6</mybatis.version>
-        <mybatis-plus.version>3.4.1</mybatis-plus.version>
+        <mybatis-plus.version>3.4.2</mybatis-plus.version>
         <guava.version>29.0-jre</guava.version>
         <algs4.version>1.0.4</algs4.version>
         <jmh.version>1.27</jmh.version>
         <junit.version>5.7.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>9.2</nimbus-jose-jwt.version>
-        <netty.version>4.1.56.Final</netty.version>
+        <nimbus-jose-jwt.version>9.4.2</nimbus-jose-jwt.version>
+        <netty.version>4.1.58.Final</netty.version>
         <jol.version>0.14</jol.version>
         <jcstress.version>0.7</jcstress.version>
         <fastjson.version>1.2.75</fastjson.version>

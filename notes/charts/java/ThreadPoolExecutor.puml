@@ -1,0 +1,42 @@
+@startuml
+
+!include ../../charts/global/stylesheet.iuml
+
+interface Executor {
+  + void execute(Runnable);
+}
+
+interface ExecutorService {
+  + void shutdown();
+  + List<Runnable> shutdownNow();
+  + boolean isShutdown();
+  + boolean isTerminated();
+  + boolean awaitTermination(long,TimeUnit);
+  + Future<T> submit(Callable<T> task);
+  + Future<T> submit(Runnable, T);
+  + Future<?> submit(Runnable);
+  + List<Future<T>> invokeAll(Collection<? extends Callable<T>>);
+  + List<Future<T>> invokeAll(Collection<? extends Callable<T>>, long, TimeUnit);
+  + T invokeAny(Collection<? extends Callable<T>>);
+  + T invokeAny(Collection<? extends Callable<T>>, long, TimeUnit);
+}
+
+interface ScheduledExecutorService {
+  + ScheduledFuture<?> schedule(Runnable, long, TimeUnit);
+  + ScheduledFuture<V> schedule(Callable<V>, long, TimeUnit);
+  + ScheduledFuture<?> scheduleAtFixedRate(Runnable, long, long, TimeUnit);
+  + ScheduledFuture<?> scheduleWithFixedDelay(Runnable, long, long, TimeUnit);
+}
+
+abstract class AbstractExecutorService
+class ThreadPoolExecutor
+class ScheduledThreadPoolExecutor
+
+Executor <|-- ExecutorService
+ExecutorService <-- AbstractExecutorService
+ExecutorService <|-- ScheduledExecutorService
+AbstractExecutorService <-- ThreadPoolExecutor
+ThreadPoolExecutor <|-- ScheduledThreadPoolExecutor
+ScheduledExecutorService <-- ScheduledThreadPoolExecutor
+
+@enduml
