@@ -41,7 +41,7 @@
         <jcstress.version>0.7</jcstress.version>
         <fastjson.version>1.2.75</fastjson.version>
         <cglib.versin>3.3.0</cglib.versin>
-        <mapstruct.version>1.4.1.Final</mapstruct.version>
+        <mapstruct.version>1.4.2.Final</mapstruct.version>
         <testcontainer.version>1.15.1</testcontainer.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
