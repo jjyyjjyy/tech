@@ -1,0 +1,17 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+SqlSessionFactory -> SqlSession : openSession
+SqlSession -> MapperRegistry : getMapper
+MapperRegistry -> MapperProxyFactory : newInstance
+MapperProxyFactory -> MapperProxy : new
+MapperProxy -> MapperMethod : execute
+MapperMethod -> SqlSession : insert/update/delete/selectList
+SqlSession -> CachingExecutor : query/update
+CachingExecutor -> BaseExecutor : query/update
+BaseExecutor -> SimpleExecutor : doQuery/doUpdate
+SimpleExecutor -> PreparedStatementHandler : query/update
+PreparedStatementHandler -> PreparedStatementHandler : handleResultSets
+
+@enduml

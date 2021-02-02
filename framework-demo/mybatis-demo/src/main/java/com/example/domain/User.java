@@ -11,7 +11,7 @@ import java.time.Instant;
  * @author jy
  */
 @Data
-@TableName("public.user")
+@TableName("public.ucenter_user")
 public class User {
 
     @TableId(type = IdType.AUTO)

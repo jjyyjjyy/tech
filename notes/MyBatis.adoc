@@ -15,6 +15,9 @@
 
 == MyBatis架构图
 
+[[img-sunset]]
+image::https://resources-1252259164.cos.ap-shanghai.myqcloud.com/images/MyBatis.png[]
+
 == 基础模块
 
 === XML解析
@@ -631,7 +634,365 @@ public class XMLStatementBuilder {
 
 == 执行
 
-=== 开启数据库会话
+plantuml::charts/mybatis/Execution.puml[format=svg]
+
+=== 获取SqlSession
+
+[source,java]
+.DefaultSqlSessionFactory.java
+----
+public class DefaultSqlSessionFactory implements SqlSessionFactory {
+
+    @Override
+    public SqlSession openSession() {
+        return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
+    }
+
+    private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
+        Transaction tx = null;
+        try {
+            final Environment environment = configuration.getEnvironment();
+            final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+            // 创建Transaction对象(默认为JdbcTransaction)
+            tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+            // 创建Executor对象(默认为SimpleExecutor)
+            final Executor executor = configuration.newExecutor(tx, execType);
+            return new DefaultSqlSession(configuration, executor, autoCommit);
+        } catch (Exception e) {
+            closeTransaction(tx); // may have fetched a connection so lets call close()
+            throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+        } finally {
+            ErrorContext.instance().reset();
+        }
+    }
+
+}
+----
+
+[source,java]
+.Configuration.java
+----
+public class Configuration {
+
+    public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+        executorType = executorType == null ? defaultExecutorType : executorType;
+        executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+        Executor executor;
+        // 根据executorType创建对应的Executor实现
+        if (ExecutorType.BATCH == executorType) {
+            executor = new BatchExecutor(this, transaction);
+        } else if (ExecutorType.REUSE == executorType) {
+            executor = new ReuseExecutor(this, transaction);
+        } else {
+            executor = new SimpleExecutor(this, transaction);
+        }
+        if (cacheEnabled) {
+            // 装饰Executor, 提供一级缓存功能
+            executor = new CachingExecutor(executor);
+        }
+        // JDK动态代理executor, 根据插件类上的注解拦截对应的方法
+        executor = (Executor) interceptorChain.pluginAll(executor);
+        return executor;
+    }
+}
+----
 
 === 生成Mapper代理
+
+[source,java]
+.MapperRegistry.java
+----
+public class MapperRegistry {
+
+    public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+        final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
+        if (mapperProxyFactory == null) {
+            throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
+        }
+        try {
+            // 根据Mapper类型获取之前注册Mapper接口创建的MapperProxyFactory对象, 生成一个动态代理Mapper接口的对象.
+            return mapperProxyFactory.newInstance(sqlSession);
+        } catch (Exception e) {
+            throw new BindingException("Error getting mapper instance. Cause: " + e, e);
+        }
+    }
+}
+----
+
+=== 执行Mapper方法
+
+[source,java]
+.MapperProxy.java
+----
+public class MapperProxy<T> implements InvocationHandler, Serializable {
+
+     @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        try {
+            if (Object.class.equals(method.getDeclaringClass())) {
+                return method.invoke(this, args);
+            } else {
+                // 缓存生成的MapperMethod
+                return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
+            }
+        } catch (Throwable t) {
+            throw ExceptionUtil.unwrapThrowable(t);
+        }
+    }
+
+    private MapperProxy.MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
+        try {
+            MapperProxy.MapperMethodInvoker invoker = methodCache.get(method);
+            if (invoker != null) {
+                return invoker;
+            }
+
+            return methodCache.computeIfAbsent(method, m -> {
+                if (m.isDefault()) {
+                    try {
+                        // 如果是default方法, 则用DefaultMethodInvoker调用该方法
+                        if (privateLookupInMethod == null) {
+                            return new MapperProxy.DefaultMethodInvoker(getMethodHandleJava8(method));
+                        } else {
+                            return new MapperProxy.DefaultMethodInvoker(getMethodHandleJava9(method));
+                        }
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException
+                        | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    // 创建一个PlainMethodInvoker用来调用MapperMethod
+                    return new MapperProxy.PlainMethodInvoker(new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
+                }
+            });
+        } catch (RuntimeException re) {
+            Throwable cause = re.getCause();
+            throw cause == null ? re : cause;
+        }
+    }
+}
+----
+
+[source,java]
+.MapperMethod.java
+----
+public class MapperMethod {
+
+    private final SqlCommand command;
+    private final MethodSignature method;
+
+    public Object execute(SqlSession sqlSession, Object[] args) {
+        Object result;
+        // 根据sql类型去调用SqlSession不同的方法
+        switch (command.getType()) {
+            case INSERT: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.insert(command.getName(), param));
+                break;
+            }
+            case UPDATE: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.update(command.getName(), param));
+                break;
+            }
+            case DELETE: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.delete(command.getName(), param));
+                break;
+            }
+            case SELECT:
+                if (method.returnsVoid() && method.hasResultHandler()) {
+                    executeWithResultHandler(sqlSession, args);
+                    result = null;
+                } else if (method.returnsMany()) {
+                    result = executeForMany(sqlSession, args);
+                } else if (method.returnsMap()) {
+                    result = executeForMap(sqlSession, args);
+                } else if (method.returnsCursor()) {
+                    result = executeForCursor(sqlSession, args);
+                } else {
+                    Object param = method.convertArgsToSqlCommandParam(args);
+                    result = sqlSession.selectOne(command.getName(), param);
+                    if (method.returnsOptional()
+                        && (result == null || !method.getReturnType().equals(result.getClass()))) {
+                        result = Optional.ofNullable(result);
+                    }
+                }
+                break;
+            case FLUSH:
+                result = sqlSession.flushStatements();
+                break;
+            default:
+                throw new BindingException("Unknown execution method for: " + command.getName());
+        }
+        if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
+            throw new BindingException("Mapper method '" + command.getName()
+                + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        }
+        return result;
+    }
+}
+----
+
+[source,java]
+.CachingExecutor.java
+----
+public class CachingExecutor extends BaseExecutor {
+
+    @Override
+    public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+        throws SQLException {
+        // 首先从MappedStatement里的二级缓存中取值
+        Cache cache = ms.getCache();
+        if (cache != null) {
+            flushCacheIfRequired(ms);
+            if (ms.isUseCache() && resultHandler == null) {
+                ensureNoOutParams(ms, boundSql);
+                @SuppressWarnings("unchecked")
+                List<E> list = (List<E>) tcm.getObject(cache, key);
+                if (list == null) {
+                    list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+                    tcm.putObject(cache, key, list); // issue #578 and #116
+                }
+                return list;
+            }
+        }
+        return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+}
+----
+
+[source,java]
+.BaseExecutor.java
+----
+// BaseExecutor实现了缓存管理和事务管理的方法, 对数据库的具体操作交由子类实现
+public class BaseExecutor {
+
+    protected Transaction transaction;
+    protected Executor wrapper;
+
+    protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+    protected PerpetualCache localCache;
+    protected PerpetualCache localOutputParameterCache;
+    protected Configuration configuration;
+
+    protected int queryStack;
+    private boolean closed;
+
+    @Override
+    public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+        ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
+        if (closed) {
+            throw new ExecutorException("Executor was closed.");
+        }
+        // 第一次执行时如果是非select语句就会先清除一级缓存
+        if (queryStack == 0 && ms.isFlushCacheRequired()) {
+            clearLocalCache();
+        }
+        List<E> list;
+        try {
+            queryStack++;
+            // 如果resultHandler为null, 先从一级缓存里取结果.
+            // 缓存的key由MappedStatement的id, offset, limit, SQL语句, 参数和Environment的id组成
+            list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
+            if (list != null) {
+                handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
+            } else {
+                list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
+            }
+        } finally {
+            queryStack--;
+        }
+        if (queryStack == 0) {
+            // 从缓存中拿到将延迟加载的结果集
+            for (BaseExecutor.DeferredLoad deferredLoad : deferredLoads) {
+                deferredLoad.load();
+            }
+            deferredLoads.clear();
+            // 如果localCacheScope为STATEMENT, 则立即清除一级缓存
+            if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
+                clearLocalCache();
+            }
+        }
+        return list;
+    }
+
+    private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+        List<E> list;
+        // 先在一级缓存中插入一个占位符
+        localCache.putObject(key, EXECUTION_PLACEHOLDER);
+        try {
+            // 执行真正的
+            list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
+        } finally {
+            localCache.removeObject(key);
+        }
+        localCache.putObject(key, list);
+        if (ms.getStatementType() == StatementType.CALLABLE) {
+            localOutputParameterCache.putObject(key, parameter);
+        }
+        return list;
+    }
+
+    @Override
+    public void commit(boolean required) throws SQLException {
+        if (closed) {
+            throw new ExecutorException("Cannot commit, transaction is already closed");
+        }
+        // commit前面先清除一级缓存
+        clearLocalCache();
+        // 执行缓存的sql
+        flushStatements();
+        if (required) {
+            transaction.commit();
+        }
+    }
+
+    @Override
+    public void rollback(boolean required) throws SQLException {
+        if (!closed) {
+            try {
+                clearLocalCache();
+                // 清除本地缓存的未执行的sql
+                flushStatements(true);
+            } finally {
+                if (required) {
+                    transaction.rollback();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void clearLocalCache() {
+        if (!closed) {
+            // 清空一级缓存
+            localCache.clear();
+            localOutputParameterCache.clear();
+        }
+    }
+}
+----
+
+[source,java]
+.SimpleExecutor.java
+----
+public class SimpleExecutor extends BaseExecutor {
+
+    private final TransactionalCacheManager tcm = new TransactionalCacheManager();
+
+    @Override
+    public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
+        Statement stmt = null;
+        try {
+            Configuration configuration = ms.getConfiguration();
+            StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+            stmt = prepareStatement(handler, ms.getStatementLog());
+            return handler.query(stmt, resultHandler);
+        } finally {
+            closeStatement(stmt);
+        }
+    }
+}
+----
 

@@ -550,10 +550,10 @@ mapper中如何传递多个参数?::
 Mybatis如何执行批处理?::
 使用 `BatchExecutor` 执行批处理.
 Mybatis有哪些Executor? 区别是什么?::
-* SimpleExecutor
-* ReuseExecutor
-* BatchExecutor
-* CachingExecutor
+* SimpleExecutor: 具体实现了对数据库的操作
+* ReuseExecutor: 缓存了sql的StatementHandler以重用
+* BatchExecutor:
+* CachingExecutor: 添加了对MappedStatement的二级缓存的读取.
 Mybatis的缓存实现原理?::
 * 一级缓存: `Executor` 中的 `localCache` 成员变量, 只在同一个 `sqlSession` 生命周期中有效.
 * 二级缓存: `MappedStatement` 的 `cache` 成员变量, 全局共享.
