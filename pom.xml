@@ -35,13 +35,13 @@
         <jmh.version>1.27</jmh.version>
         <junit.version>5.7.0</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
-        <nimbus-jose-jwt.version>9.4.2</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>9.5</nimbus-jose-jwt.version>
         <netty.version>4.1.58.Final</netty.version>
         <jol.version>0.14</jol.version>
         <jcstress.version>0.7</jcstress.version>
         <fastjson.version>1.2.75</fastjson.version>
         <cglib.versin>3.3.0</cglib.versin>
-        <mapstruct.version>1.4.1.Final</mapstruct.version>
+        <mapstruct.version>1.4.2.Final</mapstruct.version>
         <testcontainer.version>1.15.1</testcontainer.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>

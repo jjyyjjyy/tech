@@ -21,11 +21,7 @@ public class User {
 
     private String password;
 
-    private String companyName;
-
     private Integer status;
-
-    private Integer role;
 
     private Instant createdAt;
 

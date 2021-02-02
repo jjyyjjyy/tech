@@ -2,29 +2,31 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.UserMapper">
 
+    <sql id="sqlSource">
+        from public.ucenter_user
+    </sql>
+
     <resultMap id="user" type="com.example.domain.User">
         <id column="id" property="id"/>
         <result column="username" property="username"/>
         <result column="password" property="password"/>
-        <result column="company_name" property="companyName"/>
         <result column="status" property="status"/>
-        <result column="role" property="role"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
     <delete id="deleteUser">
         delete
-        from public.user
+        <include refid="sqlSource"/>
         where id = ${userId}
     </delete>
 
     <select id="findAll" resultMap="user">
         select *
-        from public.user
+        <include refid="sqlSource"/>
     </select>
     <select id="findById" resultMap="user">
         select *
-        from public.user
+        <include refid="sqlSource"/>
         where id = #{param1}
           and username = #{param2}
     </select>

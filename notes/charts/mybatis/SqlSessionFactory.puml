@@ -1,0 +1,17 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+interface SqlSessionFactory {
+  + SqlSession openSession()
+}
+
+SqlSessionFactory <.. DefaultSqlSessionFactory
+SqlSessionFactory <.. SqlSessionManager
+SqlSessionFactory <-- SqlSessionManager
+
+note bottom of DefaultSqlSessionFactory: 创建 Executor & SqlSession, 执行Mapper方法.
+note bottom of SqlSessionManager: 使用外部自定义的SqlSessionFactory.
+
+
+@enduml

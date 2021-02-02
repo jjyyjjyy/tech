@@ -562,8 +562,15 @@ Mybatis仅支持 `association` 关联对象和 `collection` 关联集合对象�
 使用 `CGLIB` 创建目标对象的代理对象, 获取该对象发现是空对象, 则单独发送查询关联对象的sql, 设置该对象的值.
 Mybatis用到哪些设计模式?::
 * 单例模式: `KeyGenerator` ...
-* 建造者模式: `ResultMapping.Builder` `MappedStatement.Builder`
-* 组合模式: `MixedSqlNode`
+* 建造者模式:
+** `CacheBuilder` 创建Cache对象.
+** `ResultMapping.Builder` 创建ResultMapping对象.
+** `ResultMap.Builder` 创建ResultMap对象.
+** `MappedStatement.Builder`
+* 包装模式:
+** Cache实现类, 如 `ScheduledCache, LoggingCache` , 每个装饰类都在原有Cache基础上增强了功能.
+* 组合模式:
+** `MixedSqlNode` : 内部可以包含多个SqlNode.
 * 代理模式: `SqlSessionManager`
 * 责任链模式: `InterceptorChain`
 MyBatis的Mapper方法执行过程?::
