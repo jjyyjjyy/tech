@@ -1709,6 +1709,293 @@ public class Phaser {
 
 === ThreadLocal
 
+`ThreadLocal` 在某个线程里存取数据, 使用裴波那契散列法+开放地址法存储, 使用裴波那契数列是为了尽量减少哈希碰撞, 让数据分布更加均匀.
+
+每个 `Thread` 对象里有一个 `ThreadLocalMap` 成员变量, 用来存放 `ThreadLocal` 和对应的Value, `ThreadLocal` 对象使用 `WeakReference` 包装, 是为了防止回收 `ThreadLocal` 对象时, 因为Thread对象没有被回收且有强引用关联, 导致 `ThreadLocal` 对象回收不了.
+
+[source,java]
+.ThreadLocal.java
+----
+public class ThreadLocal<T> {
+
+    private final int threadLocalHashCode = nextHashCode();
+
+    // 全局的hashCode
+    private static AtomicInteger nextHashCode = new AtomicInteger();
+
+    // 2^32*0.618 => int数据范围的黄金分割数
+    private static final int HASH_INCREMENT = 0x61c88647;
+
+    private static int nextHashCode() {
+        // 从0开始, 每次递增黄金分割数
+        return nextHashCode.getAndAdd(HASH_INCREMENT);
+    }
+
+    public void set(T value) {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            map.set(this, value);
+        } else {
+            // 为当前的Thread初始化一个ThreadLocalMap, 将当前的ThreadLocal对象和值存在当前的线程对象里.
+            createMap(t, value);
+        }
+    }
+
+    public T get() {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            // 根据ThreadLocal的hashCode找到槽位上的Entry
+            ThreadLocalMap.Entry e = map.getEntry(this);
+            if (e != null) {
+                @SuppressWarnings("unchecked")
+                T result = (T)e.value;
+                return result;
+            }
+        }
+        // 如果找不到Entry, 则获取初始Value, 并放入到哈希表中
+        return setInitialValue();
+    }
+
+    // 每次ThreadLocal设置value后一定要手动remove掉, 因为线程池会复用线程, 下一次方法调用的时候会get到上一次ThreadLocal中存放的值.
+    public void remove() {
+         ThreadLocalMap m = getMap(Thread.currentThread());
+         if (m != null) {
+             m.remove(this);
+         }
+     }
+
+    ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
+    }
+
+    void createMap(Thread t, T firstValue) {
+        t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }
+
+    private T setInitialValue() {
+        T value = initialValue();
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            map.set(this, value);
+        } else {
+            createMap(t, value);
+        }
+        if (this instanceof TerminatingThreadLocal) {
+            TerminatingThreadLocal.register((TerminatingThreadLocal<?>) this);
+        }
+        return value;
+    }
+}
+----
+
+[source,java]
+.ThreadLocal.ThreadLocalMap.java
+----
+static class ThreadLocalMap {
+
+    // 哈希表初始化长度为16
+    private static final int INITIAL_CAPACITY = 16;
+    private Entry[] table;
+    private int size = 0;
+    private int threshold;
+
+    // 哈希表里每个元素都是弱引用
+    static class Entry extends WeakReference<ThreadLocal<?>> {
+        Object value;
+        Entry(ThreadLocal<?> k, Object v) {
+            super(k);
+            value = v;
+        }
+    }
+
+    ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+        // 初始化哈希表
+        table = new Entry[INITIAL_CAPACITY];
+        // 计算ThreadLocal对象的槽位
+        int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
+        table[i] = new Entry(firstKey, firstValue);
+        size = 1;
+        setThreshold(INITIAL_CAPACITY);
+    }
+
+    private void set(ThreadLocal<?> key, Object value) {
+        Entry[] tab = table;
+        int len = tab.length;
+        // 槽位
+        int i = key.threadLocalHashCode & (len-1);
+
+        for (Entry e = tab[i];
+             e != null;
+             e = tab[i = nextIndex(i, len)]) {
+            ThreadLocal<?> k = e.get();
+
+            // 槽位放的就是该ThreadLocal对象
+            if (k == key) {
+                e.value = value;
+                return;
+            }
+
+            // e不为null, 但是get出来是null, 代表当前元素已被回收
+            if (k == null) {
+                replaceStaleEntry(key, value, i);
+                return;
+            }
+        }
+
+        // tab[i] 为空, 则直接插入Entry到数组里.
+        tab[i] = new Entry(key, value);
+        int sz = ++size;
+        // 清理部分过期元素
+        if (!cleanSomeSlots(i, sz) && sz >= threshold)
+            // 如果哈希表中元素数量大于阈值就执行rehash
+            rehash();
+    }
+
+    private boolean cleanSomeSlots(int i, int n) {
+        boolean removed = false;
+        Entry[] tab = table;
+        int len = tab.length;
+        do {
+            i = nextIndex(i, len);
+            Entry e = tab[i];
+            // 如果遇到过期Entry, 将n再次赋值为len, 以再次扫描log(n)次
+            if (e != null && e.get() == null) {
+                n = len;
+                removed = true;
+                i = expungeStaleEntry(i);
+            }
+        } while ( (n >>>= 1) != 0); // 控制扫描次数
+        return removed;
+    }
+
+    private void rehash() {
+        expungeStaleEntries();
+        // 清理了过期元素后, 元素数量还超过阈值的3/4, 则扩容一倍
+        if (size >= threshold - threshold / 4)
+            resize();
+    }
+
+    private void expungeStaleEntries() {
+        Entry[] tab = table;
+        int len = tab.length;
+        for (int j = 0; j < len; j++) {
+            Entry e = tab[j];
+            if (e != null && e.get() == null)
+                expungeStaleEntry(j);
+        }
+    }
+
+    private int expungeStaleEntry(int staleSlot) {
+        Entry[] tab = table;
+        int len = tab.length;
+        // 清除当前槽位上的Entry
+        tab[staleSlot].value = null;
+        tab[staleSlot] = null;
+        size--;
+        Entry e;
+        int i;
+        // 清除当前槽位的同时, 遍历下面不为空的槽位
+        for (i = nextIndex(staleSlot, len); (e = tab[i]) != null; i = nextIndex(i, len)) {
+            ThreadLocal<?> k = e.get();
+            // 清除过期Entry
+            if (k == null) {
+                e.value = null;
+                tab[i] = null;
+                size--;
+            } else {
+                // 重新计算槽位
+                int h = k.threadLocalHashCode & (len - 1);
+                // Entry所属的槽位和当前槽位不同, 移动该Entry到h或者h后面第一个空的槽位
+                if (h != i) {
+                    tab[i] = null;
+                    while (tab[h] != null)
+                        h = nextIndex(h, len);
+                    tab[h] = e;
+                }
+            }
+        }
+        return i;
+    }
+
+    private void resize() {
+        Entry[] oldTab = table;
+        int oldLen = oldTab.length;
+        // 每次扩容两倍
+        int newLen = oldLen * 2;
+        Entry[] newTab = new Entry[newLen];
+        int count = 0;
+        for (Entry e : oldTab) {
+            if (e != null) {
+                ThreadLocal<?> k = e.get();
+                if (k == null) {
+                    e.value = null; // Help the GC
+                } else {
+                    // 重新计算槽位
+                    int h = k.threadLocalHashCode & (newLen - 1);
+                    // 如果当前槽位有元素了就瞬移一位.
+                    while (newTab[h] != null)
+                        h = nextIndex(h, newLen);
+                    newTab[h] = e;
+                    count++;
+                }
+            }
+        }
+        setThreshold(newLen);
+        size = count;
+        table = newTab;
+    }
+
+    private Entry getEntry(ThreadLocal<?> key) {
+        // 计算槽位
+        int i = key.threadLocalHashCode & (table.length - 1);
+        Entry e = table[i];
+        // 命中entry
+        if (e != null && e.get() == key)
+            return e;
+        else
+            return getEntryAfterMiss(key, i, e);
+    }
+
+    private Entry getEntryAfterMiss(ThreadLocal<?> key, int i, Entry e) {
+        Entry[] tab = table;
+        int len = tab.length;
+        // 向后遍历, 寻找Entry
+        while (e != null) {
+            ThreadLocal<?> k = e.get();
+            if (k == key)
+                return e;
+            // 清除过期key
+            if (k == null)
+                expungeStaleEntry(i);
+            else
+                i = nextIndex(i, len);
+            e = tab[i];
+        }
+        return null;
+    }
+
+    private void remove(ThreadLocal<?> key) {
+        Entry[] tab = table;
+        int len = tab.length;
+        int i = key.threadLocalHashCode & (len-1);
+        // 从i向后找一直找到key
+        for (Entry e = tab[i]; e != null; e = tab[i = nextIndex(i, len)]) {
+            if (e.get() == key) {
+                // 清除当前元素
+                e.clear();
+                expungeStaleEntry(i);
+                return;
+            }
+        }
+    }
+}
+----
+
+总之, `ThreadLocalMap` 在get/set/remove都会尝试清除哈希表中的过期元素.
+
 == 并发容器
 
 === BlockingQueue

@@ -248,6 +248,7 @@ ArrayList和LinkedList的区别?::
 * `ArrayList` 底层使用数组存储元素, `LinkedList` 使用双向链表.
 * 都不是线程安全的.
 * `ArrayList` 插入和删除时间复杂度为stem:[O(n)], 查找为stem:[O(1)]. `LinkedList` 查找和删除时间复杂度为stem:[O(n)], 插入为stem:[O(1)].
+* `ArrayList` 适合从中间插或者尾插, `LinkedList` 更适合头插.
 * `LinkedList` 每个元素需要维护前后元素的引用, 所以内存占用比 `ArrayList` 大.
 为什么HashMap的长度始终是2的幂?::
 stem:[x%2^n=x&(2^n-1)] 用与运算代替模运算, 效率更高.
@@ -267,7 +268,7 @@ HashMap和HashTable的区别?::
 * HashTable线程安全, HashMap线程不安全.
 * HashTable默认初始长度为11, HashMap默认初始长度为16, 且总为2的幂.
 * HashTable扩容后为stem:[2n+1],HashMap扩容后为stem:[2n].
-* HashMap的kv可以为null, 放在数据索引为0的位置. HashTable的kv均不能为null.
+* HashMap的kv可以为null, 放在数据索引为0的位置.HashTable的kv均不能为null.
 * HashMap因hash冲突产生的链表长度大于8后会转成红黑树, HashTable不会.
 JDK中有序的Map?::
 * LinkedHashMap
