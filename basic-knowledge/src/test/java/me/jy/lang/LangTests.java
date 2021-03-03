@@ -6,8 +6,7 @@ import sun.misc.Unsafe;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -113,6 +112,19 @@ class LangTests {
     @Test
     void testInit() {
         assertEquals(2, new LangTests().a);
+    }
+
+    @Test
+    void testStringEquals() {
+        String s1 = "ccc";
+        String s2 = "cc" + new String("c");
+        String s3 = new String("ccc");
+
+        assertSame(s1, s1.intern());
+        // s2为堆中的对象, s1.intern()为常量池中的对象
+        assertNotSame(s2, s1.intern());
+        // s3为堆中的对象
+        assertSame(s1, s3.intern());
     }
 
     @Test

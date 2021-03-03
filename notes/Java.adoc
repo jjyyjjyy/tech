@@ -166,7 +166,7 @@ E=1-Bias, M=frac.
 
 === 可见性
 
-private << default << protected << public
+private < default < protected < public
 
 * `private` : 只能在类的内部访问.
 * `default` : 只能被同一个包中其他类访问.
@@ -176,13 +176,13 @@ private << default << protected << public
 
 === 重载
 
-重载指同一个类内方法名称相同, 但方法签名(参数数量/类型)不同.
+重载指同一个类内方法名称相同, 但参数类型/声明的异常/返回值类型不同.
 
 === 重写
 
 * 参数列表必须相同.
 * 子类可以提升方法的可见性.
-* 子类抛出的checked异常必须与父类相同, 或是父类抛出checked异常的子类.
+* 子类抛出的checked异常必须与父类相同, 或是父类抛出checked异常的子类, 或者不抛.
 * 子类方法的返回值可以是父类返回值类型的子类.
 
 === 接口default方法判定
