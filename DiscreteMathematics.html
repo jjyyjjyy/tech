@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Discrete Mathematics</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Discrete Mathematics</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_逻辑和证明">1. 逻辑和证明</a>
+<ul class="sectlevel2">
+<li><a href="#_命题逻辑">1.1. 命题逻辑</a>
+<ul class="sectlevel3">
+<li><a href="#_命题">1.1.1. 命题</a></li>
+<li><a href="#_条件语句">1.1.2. 条件语句</a></li>
+<li><a href="#_复合命题的真值表">1.1.3. 复合命题的真值表</a></li>
+<li><a href="#_逻辑运算符的优先级">1.1.4. 逻辑运算符的优先级</a></li>
+<li><a href="#_命题逻辑的应用">1.1.5. 命题逻辑的应用</a></li>
+</ul>
+</li>
+<li><a href="#_命题等价式">1.2. 命题等价式</a></li>
+<li><a href="#_谓词和量词">1.3. 谓词和量词</a></li>
+<li><a href="#_极限的定义">1.4. 极限的定义</a></li>
+</ul>
+</li>
+<li><a href="#_离散结构">2. 离散结构</a>
+<ul class="sectlevel2">
+<li><a href="#_集合">2.1. 集合</a>
+<ul class="sectlevel3">
+<li><a href="#_集合定义">2.1.1. 集合定义</a></li>
+<li><a href="#_描述集合的两种方式">2.1.2. 描述集合的两种方式</a></li>
+<li><a href="#_数集">2.1.3. 数集</a></li>
+<li><a href="#_子集">2.1.4. 子集</a></li>
+<li><a href="#_集合的大小">2.1.5. 集合的大小</a></li>
+<li><a href="#_幂集">2.1.6. 幂集</a></li>
+<li><a href="#_有序n元组">2.1.7. 有序n元组</a></li>
+<li><a href="#_笛卡尔积">2.1.8. 笛卡尔积</a></li>
+<li><a href="#_带量词的集合符号">2.1.9. 带量词的集合符号</a></li>
+</ul>
+</li>
+<li><a href="#_集合运算">2.2. 集合运算</a></li>
+<li><a href="#_函数">2.3. 函数</a>
+<ul class="sectlevel3">
+<li><a href="#_一对一函数单射函数">2.3.1. 一对一函数(单射函数)</a></li>
+<li><a href="#_映上函数满射函数">2.3.2. 映上函数(满射函数)</a></li>
+</ul>
+</li>
+<li><a href="#_一些重要的函数">2.4. 一些重要的函数</a></li>
+<li><a href="#_序列与求和">2.5. 序列与求和</a>
+<ul class="sectlevel3">
+<li><a href="#_几何级数">2.5.1. 几何级数</a></li>
+<li><a href="#_算术级数">2.5.2. 算术级数</a></li>
+</ul>
+</li>
+<li><a href="#_矩阵">2.6. 矩阵</a>
+<ul class="sectlevel3">
+<li><a href="#_矩阵运算">2.6.1. 矩阵运算</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_计数">3. 计数</a>
+<ul class="sectlevel2">
+<li><a href="#_计数的用处">3.1. 计数的用处</a></li>
+<li><a href="#_基本法则">3.2. 基本法则</a></li>
+<li><a href="#_鸽巢原理">3.3. 鸽巢原理</a></li>
+<li><a href="#_排列">3.4. 排列</a></li>
+<li><a href="#_组合">3.5. 组合</a></li>
+<li><a href="#_二项式定理">3.6. 二项式定理</a></li>
+<li><a href="#_帕斯卡恒等式">3.7. 帕斯卡恒等式</a></li>
+<li><a href="#_生成排列">3.8. 生成排列</a></li>
+<li><a href="#_生成组合">3.9. 生成组合</a></li>
+<li><a href="#_线性递推关系">3.10. 线性递推关系</a></li>
+<li><a href="#_求解线性递推关系">3.11. 求解线性递推关系</a>
+<ul class="sectlevel3">
+<li><a href="#_递推关系公式">3.11.1. 递推关系公式</a></li>
+<li><a href="#_定理">3.11.2. 定理</a></li>
+<li><a href="#_例子">3.11.3. 例子</a></li>
+</ul>
+</li>
+<li><a href="#_分治递推关系">3.12. 分治递推关系</a>
+<ul class="sectlevel3">
+<li><a href="#_分而治之">3.12.1. 分而治之</a></li>
+</ul>
+</li>
+<li><a href="#_生成函数">3.13. 生成函数</a>
+<ul class="sectlevel3">
+<li><a href="#_例子_2">3.13.1. 例子</a></li>
+<li><a href="#_定理_2">3.13.2. 定理</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_关系">4. 关系</a>
+<ul class="sectlevel2">
+<li><a href="#_二元关系">4.1. 二元关系</a></li>
+<li><a href="#_n元关系">4.2. n元关系</a>
+<ul class="sectlevel3">
+<li><a href="#_主键">4.2.1. 主键</a></li>
+<li><a href="#_n元关系的运算">4.2.2. n元关系的运算</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_图">5. 图</a>
+<ul class="sectlevel2">
+<li><a href="#_分类">5.1. 分类</a></li>
+<li><a href="#_术语">5.2. 术语</a></li>
+<li><a href="#_基本定理">5.3. 基本定理</a></li>
+<li><a href="#_二分图">5.4. 二分图</a>
+<ul class="sectlevel3">
+<li><a href="#_判断是否为二分图">5.4.1. 判断是否为二分图</a></li>
+</ul>
+</li>
+<li><a href="#_图的表示">5.5. 图的表示</a></li>
+<li><a href="#_图的遍历">5.6. 图的遍历</a>
+<ul class="sectlevel3">
+<li><a href="#_深度优先">5.6.1. 深度优先</a></li>
+<li><a href="#_广度优先">5.6.2. 广度优先</a></li>
+</ul>
+</li>
+<li><a href="#_连通性">5.7. 连通性</a>
+<ul class="sectlevel3">
+<li><a href="#_无向图的连通性">5.7.1. 无向图的连通性</a></li>
+<li><a href="#_计算顶点之间的通路数">5.7.2. 计算顶点之间的通路数</a></li>
+</ul>
+</li>
+<li><a href="#_欧拉回路">5.8. 欧拉回路</a></li>
+</ul>
+</li>
+<li><a href="#_树">6. 树</a>
+<ul class="sectlevel2">
+<li><a href="#_术语_2">6.1. 术语</a></li>
+<li><a href="#_性质">6.2. 性质</a></li>
+<li><a href="#_遍历">6.3. 遍历</a></li>
+<li><a href="#_二叉搜索树">6.4. 二叉搜索树</a>
+<ul class="sectlevel3">
+<li><a href="#_插入">6.4.1. 插入</a></li>
+<li><a href="#_删除">6.4.2. 删除</a></li>
+</ul>
+</li>
+<li><a href="#_avl树">6.5. AVL树</a></li>
+<li><a href="#_插入方式">6.6. 插入方式</a></li>
+<li><a href="#_旋转方式">6.7. 旋转方式</a>
+<ul class="sectlevel3">
+<li><a href="#_删除_2">6.7.1. 删除</a></li>
+</ul>
+</li>
+<li><a href="#_2_3查找树">6.8. 2-3查找树</a>
+<ul class="sectlevel3">
+<li><a href="#_插入_2">6.8.1. 插入</a></li>
+</ul>
+</li>
+<li><a href="#_b树">6.9. B树</a></li>
+<li><a href="#_红黑树">6.10. 红黑树</a>
+<ul class="sectlevel3">
+<li><a href="#_插入_3">6.10.1. 插入</a></li>
+</ul>
+</li>
+<li><a href="#_树的应用">6.11. 树的应用</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">Resources</div>
+<ul>
+<li>
+<p><a href="https://www.icourse163.org/learn/NJTU-1002530017#/learn/content" class="bare" target="_blank" rel="noopener">https://www.icourse163.org/learn/NJTU-1002530017#/learn/content</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/27004846" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/27004846</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_逻辑和证明"><a class="link" href="#_逻辑和证明">1. 逻辑和证明</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_命题逻辑"><a class="link" href="#_命题逻辑">1.1. 命题逻辑</a></h3>
+<div class="sect3">
+<h4 id="_命题"><a class="link" href="#_命题">1.1.1. 命题</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>命题是一个陈述事实的语句, 它或真或假, 但不能既为真又为假.
+如果一个命题是真命题, 用T表示, 假命题用F表示.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令 \$p\$ 为一命题, 则 \$p\$ 的否定记作 \$notp\$.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令 \$p\$ 和 \$q\$ 为命题, \$p\$、\$q\$ 的合取记作 \$p^^q\$. 当p和q都是真命题时, \$p^^q\$ 为真, 否则为假.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令 \$p\$ 和 \$q\$ 为命题, \$p\$、\$q\$ 的析取记作 \$pvvq\$. 当p和q都是假命题时, \$pvvq\$ 为假, 否则为真.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令 \$p\$ 和 \$q\$ 为命题, \$p\$、\$q\$ 的异或记作 \$po+q\$. 当p和q中恰好只有1个真命题时为真, 否则为假.</p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_条件语句"><a class="link" href="#_条件语句">1.1.2. 条件语句</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令 \$p\$ 和 \$q\$ 为命题, 条件语句 \$p-&gt;q\$ 代表命题 "如果p,则q". 当\$p\$为真且\$q\$为假时, 条件语句 \$p-&gt;q\$ 为假, 否则为真.</p>
+</div>
+</blockquote>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>\$q-&gt;p\$ 称为 \$p-&gt;q\$ 的逆命题.</p>
+</li>
+<li>
+<p>\$notp-&gt;notq\$ 称为 \$p-&gt;q\$的反命题.</p>
+</li>
+<li>
+<p>\$notq-&gt;notp\$ 称为 \$p-&gt;q\$的逆否命题.</p>
+<div class="literalblock">
+<div class="content">
+<pre>逆否命题和原命题有相同的真值.
+逆命题和反命题有相同的真值.</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令p和q为命题, 双条件语句 \$pharrq\$ 代表命题 "p当且仅当q". 当p和q真值相同时, 双条件语句为真, 否则为假.</p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_复合命题的真值表"><a class="link" href="#_复合命题的真值表">1.1.3. 复合命题的真值表</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.6666%;">
+<col style="width: 16.667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top">p</th>
+<th class="tableblock halign-center valign-top">q</th>
+<th class="tableblock halign-center valign-top">\$notq\$</th>
+<th class="tableblock halign-center valign-top">\$pvvnotq\$</th>
+<th class="tableblock halign-center valign-top">\$p^^q\$</th>
+<th class="tableblock halign-center valign-top">\$(pvvnotq)-&gt;(p^^q)\$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">T</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock">F</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_逻辑运算符的优先级"><a class="link" href="#_逻辑运算符的优先级">1.1.4. 逻辑运算符的优先级</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">运算符</th>
+<th class="tableblock halign-left valign-top">优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">\$not\$</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">\$^^\$</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">\$vv\$</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">\$-&gt;\$</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">\$hArr\$</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_命题逻辑的应用"><a class="link" href="#_命题逻辑的应用">1.1.5. 命题逻辑的应用</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>系统规范说明</p>
+</li>
+<li>
+<p>语句翻译</p>
+</li>
+<li>
+<p>布尔搜索</p>
+</li>
+<li>
+<p>逻辑电路</p>
+</li>
+<li>
+<p>逻辑谜题</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_命题等价式"><a class="link" href="#_命题等价式">1.2. 命题等价式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>永真式: 命题永远为真.</p>
+</li>
+<li>
+<p>矛盾式: 命题永远为假.</p>
+</li>
+<li>
+<p>可能式: 命题可能为真, 可能为假.</p>
+</li>
+</ul>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>如果 \$pharrq\$ 是永真式, 那么 \$p和q\$ 是逻辑等价的, 记为 \$p-=q\$.</p>
+</div>
+</blockquote>
+</div>
+<div class="ulist">
+<div class="title">德·摩根律</div>
+<ul>
+<li>
+<p>\$not(p^^q)-=notpvvnotq\$ <code>一个析取式的否定是由各个命题的否定合取而成的</code></p>
+</li>
+<li>
+<p>\$not(pvvq)-=notp^^notq\$ <code>一个合取式的否定是由各个命题的否定析取而成的</code></p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">恒等律</div>
+<ul>
+<li>
+<p>\$p^^T-=p\$</p>
+</li>
+<li>
+<p>\$pvvF-=p\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">支配律</div>
+<ul>
+<li>
+<p>\$pvvT-=T\$</p>
+</li>
+<li>
+<p>\$p^^F-=F\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">幂等律</div>
+<ul>
+<li>
+<p>\$p^^p-=p\$</p>
+</li>
+<li>
+<p>\$pvvp-=p\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">双重否定律</div>
+<ul>
+<li>
+<p>\$not(notp)-=p\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">交换律</div>
+<ul>
+<li>
+<p>\$pvvq-=qvvp\$</p>
+</li>
+<li>
+<p>\$p^^q-=q^^p\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">结合律</div>
+<ul>
+<li>
+<p>\$(pvvq)vvr-=pvv(qvvr)\$</p>
+</li>
+<li>
+<p>\$(p^^q)^^r-=p^^(q^^r)\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">分配律</div>
+<ul>
+<li>
+<p>\$pvv(q^^r)-=(pvvq)^^(pvvr)\$</p>
+</li>
+<li>
+<p>\$p^^(qvvr)-=(p^^q)vv(p^^r)\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">否定律</div>
+<ul>
+<li>
+<p>\$pvv(notp)-=T\$</p>
+</li>
+<li>
+<p>\$p^^(notp)-=F\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">吸收律</div>
+<ul>
+<li>
+<p>\$pvv(p^^q)-=p\$</p>
+</li>
+<li>
+<p>\$p^^(pvvq)-=p\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">条件命题的逻辑等价式</div>
+<ul>
+<li>
+<p>\$p-&gt;q-=notpvvq\$</p>
+</li>
+<li>
+<p>\$p-&gt;q-=notq-&gt;notp\$</p>
+</li>
+<li>
+<p>\$pvvq-=notp-&gt;q\$</p>
+</li>
+<li>
+<p>\$p^^q-=not(p-&gt;notq)\$</p>
+</li>
+<li>
+<p>\$not(p-&gt;q)-=p^^notq\$</p>
+</li>
+<li>
+<p>\$(p-&gt;q)^^(p-&gt;r)-=p-&gt;(q^^r)\$</p>
+</li>
+<li>
+<p>\$(p-&gt;r)^^(q-&gt;r)-=(pvvq)-&gt;r\$</p>
+</li>
+<li>
+<p>\$(p-&gt;q)vv(p-&gt;r)-=p-&gt;(qvvr)\$</p>
+</li>
+<li>
+<p>\$(p-&gt;r)vv(q-&gt;r)-=(p^^q)-&gt;r\$</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">双条件命题的逻辑等价式</div>
+<ul>
+<li>
+<p>\$pharrq-=(p-&gt;q)^^(q-&gt;p)\$</p>
+</li>
+<li>
+<p>\$pharrq-=notpharrnotq\$</p>
+</li>
+<li>
+<p>\$pharrq-=(p^^q)vv(notp^^notq)\$</p>
+</li>
+<li>
+<p>\$not(pharrq)-=pharrnotq\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_谓词和量词"><a class="link" href="#_谓词和量词">1.3. 谓词和量词</a></h3>
+<div class="sidebarblock">
+<div class="content">
+<div class="paragraph">
+<p>\$ubrace(AA)_("量词")ubrace(x&lt;0)_("约束论域的量词")ubrace((x^2&gt;0))_("谓词")\$</p>
+</div>
+</div>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>形式为\$P(x_1,x_2,...,x_n)\$的语句是命题函数P在n元组\$(x_1,x_2,...,x_n)\$的值, P也称为n元谓词.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>\$P(x)\$对于x在其论域中的所有值全为真, 即\$P(x)\$的全程量化. \$AAxP(x)\$表示\$P(x)\$的全称量化, 符号\$AA\$称为全称量词.</p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>论域中存在一个\$x\$使得\$P(x)\$为真, 即\$P(x)\$的存在量化. \$EExP(x)\$表示\$P(x)\$的存在量化, 符号\$EE\$称为存在量词. <code>全称量词的优先级比存在量词的优先级高</code></p>
+</div>
+</blockquote>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>论域中存在唯一一个\$x\$使得\$P(x)\$为真, \$EE!xP(x)\$表示\$P(x)\$的唯一量化, 符号\$EE!\$称为唯一量词.</p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_极限的定义"><a class="link" href="#_极限的定义">1.4. 极限的定义</a></h3>
+<div class="paragraph">
+<p>\$AAepsilon&gt;0EEdelta&gt;0AAx(0&lt;|x-a|&lt;delta-&gt;0&lt;|f(x)-L|&lt;epsilon)\$</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_离散结构"><a class="link" href="#_离散结构">2. 离散结构</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_集合"><a class="link" href="#_集合">2.1. 集合</a></h3>
+<div class="sect3">
+<h4 id="_集合定义"><a class="link" href="#_集合定义">2.1.1. 集合定义</a></h4>
+<div class="paragraph">
+<p>集合是对象的一个无序的聚集, 对象称为集合的元素或成员. 用 \$ainA\$ 表示 a是集合A中的一个元素, 用 \$anotinA\$ 表示 a不是集合A中的一个元素.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_描述集合的两种方式"><a class="link" href="#_描述集合的两种方式">2.1.2. 描述集合的两种方式</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>花名册法: {a,b,c,d}</p>
+</li>
+<li>
+<p>集合构造器: O={x | x是小于10的所有正整数}</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_数集"><a class="link" href="#_数集">2.1.3. 数集</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>自然数: \$NN\$={0,1,2,3,&#8230;&#8203;}</p>
+</li>
+<li>
+<p>整数集: \$ZZ\$={&#8230;&#8203;,-1,0,1,2,&#8230;&#8203;}</p>
+</li>
+<li>
+<p>正整数集: \$ZZ^+\$={1,2,3,&#8230;&#8203;}</p>
+</li>
+<li>
+<p>有理数集合: {\$QQ=p/q|p inZ,qinZ且q!=0\$}</p>
+</li>
+<li>
+<p>实数集: \$RR\$</p>
+</li>
+<li>
+<p>正实数集: \$RR^+\$</p>
+</li>
+<li>
+<p>复数集: \$CC\$</p>
+</li>
+<li>
+<p>空集: \$O/\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_子集"><a class="link" href="#_子集">2.1.4. 子集</a></h4>
+<div class="paragraph">
+<p>集合A是集合B的子集, 当且仅当集合A中的每一个元素都是集合B中的每一个元素. \$AAx(x in A -&gt; x in B)\$.
+对于每个非空集合至少有两个子集: 空集和它本身.</p>
+</div>
+<div class="paragraph">
+<p>真子集: \$AAx(x in A -&gt; x in B) ^^ EEx(x in B -&gt; x !in A)\$</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_集合的大小"><a class="link" href="#_集合的大小">2.1.5. 集合的大小</a></h4>
+<div class="paragraph">
+<p>令S为集合, 如果S中恰有n个不同的元素, 则S是有限集, n为S的基数, 记为 |S|.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_幂集"><a class="link" href="#_幂集">2.1.6. 幂集</a></h4>
+<div class="paragraph">
+<p>集合S的所有的子集的集合称为S的幂集.
+如果一个集合有n个元素, 那它的幂集的基数为 \$2^n\$</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_有序n元组"><a class="link" href="#_有序n元组">2.1.7. 有序n元组</a></h4>
+<div class="paragraph">
+<p>有序n元组\$(a_1,a_2,...a_n)\$是一个从\$a_1\$到\$a_n\$的n个元素的聚集.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_笛卡尔积"><a class="link" href="#_笛卡尔积">2.1.8. 笛卡尔积</a></h4>
+<div class="paragraph">
+<p>\$AxxB={(a,b)|a in A ^^ b in B}\$</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_带量词的集合符号"><a class="link" href="#_带量词的集合符号">2.1.9. 带量词的集合符号</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>\$AAx in S(P(x))\$ 表示P(x)在集合S上的全称量化.</p>
+</li>
+<li>
+<p>\$EEx in S(P(x))\$ 表示P(x)在集合S上的存在量化.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>给定谓词P和论域D, 定义P的真值集为D中使P(x)为真的元素x组成的集合.
+P(x)的真值集记为 \${x in D | P(x)}\$</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_集合运算"><a class="link" href="#_集合运算">2.2. 集合运算</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>并集: \$AuuB = {x | x in A vv A in B}\$</p>
+</li>
+<li>
+<p>交集: \$AnnB = {x | x in A ^^ A in B}\$</p>
+</li>
+<li>
+<p>差集: \$A-B = {x | x in A ^^ A !in B}\$</p>
+</li>
+<li>
+<p>补集: \$-A={x | x in U ^^ x !in A }\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_函数"><a class="link" href="#_函数">2.3. 函数</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>令A和B都是非空集合, 从A到B的函数f是对函数的一种指派, A中每个元素都能指派到B中的一个元素, 写成 f(a)=b.</p>
+</div>
+</blockquote>
+</div>
+<div class="sect3">
+<h4 id="_一对一函数单射函数"><a class="link" href="#_一对一函数单射函数">2.3.1. 一对一函数(单射函数)</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>对于函数f的定义域中所有a,b满足 \$a!=b-&gt;f(a)!=f(b)\$, 则这个函数是单射的.</p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_映上函数满射函数"><a class="link" href="#_映上函数满射函数">2.3.2. 映上函数(满射函数)</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>对于函数f的值域中所有b都能满足 f(a)=b, 则这个函数是满射的.</p>
+</div>
+</blockquote>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_一些重要的函数"><a class="link" href="#_一些重要的函数">2.4. 一些重要的函数</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>\$|__x__|\$ <code>向下取整: 比自己小的最大整数.</code></p>
+</li>
+<li>
+<p>\$|~x~|\$ <code>向上取整: 比自己大的最小整数.</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_序列与求和"><a class="link" href="#_序列与求和">2.5. 序列与求和</a></h3>
+<div class="sect3">
+<h4 id="_几何级数"><a class="link" href="#_几何级数">2.5.1. 几何级数</a></h4>
+<div class="paragraph">
+<p>\$f(x)=ar^x\$</p>
+</div>
+<div class="ulist">
+<div class="title">求和</div>
+<ul>
+<li>
+<p>\$sum_(j=0)^nar^j={(a*(r^(n+1)-1)/(r-1),r!=1),((n+1)a,r=1):}\$</p>
+</li>
+<li>
+<p>\$sum_(k=1)^nk=(n*(n+1))/2\$</p>
+</li>
+<li>
+<p>\$sum_(k=1)^nk^2=(n*(n+1)*(2n+1))/6\$</p>
+</li>
+<li>
+<p>\$sum_(k=1)^nk^3=(n^2*(n+1)^2)/4\$</p>
+</li>
+<li>
+<p>\$sum_(k=0)^(oo)x^k=1/(1-x),|x|&lt;1\$</p>
+</li>
+<li>
+<p>\$sum_(k=1)^(oo)kx^(k-1)=1/(1-x)^2,|x|&lt;1\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_算术级数"><a class="link" href="#_算术级数">2.5.2. 算术级数</a></h4>
+<div class="paragraph">
+<p>\$f(x)=ax+b\$</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_矩阵"><a class="link" href="#_矩阵">2.6. 矩阵</a></h3>
+<div class="paragraph">
+<p>矩阵是一个矩形状数组, m行n列的矩阵被称为mxn矩阵. m和n相同时被称为方阵.</p>
+</div>
+<div class="sect3">
+<h4 id="_矩阵运算"><a class="link" href="#_矩阵运算">2.6.1. 矩阵运算</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>两个m*n矩阵相加: \$A+B=[a_(ij)+b_(ij)\$]</p>
+</li>
+<li>
+<p>m*k矩阵A和k*n矩阵B相乘: \$A*B=[a_(i1)*b_(1j)a_(i2)*b_(2j)...+a_(ik)*b_(kj)\$]</p>
+</li>
+<li>
+<p>转置: \$a_(ij)=b_(ji)\$</p>
+</li>
+<li>
+<p>布尔积: \$Ao.B=[(a_(i1)^^b_(1j))vv(a_(i2)^^b_(2j))vv...vv(a_(ik)^^b_(kj))\$]</p>
+</li>
+<li>
+<p>对称矩阵: \$a_(ij)=a_(ji)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_计数"><a class="link" href="#_计数">3. 计数</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_计数的用处"><a class="link" href="#_计数的用处">3.1. 计数的用处</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>确定算法的复杂性.</p>
+</li>
+<li>
+<p>确定是否存在充分满足需求的样本.</p>
+</li>
+<li>
+<p>计算离散事件的概率.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_基本法则"><a class="link" href="#_基本法则">3.2. 基本法则</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>乘积法则</strong>: 若一个过程可以被分解为m个任务, 完成第i个任务有\$n_i\$种方式, 那么完成这个过程有\$n_1*n_2*...n_m\$种方式.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>有多少不同的7位位串? \$2^7=128\$</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>求和法则</strong>: 若一个过程可以被分解为m个任务,但这些任务不能同时执行, 完成第i个任务有\$n_i\$种方式, 那么完成这个过程有\$n_1+n_2+...n_m\$种方式.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>一个学生从三个表里选择课题, 这三个表里的课题数量分别为23/15/19, 一共有多少种可能性? \$23+15+19=57\$</p>
+</li>
+<li>
+<p>用户密码由6~8位数字或大写字母组成, 但必须至少包含一个数字, 一共有多少种可能性? \$36^6-26^6+36^7-26^7+36^8-26^8\$</p>
+</li>
+<li>
+<p>所有IPv4地址数量(A类网络号不能全为1,所有主机号不能全为0或全为1): \$(2^7-1)*(2^24-2)+2^14*(2^16-2)+2^21*(2^8-2)\$</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>减法法则</strong>: 如果一个任务可以\$n_1\$种方法执行或者可以通过\$n_2\$种方法执行, 那么执行这个任务可以通过\$n_1+n_2\$种方式减去这两种方式相同的部分.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>求以1开始或00结束的8位位串数量: \$2^7+2^6-2^5=160\$</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>除法法则</strong>: 如果一个任务能用n种方式实现, 而对于每种方式, 在所有方式中有d种与之对应, 那么完成这个任务有 \$n/d\$ 种独立的方法.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_鸽巢原理"><a class="link" href="#_鸽巢原理">3.3. 鸽巢原理</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>如果N个物品放入k个盒子, 那么至少有一个盒子里面物品数量至少有 \$|~N/K~|\$.</p>
+</div>
+</blockquote>
+</div>
+<div class="ulist">
+<div class="title">example</div>
+<ul>
+<li>
+<p>在100个人里面至少有 \$|~100/12~|=9\$个人出生在同一月.</p>
+</li>
+<li>
+<p>在52张扑克牌中至少选 \$(3-1)*4+1=9\$ 才能保证至少三张牌有同样的花色.</p>
+</li>
+<li>
+<p>在52张扑克牌中至少选 \$13*3+3\$ 才能保证至少三张牌是红心.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_排列"><a class="link" href="#_排列">3.4. 排列</a></h3>
+<div class="paragraph">
+<p>一个n元素的r排列数记为 \$P(n,r)=n(n-1)(n-2)...(n-r+1)=(n!)/((n-r)!)\$</p>
+</div>
+<div class="ulist">
+<div class="title">example</div>
+<ul>
+<li>
+<p>100个人中有多少种方法选出一个一等奖, 一个二等奖, 一个三等奖? \$P(100,3)=100*99*98\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_组合"><a class="link" href="#_组合">3.5. 组合</a></h3>
+<div class="paragraph">
+<p>一个n元素的r组合数记为 \$C(n,r)=((n),(r))=(n!)/(r!(n-r)!)=C(n,n-r)\$</p>
+</div>
+<div class="ulist">
+<div class="title">example</div>
+<ul>
+<li>
+<p>从52张扑克牌中选出5张牌, 一共有多少种选法? \$C(52,5)=52!/(5!*47!)\$</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>n个元素中允许r个重复元素的组合数为 \$((n+r-1),(r))\$</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_二项式定理"><a class="link" href="#_二项式定理">3.6. 二项式定理</a></h3>
+<div class="paragraph">
+<p>\$(x+y)^n=sum_(j=0)^n((n),(j))x^(n-j)y^j=((n),(0))x^ny^0+((n),(1))x^(n-1)y^1+((n),(2))x^(n-2)y^2+...+((n),(n))x^0y^n\$.</p>
+</div>
+<div class="ulist">
+<div class="title">推论</div>
+<ul>
+<li>
+<p>\$sum_(k=0)^nx^k((n),(k))=(1+x)^n\$</p>
+<div class="ulist">
+<ul>
+<li>
+<p>证明: \$(1+x)^n=sum_(k=0)^n((n),(k))1^(n-k)x^k=sum_(k=0)^nx^k((n),(k))\$</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_帕斯卡恒等式"><a class="link" href="#_帕斯卡恒等式">3.7. 帕斯卡恒等式</a></h3>
+<div class="paragraph">
+<p>\$((n+1),(k))=((n),(k-1))+((n),(k))\$</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_生成排列"><a class="link" href="#_生成排列">3.8. 生成排列</a></h3>
+<div class="paragraph">
+<p>对于给定数列 \$a_1a_2a_3...a_n\$, 从右向左找到 \$a_(j-1)&lt;a_j\$的两个数, 交换 \$a_(j-1)和min(a_j...a_n) &amp;&amp; 大于a_(j-1)\$, 并将 \$a_(j+1)到a_n\$按字典排序.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_生成组合"><a class="link" href="#_生成组合">3.9. 生成组合</a></h3>
+<div class="paragraph">
+<p>对于给定数列 \$a_1a_2a_3...a_n\$的r组合, 找到使得 \$a_i!=n-r+i的a_i\$,将\$a_i\$加1, 对于
+\$a_j到a_r (j=i+1)\$, 用 \$a_i+j-i+1\$代替 \$a_j\$</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_线性递推关系"><a class="link" href="#_线性递推关系">3.10. 线性递推关系</a></h3>
+<div class="paragraph">
+<p>一个常系数的k阶线性齐次递推关系是形如 \$a_n=c_1a_(n-1)c_2a_(n-2)+c_3a_(n-3)...+c_ka_(n-k)\$的关系.</p>
+</div>
+<div class="ulist">
+<div class="title">性质</div>
+<ul>
+<li>
+<p>常系数: 序列各项的系数都是常数, 而不是依赖于n的函数.</p>
+</li>
+<li>
+<p>线性: 序列通项是序列各项的倍数之和.</p>
+</li>
+<li>
+<p>齐次: 序列各项次数都是1</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">例子</div>
+<ul>
+<li>
+<p>\$P_n=(1.11)P_(n-1)\$是1阶的线性齐次递推关系.</p>
+</li>
+<li>
+<p>\$f_n=f_(n-1)+f_(n-2)\$是2阶的线性齐次递推关系.</p>
+</li>
+<li>
+<p>\$a_n=a_(n-5)\$是5阶的线性齐次递推关系.</p>
+</li>
+<li>
+<p>\$B_n=nB_(n-1)\$不是常系数的, 系数为n, 不是常数.</p>
+</li>
+<li>
+<p>\$f_n=2f_(n-1)+1\$不是齐次的, 第二项次数为0.</p>
+</li>
+<li>
+<p>\$a_n=a_(n-1)+a_(n-2)^2\$不是线性的, 第二项为平方, 不是倍数.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_求解线性递推关系"><a class="link" href="#_求解线性递推关系">3.11. 求解线性递推关系</a></h3>
+<div class="sect3">
+<h4 id="_递推关系公式"><a class="link" href="#_递推关系公式">3.11.1. 递推关系公式</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>\$a_n=r^n=c_1a_(n-1) + c_2a_(n-2) + c_3a_(n-3) + ... + c_ka_(n-k)\$.</p>
+</li>
+<li>
+<p>等式两边同时除以\$r^(n-k)\$.</p>
+</li>
+<li>
+<p>得到特征方程: \$r^k-c_1r^(k-1)-c_2r^(k-2)+...-c_(k-1)r-c_k=0\$</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_定理"><a class="link" href="#_定理">3.11.2. 定理</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>定理1:</strong> 假设 \$r^2-c_1r-c_2=0\$有两个不相等的根 \$r_1和r_2\$, 那么序列 \${a_n|a_n=a_1r_1^n+a_2r_2^n}\$是递推关系 \$a_n=c_1a_(n-1)+c_2a_(n-2)\$的解.
+其中 \$a_0=a_1+a_2,a_1=a_1r_1+a_2r_2\$.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>定理1证明:</strong></p>
+</div>
+<div class="paragraph">
+<p>\$a_n=c_1a_(n-1)+c_2a_(n-2)\$</p>
+</div>
+<div class="paragraph">
+<p>\$=c_1(a_1r_1^(n-1)+a_2r_2^(n-2))+c_2(c_1r_1^(n-2)+a_2r_2^(n-2))\$</p>
+</div>
+<div class="paragraph">
+<p>\$=a_1r_1^(n-2)(c_1r_1+c_2) + a_2r_2^(n-2)(c_1r_2+c_2)\$</p>
+</div>
+<div class="paragraph">
+<p>\$=a_1r_1^(n-2)r_1^2+a_2r_2^(n-2)r_2^2\$</p>
+</div>
+<div class="paragraph">
+<p>\$=a_1r_1^n+a_2r_2^n\$</p>
+</div>
+<div class="paragraph">
+<p>\$=a_n\$</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>定理2:</strong> 假设 \$r^2-c_1r-c_2=0\$只有一个根 \$r_0\$, 那么序列 \${a_n|a_n=a_1r_0^n+a_2nr_0^n}\$是递推关系 \$a_n=c_1a_(n-1)+c_2a_(n-2)\$的解.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_例子"><a class="link" href="#_例子">3.11.3. 例子</a></h4>
+<div class="paragraph">
+<p><strong>例1:</strong> \$a_n=a_(n-1)+2a_(n-2),a_0=2,a_1=7,求a_n.\$</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>\$r^2-r-2=0 =&gt; r={-1,2} =&gt; a_n=a_1*(-1)^n+a_2*2^n\$</p>
+</li>
+<li>
+<p>\${(a_0=2=a_1+a_2),(a_1=7=-a_1+2a_2):} =&gt; a_1=-1,a_2=3\$</p>
+</li>
+<li>
+<p>\$a_n=(-1)^(n+1) + 3*2^n\$</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>例2: 求斐波拉契数列递推关系的解</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>\$a_n=a_(n-1)+a_(n-2),a_0=0,a_1=1\$</p>
+</li>
+<li>
+<p>\$r^2-r-1=0,r_1=(1+sqrt5)/2,r_2=(1-sqrt5)/2\$</p>
+</li>
+<li>
+<p>\${(a_0=0=a_1+a_2),(a_1=1=a_1*(1+sqrt5)/2+a_2*(1-sqrt5)/2):} =&gt; a_1=1/sqrt5,a_2=-1/sqrt5\$</p>
+</li>
+<li>
+<p>\$a_n=1/sqrt5*((1+sqrt5)/2)^n-1/sqrt5*((1-sqrt5)/2)^n\$</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_分治递推关系"><a class="link" href="#_分治递推关系">3.12. 分治递推关系</a></h3>
+<div class="sect3">
+<h4 id="_分而治之"><a class="link" href="#_分而治之">3.12.1. 分而治之</a></h4>
+<div class="paragraph">
+<p>把一个规模为n的问题分成a个子问题, 每个子问题的规模是\$n/b\$, 把子问题的解组合成原来问题的解需要\$g(n)\$的额外运算, 所以求解问题所需的运算数\$f(n)=af(n/b)+g(n)\$.</p>
+</div>
+<div class="paragraph">
+<div class="title">复杂度</div>
+<p>设\$f\$满足递推关系\$f(n)=af(n/b)+cn^d,n=b^k\$, 那么
+\$f(n)={(Theta(n^d),a&lt;b^d),(Theta(n^dlog_bn),a=b^d),(Theta(n^(log_ba)),a&lt;b^d):}\$</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_生成函数"><a class="link" href="#_生成函数">3.13. 生成函数</a></h3>
+<div class="paragraph">
+<p>实数序列\$a_0,a_1,a_2,...,a_k\$的生成函数是无穷级数\$G(x)=a_0+a_1x+a_2x^2+...+a_kx^k=sum_(k=0)^ka_kx^k\$.</p>
+</div>
+<div class="sect3">
+<h4 id="_例子_2"><a class="link" href="#_例子_2">3.13.1. 例子</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>序列\${a_k|a_k=3\$的生成函数是\$sum_(k=0)^(oo)3x^k\$.</p>
+</li>
+<li>
+<p>序列\${a_k|a_k=2^k\$的生成函数是\$sum_(k=0)^(oo)2^kx^k\$.</p>
+</li>
+<li>
+<p>序列\${1,1,1,1,1,1}\$的生成函数是\$1+x+x^2+x^3+x^4+x^5=(x^5-1)/(x-1)\$.</p>
+</li>
+<li>
+<p>序列\${a_k|a_k=C(m,k)\$的生成函数是\$G(x)=C(m,0)C(m,1)x+C(m,2)x^2...+C(m,m)x^m=(1+x)^m\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_定理_2"><a class="link" href="#_定理_2">3.13.2. 定理</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>令\$f(x)=sum_(k=0)^(oo)a_kx^k,g(x)=sum_(k=0)^(oo)b_kx^k\$, 那么
+\$f(x)+g(x)=sum_(k=0)^(oo)(a_k+b_k)x^k,f(x)*g(x)=sum_(k=0)^(oo)(sum_(j=0)^ka_jb_(k-j))x^k\$</p>
+</li>
+<li>
+<p><strong>广义二项式定理:</strong> \$令|x|&lt;1,(1+x)^n=sum_(k=0)^(oo)((u),(k))x^k\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关系"><a class="link" href="#_关系">4. 关系</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_二元关系"><a class="link" href="#_二元关系">4.1. 二元关系</a></h3>
+<div class="paragraph">
+<p>\$AAainAAAbinB((a,b)inR)\$,称为a与b有关系R.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>设A和B是集合, 一个从A到B的二元关系是AxB的子集.</p>
+</li>
+<li>
+<p>集合A上的关系是A到A的关系.</p>
+</li>
+<li>
+<p>若 \$AAainA((a,a)inR)\$,则集合R是集合A上的自反关系.</p>
+</li>
+<li>
+<p>对于 \$AAaAAbinA,(a,b)inR ^^ (b,a)inR\$,则集合A上的关系R是对称的.</p>
+</li>
+<li>
+<p>对于 \$AAaAAbAAcinA((a,b)inR ^^ (b,c)inR -&gt; (a,c)inR)\$,集合A上的关系R是传递的.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_n元关系"><a class="link" href="#_n元关系">4.2. n元关系</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>设 \$A_1,A_2,...A_n\$是集合, 定义在这些集合上的n元关系R是 \$A_1xxA_2xxA_3xx...xxA_n\$的子集, 每一个集合称为R的域, n称为R的阶.</p>
+</div>
+</blockquote>
+</div>
+<div class="sect3">
+<h4 id="_主键"><a class="link" href="#_主键">4.2.1. 主键</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>当n元组的某个域的值能够确定这个n元组时, n元关系的这个域就叫做主键.</p>
+</li>
+<li>
+<p>当一组域的值确定一个关系中的n元组时, 这些域的笛卡尔积就叫做复合主键.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_n元关系的运算"><a class="link" href="#_n元关系的运算">4.2.2. n元关系的运算</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>选择(筛选行): 设R是一个n元关系,C是R中元素可能满足的一个条件, 那么选择运算符 \$S_C\$ 将n元关系R映射到R中满足条件C的所有n元组构成的n元关系.</p>
+</li>
+<li>
+<p>投影(筛选列+删除重复行): 投影 \$P_(i_1i_2...i_m)\$将n元组(\$a_1,a_2,a_3,...,a_n\$)映射到m元组(\$a_(i_1),a_(i_2),...,a_(i_m),m&lt;=n\$).</p>
+</li>
+<li>
+<p>连接: 设R是m元关系, S是n元关系, 连接运算 \$J_p(R,S)\$是 m+n-p元关系.
+将R后p个元组和S前p个元组相同的合并,再将R和S组合起来.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_图"><a class="link" href="#_图">5. 图</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>图G=(V,E)由定点的非空集V和边的集合E组成, 每条边有一个或两个顶点与它相连.</p>
+</div>
+<div class="sect2">
+<h3 id="_分类"><a class="link" href="#_分类">5.1. 分类</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>顶点集V或边集E为无限集合的图称为 <strong>无限图</strong> ,顶点集和边集为有限集的图称为 <strong>有限图</strong> .</p>
+</li>
+<li>
+<p>图的每条边都连接着两个不同的顶点, 即没有两条不同的边连接一对相同顶点的图称为 <strong>简单图</strong> .</p>
+</li>
+<li>
+<p>有多条边连接同一对顶点的图称为 <strong>多重图</strong> .</p>
+</li>
+<li>
+<p>边的两端顶点是同一个, 这样的边称为 <strong>环</strong> ,包含环的多重图称为 <strong>伪图</strong> .</p>
+</li>
+<li>
+<p>一个有向图\$(V,E)\$由一个非空顶点集\$V\$和一个有向边集\$E\$组成, 每条有向边与一个顶点有序对相关联. 与有序对\$(u,v)\$相关联的有向边开始于\$u\$,结束于\$v\$.</p>
+</li>
+<li>
+<p>既有有向边又包含无向边的图称为 <strong>混合图</strong> .</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">一些特殊的简单图</div>
+<ul>
+<li>
+<p><strong>完全图:</strong> 每队不同顶点间恰有一条边的简单图.</p>
+</li>
+<li>
+<p><strong>圈图:</strong> 由\$n\$个顶点\${v_1,v_2,v_3,...,v_n}\$ 以及边\${{v_1,v_2},{v_2,v_3},...,{v_(n-1),v_n},{v_n,v_1}}\$组成的图称为圈图.</p>
+</li>
+<li>
+<p><strong>轮图:</strong> 在圈图的基础上增加一个顶点, 并将这个新顶点于原圈图中的每个顶点相连, 得到轮图.</p>
+</li>
+<li>
+<p><strong>立方图:</strong> 用顶点表示\$2^n\$个长度为\$n\$的位串的图, 且两个顶点表示的位串恰好只有一位不同时相连接.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_术语"><a class="link" href="#_术语">5.2. 术语</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>若u和v分别是无向图G中的一条边e的两个端点, 那么称两个顶点u和v在G里 <strong>邻接</strong> .</p>
+</li>
+<li>
+<p>图G=(V,E)中, 顶点v相邻的顶点的集合记作N(v),称为顶点v的 <strong>邻居</strong> .</p>
+</li>
+<li>
+<p>在无向图中, 顶点v的 <strong>度(deg(v))</strong> 是与该顶点相连的边的数量, 顶点上有环的度算双份. deg为0的顶点称为 <strong>孤立的</strong> , deg为1的点称为 <strong>悬挂的</strong> .</p>
+</li>
+<li>
+<p>当(u,v)表示有向图G的一条边时, u邻接到v, u是起点, v是终点.
+环的起点和终点是相同的.</p>
+</li>
+<li>
+<p>在有向图中, \$deg^(-)(v)\$表示v的 <strong>入度</strong> , 表示以v为终点的边数. \$deg^+(v)\$表示v的 <strong>出度</strong> , 是以v为起点的边数</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_基本定理"><a class="link" href="#_基本定理">5.3. 基本定理</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>握手定理:</strong> 顶点度数之和是边数的两倍: \$sum_(vinA)deg(v)=2m\$.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>例子: 一个具有10个顶点且每个顶点的度都为6的图, 有多少条边? \$6*10//2=30\$</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>无向图中有偶数个度数为奇数的顶点.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>证明: 顶点度数之和2m由度数为奇数的顶点和度数为偶数的顶点组成, 度数为偶数的顶点度数之和肯定为偶数, 2m为偶数, 所以必有偶数个度数为奇数的顶点.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>因为每条边都有起点和终点, 所以图中所有顶点入度之和=出度之和=边数.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_二分图"><a class="link" href="#_二分图">5.4. 二分图</a></h3>
+<div class="paragraph">
+<p>把简单图的顶点分为两个不想交的子集, 使得每条边都连接一个子集中的顶点和另外一个子集的顶点, 且每个子集中的顶点互不相连, 则这样的图称为 <strong>二分图</strong> .</p>
+</div>
+<div class="sect3">
+<h4 id="_判断是否为二分图"><a class="link" href="#_判断是否为二分图">5.4.1. 判断是否为二分图</a></h4>
+<div class="paragraph">
+<p>对图中的每个顶点赋予不同的颜色, 如果没有两个相邻的顶点被赋予相同的颜色, 则该图为二分图.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_图的表示"><a class="link" href="#_图的表示">5.5. 图的表示</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>邻接表 <code>列出每个顶点与它相邻的顶点</code></p>
+</li>
+<li>
+<p>邻接矩阵 <code>n个顶点写成nxn的矩阵, 如果两个顶点相连则记下边数, 否则为0</code></p>
+</li>
+<li>
+<p>关联矩阵 <code>设图G=(V,E)是无向图, 写成点vx边e的矩阵, 如果v和e关联则记为1, 否则为0</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_图的遍历"><a class="link" href="#_图的遍历">5.6. 图的遍历</a></h3>
+<div class="sect3">
+<h4 id="_深度优先"><a class="link" href="#_深度优先">5.6.1. 深度优先</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>将自己标记位已读, 处理该点.</p>
+</li>
+<li>
+<p>遍历与自己相邻的点, 重复步骤1.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_广度优先"><a class="link" href="#_广度优先">5.6.2. 广度优先</a></h4>
+
+</div>
+</div>
+<div class="sect2">
+<h3 id="_连通性"><a class="link" href="#_连通性">5.7. 连通性</a></h3>
+<div class="paragraph">
+<p><strong>通路</strong> 是边的序列, 它从图的一个顶点开始沿着图中的边行经图中相邻的顶点.</p>
+</div>
+<div class="sect3">
+<h4 id="_无向图的连通性"><a class="link" href="#_无向图的连通性">5.7.1. 无向图的连通性</a></h4>
+<div class="paragraph">
+<p>若无向图中每一对不同的顶点之间都有通路, 则该图是连通的.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_计算顶点之间的通路数"><a class="link" href="#_计算顶点之间的通路数">5.7.2. 计算顶点之间的通路数</a></h4>
+<div class="paragraph">
+<p>图\$G\$顶点\$v_i到v_j\$长度为\$r\$的不同通路的数目等于图\$G\$的 <strong>邻接矩阵</strong> \$A^r\$的第\$i,j\$项.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_欧拉回路"><a class="link" href="#_欧拉回路">5.8. 欧拉回路</a></h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_树"><a class="link" href="#_树">6. 树</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_术语_2"><a class="link" href="#_术语_2">6.1. 术语</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>不含简单回路的连通图称为树.(每对顶点之间存在唯一简单通路)</p>
+</li>
+<li>
+<p>指定一棵树的一个特殊顶点为根</p>
+</li>
+<li>
+<p>假设一棵树的顶点为T,v为非根顶点, 则v的父母是从u到v存在有向边的唯一顶点u.</p>
+</li>
+<li>
+<p>当u为v的父母时, v称为u的孩子.</p>
+</li>
+<li>
+<p>具有相同父母的顶点称为兄弟.</p>
+</li>
+<li>
+<p>若顶点没有孩子, 则该顶点称为树叶, 有孩子的顶点称为内点.</p>
+</li>
+<li>
+<p>若每棵树的内点都有不超过m个孩子, 则称它为m叉树. 若每个内点正好有m个孩子, 则称它为满m叉树.</p>
+</li>
+<li>
+<p>若一颗高度为h的m叉树的所有树叶都在h或h-1层, 则这个树是平衡的.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_性质"><a class="link" href="#_性质">6.2. 性质</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>带有n个顶点的树含有n-1条边.</p>
+</li>
+<li>
+<p>带有i个内点的满m叉树含有 \$n=mi+1\$个顶点. (n=m+l)</p>
+</li>
+<li>
+<p>高度为h的m叉树最多有\$m^h\$个树叶.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>一颗高度为h的m叉树带有l个树叶, 则 \$h&gt;=log_ml\$</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_遍历"><a class="link" href="#_遍历">6.3. 遍历</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>先序遍历: 先遍历根节点, 再遍历子节点.</p>
+</li>
+<li>
+<p>后序遍历: 先遍历子节点, 再遍历根节点.</p>
+</li>
+<li>
+<p>中序遍历: 先遍历左子节点, 再遍历根节点, 最后遍历右子节点.</p>
+</li>
+<li>
+<p>层序遍历:
+遍历完同一高度的兄弟节点, 再遍历下一层的节点.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_二叉搜索树"><a class="link" href="#_二叉搜索树">6.4. 二叉搜索树</a></h3>
+<div class="sect3">
+<h4 id="_插入"><a class="link" href="#_插入">6.4.1. 插入</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果插入的key比节点小, 则往左插.</p>
+</li>
+<li>
+<p>如果插入的key比节点大, 则往右插.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_删除"><a class="link" href="#_删除">6.4.2. 删除</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果被删除的节点是叶子节点, 则直接删除.</p>
+</li>
+<li>
+<p>如果有一个子节点, 则用子节点替换被删除的节点.</p>
+</li>
+<li>
+<p>如果有两个节点, 则找到右节点中最小的节点, 替换被删除的节点, 再把这个最小的节点从右子树中直接删除(最小的节点肯定是树叶).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_avl树"><a class="link" href="#_avl树">6.5. AVL树</a></h3>
+<div class="paragraph">
+<p>AVL树是一颗二叉搜索树, 其每个节点的左右子节点高度之差绝对值小于等于1.</p>
+</div>
+<div class="paragraph">
+<p>设受插入节点影响而失去平衡的节点的父节点为Z.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_插入方式"><a class="link" href="#_插入方式">6.6. 插入方式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>LL:
+插入的节点在Z节点左子树的左子树上.</p>
+</li>
+<li>
+<p>RR:
+插入的节点在Z节点右子树的右子树上.</p>
+</li>
+<li>
+<p>LR:
+插入的节点在Z节点左子树的右子树上.</p>
+</li>
+<li>
+<p>RL:
+插入的节点在Z节点右子树的左子树上.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_旋转方式"><a class="link" href="#_旋转方式">6.7. 旋转方式</a></h3>
+<div class="paragraph">
+<p>设Z节点的左子节点为X, 右子节点为Y.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>右单旋(<strong>处理LL</strong>):
+将Z节点变为X节点的右子节点, X节点原有的右子节点变为Z节点的左子节点.</p>
+</li>
+<li>
+<p>左单旋(<strong>处理RR</strong>):
+将Z节点变为Y节点的左子节点, Y节点原有的左子节点变为Z节点的右子节点.</p>
+</li>
+<li>
+<p>左右双旋(<strong>处理LR</strong>):
+以X节点的右子节点为轴进行左单旋(用X节点的右子节点替换X节点), 然后以新的X节点为轴进行右单旋.</p>
+</li>
+<li>
+<p>右左双旋(<strong>处理RL</strong>):
+以Y节点的左子节点为轴进行右单旋(用Y节点的左子节点替换Y节点), 然后以新的Y节点为轴进行左单旋.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_删除_2"><a class="link" href="#_删除_2">6.7.1. 删除</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>先按照普通二叉搜索树的删除方式删除节点.</p>
+</li>
+<li>
+<p>如果删除后导致树不平衡, 需要做旋转操作.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_3查找树"><a class="link" href="#_2_3查找树">6.8. 2-3查找树</a></h3>
+<div class="ulist">
+<div class="title">一颗2-3查找树由一下节点组成:</div>
+<ul>
+<li>
+<p>2-节点: 含有一个key和两个子树, 左子树的根节点中的key都小于该节点的key, 右子树的根节点中的key都大于该节点的key.</p>
+</li>
+<li>
+<p>3-节点: 含有两个key和三个子树, 左子树的根节点中的key都小于该节点的key, 中间子树的根节点的key处于该节点的两个key之间, 右子树的根节点中的key都大于该节点的key.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_插入_2"><a class="link" href="#_插入_2">6.8.1. 插入</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>插入的是2-节点, 则直接将key插入到该节点中.</p>
+</li>
+<li>
+<p>插入的是3-节点:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>父节点是2-节点: 先将key插入到该节点中, 形成4-节点, 然后将中间的key移动到父节点中.</p>
+</li>
+<li>
+<p>父节点是3-节点: 先将key插入到该节点中, 形成4-节点, 然后递归将中间的key移动到父节点为2-3节点的节点中.</p>
+</li>
+<li>
+<p>所有节点都是3-节点: 先将key插入到该节点中, 形成4-节点, 然后递归将中间的key移动到根节点中, 最后将根节点分裂, 形成3个2-节点.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_b树"><a class="link" href="#_b树">6.9. B树</a></h3>
+<div class="ulist">
+<div class="title">阶为M的B树具有如下性质:</div>
+<ul>
+<li>
+<p>数据项存在树叶上.</p>
+</li>
+<li>
+<p>非叶节点存储最多\$M-1\$个数据, 其中第\$i\$个数据代表子树中第\$i+1\$个最小的数据.</p>
+</li>
+<li>
+<p>除了根节点外, 所有非叶子节点的子节点数量在\$|~M/2~|~M\$之间.</p>
+</li>
+<li>
+<p>所有相同高度的节点拥有\$|~L/2~|~L\$个数据.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_红黑树"><a class="link" href="#_红黑树">6.10. 红黑树</a></h3>
+<div class="ulist">
+<div class="title">性质</div>
+<ul>
+<li>
+<p>节点不是红色就是黑色.</p>
+</li>
+<li>
+<p>根节点是黑色的.</p>
+</li>
+<li>
+<p>每个空的节点都是黑色的.</p>
+</li>
+<li>
+<p>每个红色节点的叶子节点都是黑色的.</p>
+</li>
+<li>
+<p>从任一节点到其每个叶子节点的所有路径都包含相同数量的黑色节点.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_插入_3"><a class="link" href="#_插入_3">6.10.1. 插入</a></h4>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+uncle节点:
+X节点的父节点的兄弟节点. grand parent节点:
+X节点的父节点的父节点.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<div class="title">首先尝试着色</div>
+<ol class="arabic">
+<li>
+<p>将新插入的节点X标记位红色.</p>
+</li>
+<li>
+<p>如果X是根节点, 则标记为黑色, 结束.</p>
+</li>
+<li>
+<p>如果X的父节点为黑色, 结束.</p>
+</li>
+<li>
+<p>此时X的父节点是红色, 如果X的uncle节点是红色:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>将X的父节点和uncle节点标记为黑色.</p>
+</li>
+<li>
+<p>将X的祖父节点标记为红色.</p>
+</li>
+<li>
+<p>将X的祖父节点设为X节点, 重复步骤2, 3, 4.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>如果X的uncle节点是黑色,则先旋转(参考AVL树旋转), 然后父节点设为黑色, 祖父节点设为红色, 重复步骤2, 3, 5:</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_树的应用"><a class="link" href="#_树的应用">6.11. 树的应用</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>二叉搜索树</p>
+</li>
+<li>
+<p>决策树</p>
+</li>
+<li>
+<p>前缀码</p>
+</li>
+<li>
+<p>博弈树</p>
+</li>
+<li>
+<p>最小生成树</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>😑卒</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2019-12-11 09:43:49 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

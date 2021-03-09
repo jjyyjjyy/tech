@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<meta name="author" content="jy">
+<title>Algorithm</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Algorithm</h1>
+<div class="details">
+<span id="author" class="author">jy</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_数据结构">1. 数据结构</a>
+<ul class="sectlevel2">
+<li><a href="#_逻辑结构分类">1.1. 逻辑结构分类</a></li>
+<li><a href="#_物理结构分类">1.2. 物理结构分类</a></li>
+</ul>
+</li>
+<li><a href="#_算法">2. 算法</a>
+<ul class="sectlevel2">
+<li><a href="#_算法分析">2.1. 算法分析</a></li>
+<li><a href="#_big_o_符号">2.2. Big O 符号</a></li>
+</ul>
+</li>
+<li><a href="#list">3. 表</a>
+<ul class="sectlevel2">
+<li><a href="#array-list">3.1. 线性表</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度">3.1.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#linked-list">3.2. 链表</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_2">3.2.1. 时间复杂度</a></li>
+<li><a href="#_arraylist和linkedlist比较">3.2.2. ArrayList和LinkedList比较</a></li>
+<li><a href="#_翻转单链表">3.2.3. 翻转单链表</a></li>
+</ul>
+</li>
+<li><a href="#queue">3.3. 队列</a>
+<ul class="sectlevel3">
+<li><a href="#_数组实现队列">3.3.1. 数组实现队列</a></li>
+<li><a href="#_链表实现队列">3.3.2. 链表实现队列</a></li>
+</ul>
+</li>
+<li><a href="#stack">3.4. 栈</a>
+<ul class="sectlevel3">
+<li><a href="#_数组实现栈">3.4.1. 数组实现栈</a></li>
+<li><a href="#_双向链表实现栈">3.4.2. 双向链表实现栈</a></li>
+</ul>
+</li>
+<li><a href="#_哈希表">3.5. 哈希表</a>
+<ul class="sectlevel3">
+<li><a href="#_解决哈希冲突">3.5.1. 解决哈希冲突</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#tree">4. 树</a>
+<ul class="sectlevel2">
+<li><a href="#_术语">4.1. 术语</a></li>
+<li><a href="#_二叉树">4.2. 二叉树</a>
+<ul class="sectlevel3">
+<li><a href="#_实现">4.2.1. 实现</a></li>
+<li><a href="#_时间复杂度_3">4.2.2. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_avl树">4.3. AVL树</a>
+<ul class="sectlevel3">
+<li><a href="#_性质">4.3.1. 性质</a></li>
+<li><a href="#_二叉树失衡场景">4.3.2. 二叉树失衡场景</a></li>
+<li><a href="#_实现_2">4.3.3. 实现</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#graph">5. 图</a>
+<ul class="sectlevel2">
+<li><a href="#_表示方法">5.1. 表示方法</a></li>
+<li><a href="#_遍历">5.2. 遍历</a></li>
+<li><a href="#bfs">5.3. 广度优先算法</a></li>
+<li><a href="#dfs">5.4. 深度优先算法</a></li>
+</ul>
+</li>
+<li><a href="#sort">6. 排序</a>
+<ul class="sectlevel2">
+<li><a href="#_冒泡排序">6.1. 冒泡排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_4">6.1.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_选择排序">6.2. 选择排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_5">6.2.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_插入排序">6.3. 插入排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_6">6.3.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_希尔排序">6.4. 希尔排序</a></li>
+<li><a href="#_归并排序">6.5. 归并排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_7">6.5.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_快速排序">6.6. 快速排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_8">6.6.1. 时间复杂度</a></li>
+<li><a href="#_快速排序和归并排序的区别">6.6.2. 快速排序和归并排序的区别</a></li>
+</ul>
+</li>
+<li><a href="#_堆排序">6.7. 堆排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_9">6.7.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_桶排序">6.8. 桶排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_10">6.8.1. 时间复杂度</a></li>
+</ul>
+</li>
+<li><a href="#_计数排序">6.9. 计数排序</a>
+<ul class="sectlevel3">
+<li><a href="#_时间复杂度_11">6.9.1. 时间复杂度</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#search">7. 查找</a>
+<ul class="sectlevel2">
+<li><a href="#_二分查找">7.1. 二分查找</a></li>
+<li><a href="#_bf">7.2. BF</a></li>
+<li><a href="#_rk">7.3. RK</a></li>
+<li><a href="#_kmp">7.4. KMP</a></li>
+</ul>
+</li>
+<li><a href="#_算法思想">8. 算法思想</a>
+<ul class="sectlevel2">
+<li><a href="#_贪心">8.1. 贪心</a>
+<ul class="sectlevel3">
+<li><a href="#_适用场景">8.1.1. 适用场景</a></li>
+<li><a href="#_思路">8.1.2. 思路</a></li>
+</ul>
+</li>
+<li><a href="#_分治">8.2. 分治</a>
+<ul class="sectlevel3">
+<li><a href="#_适用场景_2">8.2.1. 适用场景</a></li>
+</ul>
+</li>
+<li><a href="#_回溯">8.3. 回溯</a></li>
+<li><a href="#_动态规划">8.4. 动态规划</a>
+<ul class="sectlevel3">
+<li><a href="#_适用场景_3">8.4.1. 适用场景</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">Resource</div>
+<ul>
+<li>
+<p><a href="https://book.douban.com/subject/19952400" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/19952400</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/26745780" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/26745780</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据结构"><a class="link" href="#_数据结构">1. 数据结构</a></h2>
+<div class="sectionbody">
+<div class="paragraph lead">
+<p>数据结构就是把数据元素按照一定的关系组织起来的集合, 用来存储数据.</p>
+</div>
+<div class="sect2">
+<h3 id="_逻辑结构分类"><a class="link" href="#_逻辑结构分类">1.1. 逻辑结构分类</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>集合: 集合结构中数据元素除了属于同一个集合外, 他们之间没有任何的关系.</p>
+</li>
+<li>
+<p>线性: 线性结构中的数据元素存在一对一的关系.</p>
+</li>
+<li>
+<p>树形: 树形结构中的数据元素存在一对多的层次关系.</p>
+</li>
+<li>
+<p>图形: 图形结构的数据元素是多对多的关系.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_物理结构分类"><a class="link" href="#_物理结构分类">1.2. 物理结构分类</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>顺序结构: 把数据存放到地址连续的存储单元里面, 其数据建的逻辑关系和物理关系是一致的.</p>
+</li>
+<li>
+<p>链式结构: 把数据元素存放在任意的存储单元里面, 这组存储单元可以是连续的也可以是不连续的.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_算法"><a class="link" href="#_算法">2. 算法</a></h2>
+<div class="sectionbody">
+<div class="paragraph lead">
+<p>算法指解题方案的准确而完整的描述, 是一系列解决问题的清晰指令.<br>
+算法代表着用系统的方法解决问题的策略机制.</p>
+</div>
+<div class="sect2">
+<h3 id="_算法分析"><a class="link" href="#_算法分析">2.1. 算法分析</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>最坏情况分析: 记T(n)为输入规模为n时的最长运行时间.</p>
+</li>
+<li>
+<p>平均情况分析: 记T(n)为输入规模为n时的所有可能运行时间根据概率加权平均.</p>
+</li>
+<li>
+<p>最好情况分析: 记T(n)为输入规模为n时的最短运行时间.</p>
+</li>
+<li>
+<p>渐近分析: 忽略掉依赖于机器的常量, 检查程序运行的增量, 而不是具体的运行时间.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_big_o_符号"><a class="link" href="#_big_o_符号">2.2. Big O 符号</a></h3>
+<div class="ulist">
+<div class="title">表示规则</div>
+<ul>
+<li>
+<p>用常数1取代运行时间中的所有加法常数.</p>
+</li>
+<li>
+<p>在修改后的运行次数中, 只保留高阶项.</p>
+</li>
+<li>
+<p>如果最高阶项存在, 且常数因子不为1, 则去除与这个项相乘的常数.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>eg: \$3n^3+90n^2-5n+4096=O(n^3)\$</p>
+</div>
+<div class="paragraph">
+<div class="title">常见复杂度比较:</div>
+<p>\$1 &lt; lgn &lt; sqrtn &lt; n &lt; nlgn &lt; n^2 &lt; n^3 &lt; 2^n &lt; n!\$</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="list"><a class="link" href="#list">3. 表</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="array-list"><a class="link" href="#array-list">3.1. 线性表</a></h3>
+<div class="paragraph">
+<p>通过数组存储元素, 可以通过数组索引直接获取元素.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * 基于数组实现线性表
+ *
+ * @author jy
+ */
+class ArrayList&lt;T&gt; implements List&lt;T&gt; {
+
+    private static final int DEFAULT_CAPACITY = 10;
+
+    private static final Object[] DEFAULT_EMPTY_DATA = {};
+
+    private Object[] elements;
+
+    private int size;
+
+    public ArrayList() {
+        this.elements = DEFAULT_EMPTY_DATA;
+    }
+
+    public ArrayList(int size) {
+        this.elements = new Object[Math.max(0, size)];
+    }
+
+    @Override
+    public void add(T e) {
+        if (this.elements.length == size) {
+            resize(size + (size &gt;&gt; 1));
+        }
+        elements[size++] = e;
+    }
+
+    private void resize(int i) {
+        i = Math.max(DEFAULT_CAPACITY, i);
+        Object[] newElements = new Object[i];
+        System.arraycopy(elements, 0, newElements, 0, size);
+        elements = newElements;
+    }
+
+    @Override
+    public T get(int index) {
+        checkRange(index);
+        return (T) elements[index];
+    }
+
+    @Override
+    public void remove(int index) {
+        checkRange(index);
+        elements[index] = null;
+        if (index != --size) {
+            System.arraycopy(elements, index + 1, elements, index, size - index + 1);
+        }
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    private void checkRange(int index) {
+        if (index &gt;= size) {
+            throw new RuntimeException("Index out of bounds!");
+        }
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度"><a class="link" href="#_时间复杂度">3.1.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>get: \$O(1)\$</p>
+</li>
+<li>
+<p>add: \$O(n)\$</p>
+</li>
+<li>
+<p>remove: \$O(n)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="linked-list"><a class="link" href="#linked-list">3.2. 链表</a></h3>
+<div class="paragraph">
+<p>每个元素包含一个指针指向下一个元素.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * 双向链表实现
+ *
+ * @author jy
+ */
+class LinkedList&lt;T&gt; implements List&lt;T&gt; {
+
+    private ListNode&lt;T&gt; head;
+
+    private ListNode&lt;T&gt; tail;
+
+    private int size;
+
+    // tag::reverse-list[]
+    public static &lt;T&gt; ListNode&lt;T&gt; reverse(ListNode&lt;T&gt; head) {
+        ListNode&lt;T&gt; prev = null;
+        ListNode&lt;T&gt; current = head;
+        while (current != null) {
+            ListNode&lt;T&gt; next = current.getNext();
+            current.setNext(prev);
+            prev = current;
+            current = next;
+        }
+        return prev;
+    }
+    // end::reverse-list[]
+
+    @Override
+    public void add(T e) {
+        ListNode&lt;T&gt; node = new ListNode&lt;&gt;(e);
+        if (this.tail == null) {
+            head = this.tail = node;
+        } else {
+            node.setPrev(tail);
+            this.tail.setNext(node);
+            this.tail = node;
+        }
+        size++;
+    }
+
+    @Override
+    public T get(int index) {
+        ListNode&lt;T&gt; current = head;
+        for (int i = 0; i &lt; index &amp;&amp; current != null; i++) {
+            current = current.getNext();
+        }
+        if (current == null) {
+            throw new RuntimeException("Index out of bound!");
+        }
+        return current.getData();
+    }
+
+    @Override
+    public void remove(int index) {
+        ListNode&lt;T&gt; current = head;
+        for (int i = 0; i &lt; index &amp;&amp; current != null; i++) {
+            current = current.getNext();
+        }
+        if (current == null) {
+            throw new RuntimeException("Index out of bound!");
+        }
+        ListNode&lt;T&gt; prev = current.getPrev();
+        if (prev == null) {
+            head = current.getNext();
+        } else {
+            prev.setNext(current.getNext());
+        }
+        size--;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_2"><a class="link" href="#_时间复杂度_2">3.2.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>get: \$O(n)\$</p>
+</li>
+<li>
+<p>add: \$O(1)\$</p>
+</li>
+<li>
+<p>remove: \$O(n)\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_arraylist和linkedlist比较"><a class="link" href="#_arraylist和linkedlist比较">3.2.2. ArrayList和LinkedList比较</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>ArrayList的实现基于数组, LinkedList的实现基于双向链表.</p>
+</li>
+<li>
+<p>对于随机访问, ArrayList优于LinkedList.<br>
+对于新增元素, LinkedList优于ArrayList.</p>
+</li>
+<li>
+<p>LinkedList比ArrayList更占内存.<br>
+因为LinkedList要维护前驱和后继节点的指针.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_翻转单链表"><a class="link" href="#_翻转单链表">3.2.3. 翻转单链表</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    public static &lt;T&gt; ListNode&lt;T&gt; reverse(ListNode&lt;T&gt; head) {
+        ListNode&lt;T&gt; prev = null;
+        ListNode&lt;T&gt; current = head;
+        while (current != null) {
+            ListNode&lt;T&gt; next = current.getNext();
+            current.setNext(prev);
+            prev = current;
+            current = next;
+        }
+        return prev;
+    }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="queue"><a class="link" href="#queue">3.3. 队列</a></h3>
+<div class="paragraph">
+<p>先进先出.</p>
+</div>
+<div class="sect3">
+<h4 id="_数组实现队列"><a class="link" href="#_数组实现队列">3.3.1. 数组实现队列</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * @author jy
+ */
+class ArrayQueue&lt;T&gt; {
+
+    private static final int DEFAULT_CAPACITY = 10;
+
+    private static final Object[] DEFAULT_EMPTY_DATA = {};
+
+    private Object[] elements;
+
+    private int size;
+
+    public ArrayQueue() {
+        this.elements = DEFAULT_EMPTY_DATA;
+    }
+
+    public ArrayQueue(int capacity) {
+        this.elements = new Object[Math.max(capacity, DEFAULT_CAPACITY)];
+    }
+
+    public void push(T e) {
+        if (this.elements.length == size) {
+            resize(size + (size &gt;&gt; 1));
+        }
+        this.elements[size++] = e;
+    }
+
+    public T pop() {
+        if (this.size == 0) {
+            return null;
+        }
+        T data = (T) this.elements[0];
+        System.arraycopy(elements, 1, elements, 0, --size);
+        return data;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    private void resize(int i) {
+        Object[] newElements = new Object[Math.max(i, DEFAULT_CAPACITY)];
+        System.arraycopy(elements, 0, newElements, 0, size);
+        this.elements = newElements;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_链表实现队列"><a class="link" href="#_链表实现队列">3.3.2. 链表实现队列</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * @author jy
+ */
+class LinkedQueue&lt;T&gt; {
+
+    private ListNode&lt;T&gt; head;
+    private ListNode&lt;T&gt; tail;
+
+    private int size;
+
+    public LinkedQueue() {
+    }
+
+    public void push(T e) {
+        ListNode&lt;T&gt; node = new ListNode&lt;&gt;(e);
+        if (head == null) {
+            head = tail = node;
+        } else {
+            tail.setNext(node);
+            tail = node;
+        }
+        size++;
+    }
+
+    public T pop() {
+        if (size == 0) {
+            return null;
+        }
+
+        ListNode&lt;T&gt; legacyHead = this.head;
+
+        this.head = this.head.getNext();
+
+        if (head == null) {
+            this.tail = null;
+        } else {
+            this.head.setPrev(null);
+        }
+
+        legacyHead.setNext(null);
+        size--;
+
+        return legacyHead.getData();
+    }
+
+    public int size() {
+        return size;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="stack"><a class="link" href="#stack">3.4. 栈</a></h3>
+<div class="paragraph">
+<p>先进后出.</p>
+</div>
+<div class="sect3">
+<h4 id="_数组实现栈"><a class="link" href="#_数组实现栈">3.4.1. 数组实现栈</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * 基于数组实现栈
+ *
+ * @author jy
+ */
+class ArrayStack&lt;T&gt; {
+
+    private static final int DEFAULT_CAPACITY = 10;
+
+    private static final Object[] DEFAULT_EMPTY_DATA = {};
+
+    private Object[] elements;
+
+    private int size;
+
+    public ArrayStack() {
+        this.elements = DEFAULT_EMPTY_DATA;
+    }
+
+    public ArrayStack(int capacity) {
+        this.elements = new Object[Math.max(capacity, DEFAULT_CAPACITY)];
+    }
+
+    public void push(T e) {
+        if (this.size == elements.length) {
+            resize(size + (size &gt;&gt; 1));
+        }
+        this.elements[size++] = e;
+    }
+
+    private void resize(int i) {
+        Object[] newElements = new Object[Math.max(i, DEFAULT_CAPACITY)];
+        System.arraycopy(elements, 0, newElements, 0, size);
+        this.elements = newElements;
+    }
+
+    public T pop() {
+        if (this.size == 0) {
+            return null;
+        }
+        T element = (T) this.elements[size - 1];
+        this.elements[--size] = null;
+        return element;
+    }
+
+    public int size() {
+        return size;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_双向链表实现栈"><a class="link" href="#_双向链表实现栈">3.4.2. 双向链表实现栈</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.list;
+
+/**
+ * @author jy
+ */
+class LinkedStack&lt;T&gt; {
+
+    private ListNode&lt;T&gt; head;
+    private ListNode&lt;T&gt; tail;
+    private int size;
+
+    public void push(T e) {
+        ListNode&lt;T&gt; node = new ListNode&lt;&gt;(e);
+        if (tail == null) {
+            head = this.tail = node;
+        } else {
+            tail.setNext(node);
+            node.setPrev(tail);
+            tail = node;
+        }
+        size++;
+    }
+
+    public T pop() {
+        if (size == 0) {
+            return null;
+        }
+
+        ListNode&lt;T&gt; legacyTail = this.tail;
+        this.tail = this.tail.getPrev();
+
+        if (tail == null) {
+            head = null;
+        } else {
+            this.tail.setNext(null);
+        }
+
+        legacyTail.setPrev(null);
+        size--;
+
+        return legacyTail.getData();
+    }
+
+    public int size() {
+        return size;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_哈希表"><a class="link" href="#_哈希表">3.5. 哈希表</a></h3>
+<div class="paragraph">
+<p>对key计算hash值, 确定元素存放的位置.</p>
+</div>
+<div class="sect3">
+<h4 id="_解决哈希冲突"><a class="link" href="#_解决哈希冲突">3.5.1. 解决哈希冲突</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>线性检测: 往散列表中插入数据, 如果某个数据经过hash后存放位置被占用了, 则从当前位置开始向后依次查找直到找到一个空闲的位置.</p>
+</li>
+<li>
+<p>二次检测: 每次检测的步长为平方数, 如 \$1^2,2^2,3^2...\$</p>
+</li>
+<li>
+<p>二次散列: 哈希冲突后第二次计算hash值.</p>
+</li>
+<li>
+<p>链地址法: 使用链表存储冲突的元素.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tree"><a class="link" href="#tree">4. 树</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_术语"><a class="link" href="#_术语">4.1. 术语</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>根节点</p>
+</li>
+<li>
+<p>叶子节点</p>
+</li>
+<li>
+<p>边</p>
+</li>
+<li>
+<p>深度</p>
+</li>
+<li>
+<p>高度</p>
+</li>
+<li>
+<p>满二叉树: 除了叶子节点, 其他节点均有两个子节点.</p>
+</li>
+<li>
+<p>完全二叉树: 最后一层叶子节点从左到右排列, 最后一层以上的节点均有两个节点.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_二叉树"><a class="link" href="#_二叉树">4.2. 二叉树</a></h3>
+<div class="paragraph">
+<p>树中任意一个节点, 其左子节点的值都小于该节点的值, 其右子节点的值都大于该节点的值.</p>
+</div>
+<div class="sect3">
+<h4 id="_实现"><a class="link" href="#_实现">4.2.1. 实现</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.tree;
+
+import java.util.Optional;
+
+/**
+ * @author jy
+ */
+public class BinarySearchTree&lt;T extends Comparable&lt;? super T&gt;&gt; {
+
+    private Node root;
+
+    public void insert(T value) {
+        Node node = new Node(value);
+        if (root == null) {
+            root = node;
+            return;
+        }
+        Node current = root;
+        while (true) {
+            int compare = current.value.compareTo(value);
+            if (compare == 0) {
+                return;
+            }
+            if (compare &lt; 0) {
+                if (current.right == null) {
+                    current.right = node;
+                    break;
+                }
+                current = current.right;
+            } else {
+                if (current.left == null) {
+                    current.left = node;
+                    break;
+                }
+                current = current.left;
+            }
+        }
+    }
+
+    public void remove(T value) {
+        checkValue(value);
+        remove(value, root);
+    }
+
+    public T findMin() {
+        if (root == null) {
+            return null;
+        }
+        return findMinNode(root).value;
+    }
+
+    public T findMax() {
+        if (root == null) {
+            return null;
+        }
+        return findMaxNode(root).value;
+    }
+
+    public boolean contains(T value) {
+        checkValue(value);
+        return contains(value, root);
+    }
+
+    public int height() {
+        return height(root);
+    }
+
+    private int height(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        return 1 + Math.max(height(node.left), height(node.right));
+    }
+
+    private boolean contains(T value, Node node) {
+        if (node == null) {
+            return false;
+        }
+        int compare = value.compareTo(node.value);
+        if (compare == 0) {
+            return true;
+        }
+        if (compare &lt; 0) {
+            return contains(value, node.left);
+        }
+        return contains(value, node.right);
+    }
+
+    /**
+     * 删除
+     *
+     * @param value 要删除的节点的值
+     * @param node  根节点
+     */
+    private Node remove(T value, Node node) {
+        if (node == null) {
+            return null;
+        }
+
+        int compare = value.compareTo(node.value);
+        if (compare &lt; 0) {
+            node.left = remove(value, node.left);
+        } else if (compare &gt; 0) {
+            node.right = remove(value, node.right);
+        } else if (node.left != null &amp;&amp; node.right != null) {
+            // 找到右子节点中最小的节点, 变为node的右子节点
+            node.value = findMinNode(node.right).value;
+            node.right = remove(node.value, node.right);
+        } else {
+            // node为树叶或者只有一个子节点
+            node = Optional.ofNullable(node.left).orElse(node.right);
+        }
+        return node;
+    }
+
+    private Node findMaxNode(Node node) {
+        if (node.right == null) {
+            return node;
+        }
+        return findMaxNode(node.right);
+    }
+
+    private Node findMinNode(Node node) {
+        if (node.left == null) {
+            return node;
+        }
+        return findMinNode(node.left);
+    }
+
+    private void checkValue(T value) {
+        if (value == null) {
+            throw new IllegalArgumentException("No soup for u!");
+        }
+    }
+
+    private class Node {
+
+        private T value;
+        private Node left;
+        private Node right;
+
+        private Node(T value) {
+            this.value = value;
+        }
+    }
+
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_3"><a class="link" href="#_时间复杂度_3">4.2.2. 时间复杂度</a></h4>
+<div class="paragraph">
+<p>最坏 \$O(n)\$, 平均 \$O(logn)\$</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_avl树"><a class="link" href="#_avl树">4.3. AVL树</a></h3>
+<div class="sect3">
+<h4 id="_性质"><a class="link" href="#_性质">4.3.1. 性质</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>可以是空树.</p>
+</li>
+<li>
+<p>任意左右子树均是AVL树, 且高度之差不能大于1.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_二叉树失衡场景"><a class="link" href="#_二叉树失衡场景">4.3.2. 二叉树失衡场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>LL: 向左子树的左子树插入元素.</p>
+</li>
+<li>
+<p>LR: 向左子树的右子树插入元素.</p>
+</li>
+<li>
+<p>RR: 向右子树的右子树插入元素.</p>
+</li>
+<li>
+<p>RL: 向右子树的左子树插入元素.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_实现_2"><a class="link" href="#_实现_2">4.3.3. 实现</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.tree;
+
+/**
+ * @author jy
+ */
+public class AVLTree&lt;T extends Comparable&lt;T&gt;&gt; {
+
+    private Node root;
+
+    private int height(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        return Math.max(height(node.left), height(node.right)) + 1;
+    }
+
+    private int heightBalanceFactor(Node node) {
+        if (node == null) {
+            return 0;
+        }
+        return Math.abs(height(node.left) - height(node.right));
+    }
+
+    /**
+     * 将Z节点变为X节点的右子节点, X节点原有的右子节点变为Z节点的左子节点.
+     */
+    public Node llRotate(Node node) {
+        Node pivot = node.left;
+        node.left = pivot.right;
+        pivot.right = node;
+
+        return pivot;
+    }
+
+    /**
+     * 将Z节点变为Y节点的左子节点, Y节点原有的左子节点变为Z节点的右子节点.
+     */
+    public Node rrRotate(Node node) {
+        Node pivot = node.right;
+        node.right = pivot.left;
+        pivot.left = node;
+        return pivot;
+    }
+
+    /**
+     * 以X节点的右子节点为轴进行左单旋(用X节点的右子节点替换X节点), 然后以新的X节点为轴进行右单旋.
+     */
+    private Node lrRotate(Node node) {
+        Node left = node.left;
+        Node pivot = left.right;
+
+        // ll
+        left.right = pivot.left;
+        pivot.left = left;
+        node.left = pivot;
+
+        // rr
+        node.left = pivot.right;
+        pivot.right = node;
+
+        return pivot;
+    }
+
+    /**
+     * 以Y节点的左子节点为轴进行右单旋(用Y节点的左子节点替换Y节点), 然后以新的Y节点为轴进行左单旋.
+     */
+    private Node rlRotate(Node node) {
+        Node right = node.right;
+        Node pivot = right.left;
+
+        // rr
+        right.left = pivot.right;
+        pivot.right = right;
+        node.right = pivot;
+
+        // ll
+        node.right = pivot.left;
+        pivot.left = node;
+
+        return pivot;
+    }
+
+    public void insert(T value) {
+        root = insert(root, value);
+    }
+
+    private Node insert(Node root, T value) {
+        Node node = new Node(value);
+        if (root == null) {
+            root = node;
+        } else if (root.value.compareTo(value) &lt; 0) {
+            root.right = insert(root.right, value);
+            if (heightBalanceFactor(root) &gt; 1) {
+                if (root.right.value.compareTo(value) &lt; 0) {
+                    root = rrRotate(root);
+                } else {
+                    root = rlRotate(root);
+                }
+            }
+        } else {
+            root.left = insert(root.left, value);
+            if (heightBalanceFactor(root) &gt; 1) {
+                if (root.left.value.compareTo(value) &gt; 0) {
+                    root = llRotate(root);
+                } else {
+                    root = lrRotate(root);
+                }
+            }
+        }
+        return root;
+    }
+
+    public int heightFactor() {
+        return heightBalanceFactor(root);
+    }
+
+    /**
+     * 中序遍历
+     */
+    public void inOrder(Node node) {
+        if (node == null) {
+            return;
+        }
+        inOrder(node.left);
+        System.out.println(node.value);
+        inOrder(node.right);
+    }
+
+    public void print() {
+        inOrder(root);
+    }
+
+    private class Node {
+
+        private final T value;
+        private Node left;
+        private Node right;
+
+        private Node(T value) {
+            this.value = value;
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="graph"><a class="link" href="#graph">5. 图</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_表示方法"><a class="link" href="#_表示方法">5.1. 表示方法</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>邻接矩阵</p>
+</li>
+<li>
+<p>邻接表</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_遍历"><a class="link" href="#_遍历">5.2. 遍历</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="bfs"><a class="link" href="#bfs">5.3. 广度优先算法</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="dfs"><a class="link" href="#dfs">5.4. 深度优先算法</a></h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sort"><a class="link" href="#sort">6. 排序</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_冒泡排序"><a class="link" href="#_冒泡排序">6.1. 冒泡排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 冒泡排序
+     * 两两比较, 如果左边的元素比右边的大, 则交换位置.
+     * O(n^2)
+     */
+    public static class BubbleSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            for (int i = arr.length - 1; i &gt; 0; i--) {
+                for (int j = 0; j &lt; i; j++) {
+                    if (less(arr[j + 1], arr[j])) {
+                        exchange(arr, j, j + 1);
+                    }
+                }
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_4"><a class="link" href="#_时间复杂度_4">6.1.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>比较次数: \$(n-1) + (n-2) + (n-3)+...+2+1=((n-1+1)*(n-1))/2=(n^2-n)/2\$</p>
+</li>
+<li>
+<p>交换次数: \$(n-1) + (n-2) + (n-3)+...+2+1=((n-1+1)*(n-1))/2=(n^2-n)/2\$</p>
+</li>
+<li>
+<p>总: \$O(n^2-n)=O(n^2)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_选择排序"><a class="link" href="#_选择排序">6.2. 选择排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 选择排序
+     * 选择数组剩余元素中最小的元素放到首位
+     * O(n^2)
+     */
+    public static class SelectSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            for (int i = 0; i &lt; arr.length - 1; i++) {
+                int minIndex = i;
+                for (int j = i + 1; j &lt; arr.length; j++) {
+                    if (less(arr[j], arr[minIndex])) {
+                        minIndex = j;
+                    }
+                }
+                exchange(arr, i, minIndex);
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_5"><a class="link" href="#_时间复杂度_5">6.2.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>比较次数: \$(n-1) + (n-2) + (n-3)+...+2+1=((n-1+1)*(n-1))/2=(n^2-n)/2\$</p>
+</li>
+<li>
+<p>交换次数: \$O(n-1)\$</p>
+</li>
+<li>
+<p>总: \$O((n^2+n)/2-1)=O(n^2)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_插入排序"><a class="link" href="#_插入排序">6.3. 插入排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 插入排序
+     * 保证索引左边的元素排好序
+     * O(n^2)
+     */
+    public static class InsertSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            for (int i = 1; i &lt; arr.length; i++) {
+                for (int j = i; j &gt; 0; j--) {
+                    if (less(arr[j], arr[j - 1])) {
+                        exchange(arr, j, j - 1);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_6"><a class="link" href="#_时间复杂度_6">6.3.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>比较次数: \$(n-1) + (n-2) + (n-3)+...+2+1=((n-1+1)*(n-1))/2=(n^2-n)/2\$</p>
+</li>
+<li>
+<p>交换次数: \$(n-1) + (n-2) + (n-3)+...+2+1=((n-1+1)*(n-1))/2=(n^2-n)/2\$</p>
+</li>
+<li>
+<p>总: \$O(n^2-n)=O(n^2)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_希尔排序"><a class="link" href="#_希尔排序">6.4. 希尔排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 希尔排序(优化过的插入排序)
+     * &lt;p&gt;
+     * 步骤:
+     * 1. 选定一个增长量, 对元素进行分组.
+     * 2. 对每组元素进行插入排序.
+     * 3. 减小增长量直至1, 重复步骤2.
+     */
+    public static class ShellSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            int gap = 1;
+            while (gap &lt; arr.length / 2) {
+                gap = gap * 2 + 1;
+            }
+            for (; gap &gt; 0; gap /= 2) {
+                for (int i = gap; i &lt; arr.length; i++) {
+                    for (int j = i; j &gt;= gap; j -= gap) {
+                        if (less(arr[j], arr[j - gap])) {
+                            exchange(arr, j, j - gap);
+                        } else {
+                            break; // 如果左边比j小, 则不需要继续向左比较了.
+                        }
+                    }
+                }
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_归并排序"><a class="link" href="#_归并排序">6.5. 归并排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 归并排序
+     * 将数组切成若干小数组后排序, 最后合并.
+     */
+    public static class MergeSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            sort(arr, 0, arr.length - 1);
+        }
+
+        private void sort(int[] arr, int lo, int hi) {
+            if (lo &gt;= hi) {
+                return;
+            }
+            int mid = lo + (hi - lo) / 2;
+            sort(arr, lo, mid);
+            sort(arr, mid + 1, hi);
+            merge(arr, lo, mid, hi);
+        }
+
+        /*private void sort2(int[] arr) {
+            int n = arr.length;
+            for (int i = 1; i &lt; n; i += i) {
+                for (int lo = 0; lo &lt; n - i; lo += i * 2) { // 每次处理i*2个元素再合并
+                    merge(arr, lo, lo + i - 1, Math.min(n - 1, lo + i * 2 - 1));
+                }
+            }
+        }*/
+
+        private void merge(int[] arr, int lo, int mid, int hi) {
+
+            int[] tmpArr = new int[arr.length];
+
+            int i = 0, p1 = lo, p2 = mid + 1;
+            while (p1 &lt;= mid &amp;&amp; p2 &lt;= hi) {
+                if (less(arr[p1], arr[p2])) {
+                    tmpArr[i++] = arr[p1++];
+                } else {
+                    tmpArr[i++] = arr[p2++];
+                }
+            }
+            while (p1 &lt;= mid) {
+                tmpArr[i++] = arr[p1++];
+            }
+            while (p2 &lt;= hi) {
+                tmpArr[i++] = arr[p2++];
+            }
+            System.arraycopy(tmpArr, 0, arr, 0, tmpArr.length);
+        }
+
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_7"><a class="link" href="#_时间复杂度_7">6.5.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>拆分次数: \$O(logn)\$</p>
+</li>
+<li>
+<p>每次合并比较次数: \$O(n)\$</p>
+</li>
+<li>
+<p>总: \$O(nlogn)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_快速排序"><a class="link" href="#_快速排序">6.6. 快速排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 快速排序
+     * 保证某一元素左边值比该元素值小且有序, 右边值比该元素值大且有序, 则该数组有序.
+     * 1. 找到1个分界值, 把比分界值小的放左边, 把比分界值大的放右边.
+     * 2. 重复步骤1将分界值左右两边分别排序.
+     */
+    public static class QuickSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            sort(arr, 0, arr.length - 1);
+        }
+
+        private void sort(int[] arr, int lo, int hi) {
+            if (lo &gt;= hi) {
+                return;
+            }
+            int partitionIndex = partition(arr, lo, hi);
+            sort(arr, lo, partitionIndex - 1);
+            sort(arr, partitionIndex + 1, hi);
+        }
+
+        private int partition(int[] arr, int lo, int hi) {
+            int left = lo;
+            int partitionValue = arr[hi];
+
+            for (int i = left; i &lt; hi; i++) {
+                if (arr[i] &lt; partitionValue) {
+                    exchange(arr, i, left++);
+                }
+            }
+            exchange(arr, left, hi);
+            return left;
+        }
+
+        /*private void sort2(int[] arr, int lo, int hi) {
+            if (hi &lt;= lo) {
+                return;
+            }
+            // 随机选择数组中一位作为partition
+            exchange(arr, hi, ThreadLocalRandom.current().nextInt(lo, hi));
+            // 取到左区间和右区间位置
+            int[] indexes = partition(arr, lo, hi);
+            sort(arr, lo, indexes[0]);
+            sort(arr, indexes[1] + 1, hi);
+        }
+
+        private int[] partition(int[] arr, int lo, int hi) {
+            int less = lo - 1;
+            int more = hi;
+            while (lo &lt; more) {
+                if (arr[lo] &lt; arr[hi]) {
+                    // 左指针加1, 交换lo
+                    exchange(arr, ++less, lo++);
+                } else if (arr[lo] &gt; arr[hi]) {
+                    // 右指针减1
+                    exchange(arr, --more, lo);
+                } else {
+                    lo++;
+                }
+            }
+            exchange(arr, more, hi);
+            return new int[]{less, more};
+        }*/
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_8"><a class="link" href="#_时间复杂度_8">6.6.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>拆分次数: 最优\$O(logn)\$, 最坏\$O(n)\$</p>
+</li>
+<li>
+<p>每次比较交换次数: \$O(n)\$</p>
+</li>
+<li>
+<p>总: 最好\$O(nlogn)\$, 最坏\$O(n^2)\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_快速排序和归并排序的区别"><a class="link" href="#_快速排序和归并排序的区别">6.6.2. 快速排序和归并排序的区别</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>归并排序将子数组切分后有 <strong>归并</strong> 的动作, 快速排序将子数组排完序后整个数组就自然而然的有序了.</p>
+</li>
+<li>
+<p>归并排序每次切分数组都是等分.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_堆排序"><a class="link" href="#_堆排序">6.7. 堆排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 堆排序
+     * 先将数组转成最大堆的形式, 再将第一项放到最后. 逐步重复1..n-1项
+     */
+    public static class HeapSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+
+            int last = arr.length - 1;
+
+            // 构造最大堆
+            buildMaxHeap(arr, last);
+            while (last &gt; 0) {
+                // 交换首尾元素
+                exchange(arr, 0, last);
+                buildMaxHeap(arr, --last);
+            }
+        }
+
+        private void buildMaxHeap(int[] arr, int last) {
+
+            if (last == 0) {
+                return;
+            }
+            // 当前尾节点的父节点
+            int parent = (last - 1) / 2;
+
+            while (parent &gt;= 0) {
+                int left = parent * 2 + 1;
+                int right = parent * 2 + 2;
+                // 找到两个子节点中的值最大的节点
+                int maxChildIndex = right &lt;= last &amp;&amp; less(arr[left], arr[right]) ? right : left;
+                // 如果父节点值小, 则交换
+                if (less(arr[parent], arr[maxChildIndex])) {
+                    exchange(arr, parent, maxChildIndex);
+                }
+                parent--;
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_9"><a class="link" href="#_时间复杂度_9">6.7.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>建堆: \$O(logn)\$</p>
+</li>
+<li>
+<p>总: \$O(nlogn)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_桶排序"><a class="link" href="#_桶排序">6.8. 桶排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    /**
+     * 桶排序
+     * 将元素按照大小放入不同的桶中, 对每个桶进行排序. 最后取出所有桶内元素.
+     */
+    public static class BucketSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+            List&lt;Integer&gt; list = sort(Arrays.stream(arr).boxed().collect(Collectors.toList()), 5);
+            for (int i = 0; i &lt; list.size(); i++) {
+                arr[i] = list.get(i);
+            }
+        }
+
+        private List&lt;Integer&gt; sort(List&lt;Integer&gt; arr, int bucketSize) {
+
+            if (arr.size() &lt;= 1 || bucketSize &lt; 1) {
+                return arr;
+            }
+
+            IntSummaryStatistics statistics = arr.stream().mapToInt(i -&gt; i).summaryStatistics();
+            int min = statistics.getMin();
+            int max = statistics.getMax();
+
+            // 计算出桶数量
+            int bucketCount = (max - min) / bucketSize + 1;
+
+            List&lt;List&lt;Integer&gt;&gt; buckets = IntStream.range(0, bucketCount).mapToObj(i -&gt; new ArrayList&lt;Integer&gt;()).collect(Collectors.toList());
+
+            for (int value : arr) {
+                int bucketIndex = (value - min) / bucketSize;
+                buckets.get(bucketIndex).add(value);
+            }
+
+            List&lt;Integer&gt; result = new ArrayList&lt;&gt;();
+
+            // 桶内排序
+            for (List&lt;Integer&gt; bucket : buckets) {
+                if (bucket.isEmpty()) {
+                    continue;
+                }
+                if (bucketCount == 1) {
+                    bucketSize--;
+                }
+                result.addAll(sort(bucket, bucketSize));
+            }
+            return result;
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_10"><a class="link" href="#_时间复杂度_10">6.8.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>总: \$O(n)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_计数排序"><a class="link" href="#_计数排序">6.9. 计数排序</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    public static class CountingSort implements SortTemplate {
+
+        @Override
+        public void sort(int[] arr) {
+
+            IntSummaryStatistics statistics = Arrays.stream(arr).summaryStatistics();
+            int min = statistics.getMin();
+
+            // 计算桶数量
+            int bucketCount = statistics.getMax() - min + 1;
+            int[] countingArray = new int[bucketCount];
+
+            for (int i : arr) {
+                countingArray[i - min]++; // 统计出现次数
+            }
+
+            int position = 0;
+            for (int i = 0; i &lt; countingArray.length; i++) { // 遍历桶
+                for (int j = 0; j &lt; countingArray[i]; j++) { // 桶里值为几, 就代表该桶代表的数出现几次
+                    arr[position++] = i + min;
+                }
+            }
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_时间复杂度_11"><a class="link" href="#_时间复杂度_11">6.9.1. 时间复杂度</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>总: \$O(n)\$</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="search"><a class="link" href="#search">7. 查找</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_二分查找"><a class="link" href="#_二分查找">7.1. 二分查找</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.search;
+
+/**
+ * @author jy
+ */
+class BinarySearch {
+
+    public int uniqueSearch(int[] arr, int target) {
+        int low = 0;
+        int high = arr.length - 1;
+        while (low &lt; high) {
+            int mid = low + (high - low) / 2 + 1;
+            if (arr[mid] == target)
+                return mid;
+            if (arr[mid] &lt; target) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return -1;
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>时间复杂度为 \$O(logn)\$</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bf"><a class="link" href="#_bf">7.2. BF</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.search;
+
+/**
+ * @author jy
+ */
+public class BF {
+
+    public int search(String origin, String target) {
+        if (origin.length() &lt; target.length()) {
+            return -1;
+        }
+        char[] originChars = origin.toCharArray();
+        char[] targetChars = target.toCharArray();
+
+        // 移动双指针来比较两个子串.
+        int o = 0, t = 0;
+        while (o &lt; originChars.length &amp;&amp; t &lt; targetChars.length) {
+            if (originChars[o] == targetChars[t]) {
+                o++;
+                t++;
+            } else {
+                o = o - t + 1;
+                t = 0;
+            }
+        }
+
+        if (t == targetChars.length) {
+            return o - t;
+        }
+        return -1;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rk"><a class="link" href="#_rk">7.3. RK</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.search;
+
+/**
+ * @author jy
+ */
+public class RK {
+
+    public int search(String origin, String target) {
+        if (origin.length() &lt; target.length()) {
+            return -1;
+        }
+        int hash = hash(target, 26, 31, 0, target.length());
+
+        for (int i = 0; i &lt; origin.length() - target.length() + 1; i++) {
+            // 比较每一个子串的哈希值, 如果哈希值相同则比较两个子串是否完全相等.
+            if (hash(origin, 26, 31, i, target.length()) == hash &amp;&amp; match(origin, target, i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean match(String origin, String target, int i) {
+        for (int j = 0; j &lt; target.length(); j++) {
+            if (origin.charAt(i + j) != target.charAt(j)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 计算指定子串hash值
+     */
+    private int hash(String str, int r, int k, int start, int length) {
+        int hash = 0;
+        for (int i = start; i &lt; start + length; i++) {
+            hash = (r * hash + str.charAt(i) % k);
+        }
+        return hash;
+    }
+
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_kmp"><a class="link" href="#_kmp">7.4. KMP</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.search;
+
+/**
+ * @author jy
+ */
+public class KMP {
+
+    public int search(String origin, String target) {
+
+        int[] next = next(target);
+
+        int i = 0;
+        int j = 0;
+        while (i &lt; origin.length()) {
+            while (j &gt; 0 &amp;&amp; target.charAt(j) != origin.charAt(i)) {
+                j = next[j - 1];
+            }
+            if (target.charAt(j) == origin.charAt(i)) {
+                j++;
+            }
+            i++;
+            if (j == target.length()) {
+                return i - j;
+            }
+        }
+        return -1;
+    }
+
+    private int[] next(String target) {
+        int[] next = new int[target.length()];
+
+        next[0] = 0;
+
+        for (int i = 1, k = 0; i &lt; target.length(); i++) {
+            while (k &gt; 0 &amp;&amp; target.charAt(i) != target.charAt(k)) {
+                k = next[k - 1];
+            }
+            if (target.charAt(i) == target.charAt(k)) {
+                k++;
+            }
+            next[i] = k;
+        }
+        return next;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_算法思想"><a class="link" href="#_算法思想">8. 算法思想</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_贪心"><a class="link" href="#_贪心">8.1. 贪心</a></h3>
+<div class="paragraph">
+<p>只考虑局部的利益最大化.</p>
+</div>
+<div class="sect3">
+<h4 id="_适用场景"><a class="link" href="#_适用场景">8.1.1. 适用场景</a></h4>
+<div class="paragraph">
+<p>局部最优解能导致产生全局最优解.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_思路"><a class="link" href="#_思路">8.1.2. 思路</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>建立数学模型来描述问题.</p>
+</li>
+<li>
+<p>把求解的问题分成若干个子问题.</p>
+</li>
+<li>
+<p>对每一个子问题求解, 得到子问题的局部最优解.</p>
+</li>
+<li>
+<p>把子问题的局部最优解合成原来解问题的一个解.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_分治"><a class="link" href="#_分治">8.2. 分治</a></h3>
+<div class="paragraph">
+<p>把一个复杂的问题分解为多个子问题求解.</p>
+</div>
+<div class="sect3">
+<h4 id="_适用场景_2"><a class="link" href="#_适用场景_2">8.2.1. 适用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>原问题和子问题有相同的模式.</p>
+</li>
+<li>
+<p>子问题之间没有相关性.</p>
+</li>
+<li>
+<p>具有分解终止条件, 即当问题足够小时, 可以直接求解.</p>
+</li>
+<li>
+<p>可以将子问题合并成原问题.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_回溯"><a class="link" href="#_回溯">8.3. 回溯</a></h3>
+<div class="paragraph">
+<p>按优选条件向前搜索, 以达到目标.但当探索到某一步时, 发现原先选择并不优或达不到目标, 就退回一步重新选择.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_动态规划"><a class="link" href="#_动态规划">8.4. 动态规划</a></h3>
+<div class="paragraph">
+<p>把原问题分解为相对简单的子问题的方式求解复杂问题的方法.<br>
+记住已经解决过的子问题的解的方法: ① 自顶向下的备忘录法.<br>
+② 自底向上.</p>
+</div>
+<div class="sect3">
+<h4 id="_适用场景_3"><a class="link" href="#_适用场景_3">8.4.1. 适用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>问题的最优解包含子问题的最优解.</p>
+</li>
+<li>
+<p>某一子问题的解一旦确定, 就不会受之后子问题的解的影响.</p>
+</li>
+<li>
+<p>子问题重叠, 一个子问题在下一阶段决策中可能被多次使用到.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-02-20 10:20:28 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

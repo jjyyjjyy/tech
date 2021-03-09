@@ -1,0 +1,13 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+autonumber
+
+Client -> Server: GET /metadata/client
+Server -> Server: 获取配置信息
+Server -> Client
+Client -> Server: POST /starter.zip
+Server -> Server: 根据请求参数创建临时项目目录及文件
+Server -> Client: 上传项目压缩包
+@enduml

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubia-cm
+  namespace: jy-test
+data:
+  log.level: debug

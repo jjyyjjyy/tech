@@ -1,0 +1,79 @@
+@startmindmap
+
+!include ../global/stylesheet.iuml
+!include ../global/mindmap.iuml
+
+* JVM
+-- JVM发展历史
+** 内存
+*** 内存结构
+**** 程序计数器
+**** 虚拟机栈
+**** 本地方法栈
+**** 方法区
+**** 堆
+**** 堆外内存
+*** 内存分配
+**** 对象布局
+***** 对象头
+***** 对象实例数据
+***** 对齐填充
+**** 内存分配方式
+***** 指针碰撞
+***** 空闲列表
+**** OOM类型
+***** Java heap space
+***** GC overhead limit exceeded
+***** Requested array size exceeds VM limit
+***** Metaspace
+***** unable to create new native thread
+***** Direct buffer memory
+*** 内存回收
+**** 引用分类
+***** 强引用: =赋值的引用对象.
+***** 软引用: 虚拟机内存不足时会标记下, 下一次GC时回收.
+***** 弱引用: 每次GC时都会回收.
+***** 虚引用: 无法获取到引用的对象实例, 但对象被GC时会回调一个方法.
+**** GC Roots
+***** 虚拟机栈和本地方法栈中本地变量表引用的对象
+***** 方法区中静态属性引用的对象
+***** 方法区中常量引用的对象
+***** 虚拟机内部的类引用的对象
+***** 被同步锁持有的对象
+**** 垃圾回收方式
+***** Minor GC(回收Young区)
+***** Major GC(回收Old区)
+***** Mixed GC(回收整个Young区+部分Old区)
+***** Full GC(回收整个堆+方法区)
+**** 垃圾回收算法
+***** 复制
+***** 标记整理
+***** 标记清除
+**** 垃圾回收器
+***** SerialGC
+***** ParallelGC
+***** CMS+ParNewGC
+***** G1GC
+***** ZGC
+***** ShenandoahGC
+***** EpsilonGC
+-- 类加载
+--- Class文件结构
+--- 字节码指令
+--- 类加载器
+--- 执行引擎
+-- 监控工具
+--- jcmd
+---- jcmd PID VM.flags
+---- jcmd PID GC.heap_info
+--- jstat
+---- jstat -gcutil PID INTERVAL
+--- jmap
+---- jmap -heap PID
+--- jinfo
+--- jstack
+--- jvisualvm
+--- jmc
+--- Yourkit
+
+@endmindmap

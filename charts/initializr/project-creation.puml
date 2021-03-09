@@ -1,0 +1,28 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+autonumber
+
+Client -> ProjectGenerationController : POST /starter.zip
+ProjectGenerationController -> ProjectGenerationInvoker : invokeProjectStructureGeneration: 获取项目结构
+ProjectGenerationInvoker -> ProjectRequestToDescriptionConverter : convert: 将项目配置转换成ProjectDescription
+ProjectGenerationInvoker <- ProjectRequestToDescriptionConverter
+ProjectGenerationInvoker -> ProjectGenerator : generate
+ProjectGenerator -> ProjectGenerationContext : 注册Bean
+note over ProjectGenerationContext
+ProjectDescription
+ProjectGenerationConfiguration
+InitializrMetadata
+BuildItemResolver
+MetadataProjectDescriptionCustomizer
+end note
+ProjectGenerator -> ProjectGenerationContext : refresh
+ProjectGenerationInvoker -> ProjectAssetGenerator : generate
+ProjectAssetGenerator -> ProjectContributor : contribute
+ProjectAssetGenerator <- ProjectContributor
+ProjectGenerationInvoker <- ProjectAssetGenerator
+ProjectGenerationInvoker -> ProjectGenerationInvoker : publishProjectGeneratedEvent
+ProjectGenerationController <- ProjectGenerationInvoker: 打包项目文件夹为压缩包
+ProjectGenerationController -> Client: 下载项目压缩包
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+package CPU {
+[寄存器] as PC
+}
+
+package SRAM {
+[L1高速缓存] as l1Cache
+[L2高速缓存] as l2Cache
+[L3高速缓存] as l3Cache
+}
+
+package DRAM {
+[主存] as memory
+}
+
+package DISK {
+[本地磁盘存储] as localStorage
+[远程磁盘存储] as remoteStorage
+}
+
+PC ..> l1Cache
+l1Cache ..> l2Cache
+l2Cache ..> l3Cache
+l3Cache ..> memory
+memory ..> localStorage
+localStorage ..> remoteStorage
+
+@enduml

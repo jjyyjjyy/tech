@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.metatdata.name }}
+  namespace: {{ .Values.metatdata.namespace }}
+  annotations:
+    chartName: {{ .Chart.Name }}
+    chartVersion: {{ .Chart.Version }}
+    chartAppVersion: {{ .Chart.AppVersion }}
+spec:
+  replicas: {{ default 1 .Values.replicaCount }}
+  minReadySeconds: {{ default 5 .Values.minReadySeconds }}
+  selector:
+    matchLabels:
+      app: {{ .Values.metatdata.app }}
+      env: {{ .Values.metatdata.env }}
+  template:
+    metadata:
+      name: {{ .Values.metatdata.app }}
+      labels:
+        app: {{ .Values.metatdata.app }}
+        env: {{ .Values.metatdata.env }}
+    spec:
+      nodeSelector:
+        namespace: {{ .Values.metatdata.namespace }}
+      imagePullSecrets:
+        - name: {{ .Values.image.imagePullSecrets }}
+      containers:
+        - name: {{ .Values.metatdata.app }}- {{ .Values.metatdata.env }}
+          image: {{ .Values.image.repository }}:{{ .Values.metatdata.env }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.metatdata.name }}
+  namespace: {{ .Values.metatdata.namespace }}
+spec:
+  type: NodePort
+  ports:
+    - targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
+      port: {{ default 80 .Values.service.port }}
+      name: http
+  selector:
+    app: {{ .Values.metatdata.app }}
+    env: {{ .Values.metatdata.env }}

@@ -1,0 +1,75 @@
+@startmindmap
+
+!include ../global/stylesheet.iuml
+!include ../global/mindmap.iuml
+
+* JUC
+
+left
+
+** 1. 多线程基础
+*** 创建线程的方式
+**** 继承Thread
+**** 实现Runnable接口, 创建Thread对象
+**** 实现Callable接口, 创建FutureTask对象
+*** 关闭线程的方式
+**** 设置关闭标志位
+**** 中断线程
+*** 线程状态流转
+**** NEW
+**** RUNNABLE
+**** WAITING
+**** TIMED_WAITING
+**** BLOCKED
+**** TERMINATED
+*** volatile
+*** synchronized
+*** JMM
+** 锁
+*** 互斥锁
+*** 读写锁
+*** Condition
+** CAS
+*** 实现原理
+*** ABA问题解决
+*** CAS工具类
+**** AtomicInteger
+**** AtomicLong
+**** AtomicBoolean
+**** AtomicReference
+**** AtomicIntegerArray
+**** AtomicLongArray
+**** AtomicReferenceArray
+**** AtomicIntegerFieldUpdater
+**** AtomicLongFieldUpdater
+**** LongAddr
+
+right
+
+** 并发工具类
+*** Semaphore
+*** CountDownLatch
+*** CyclicBarrier
+*** Exchanger
+*** Phaser
+** 并发容器
+*** BlockingQueue
+*** BlockingDeque
+*** CopyOnWrite
+*** ConcurrentLinkedQueue
+*** ConcurrentLinkedDeque
+*** ConcurrentHashMap
+*** ConcurrentSkipListMap
+** 线程池
+*** 线程池类型
+*** 线程池关闭
+*** 线程调度流程
+*** 实现
+**** ThreadPoolExecutor
+**** ScheduledThreadPoolExecutor
+**** ForkJoinPool
+** 异步
+*** Future
+*** CompletableFuture
+
+@endmindmap

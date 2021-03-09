@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Design Pattern</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Design Pattern</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_设计模式概述">1. 设计模式概述</a>
+<ul class="sectlevel2">
+<li><a href="#_定义">1.1. 定义</a></li>
+<li><a href="#_特性">1.2. 特性</a></li>
+<li><a href="#_要素">1.3. 要素</a></li>
+<li><a href="#_原则">1.4. 原则</a>
+<ul class="sectlevel3">
+<li><a href="#_单一职责原则">1.4.1. 单一职责原则</a></li>
+<li><a href="#_接口隔离原则">1.4.2. 接口隔离原则</a></li>
+<li><a href="#_依赖倒转原则">1.4.3. 依赖倒转原则</a></li>
+<li><a href="#_里氏替换原则">1.4.4. 里氏替换原则</a></li>
+<li><a href="#_开闭原则">1.4.5. 开闭原则</a></li>
+<li><a href="#_迪米特原则">1.4.6. 迪米特原则</a></li>
+<li><a href="#_合成复用原则">1.4.7. 合成复用原则</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_uml">2. UML</a>
+<ul class="sectlevel2">
+<li><a href="#_类之间的关系">2.1. 类之间的关系</a></li>
+</ul>
+</li>
+<li><a href="#_设计模式分类">3. 设计模式分类</a></li>
+<li><a href="#_创建型模式">4. 创建型模式</a>
+<ul class="sectlevel2">
+<li><a href="#singleton">4.1. Singleton模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景">4.1.1. 使用场景</a></li>
+<li><a href="#_结构">4.1.2. 结构</a></li>
+<li><a href="#_优点">4.1.3. 优点</a></li>
+<li><a href="#_缺点">4.1.4. 缺点</a></li>
+<li><a href="#_单例模式写法">4.1.5. 单例模式写法</a></li>
+</ul>
+</li>
+<li><a href="#simple-factory">4.2. 简单工厂模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_2">4.2.1. 使用场景</a></li>
+<li><a href="#_结构_2">4.2.2. 结构</a></li>
+<li><a href="#_优点_2">4.2.3. 优点</a></li>
+<li><a href="#_缺点_2">4.2.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#factoy-method">4.3. Factory Method模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_3">4.3.1. 使用场景</a></li>
+<li><a href="#_结构_3">4.3.2. 结构</a></li>
+<li><a href="#_优点_3">4.3.3. 优点</a></li>
+<li><a href="#_缺点_3">4.3.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#abstract-factory">4.4. Abstract Factory模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_4">4.4.1. 使用场景</a></li>
+<li><a href="#_结构_4">4.4.2. 结构</a></li>
+<li><a href="#_优点_4">4.4.3. 优点</a></li>
+<li><a href="#_缺点_4">4.4.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#prototype">4.5. 原型模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_5">4.5.1. 使用场景</a></li>
+<li><a href="#_结构_5">4.5.2. 结构</a></li>
+<li><a href="#_优点_5">4.5.3. 优点</a></li>
+<li><a href="#_缺点_5">4.5.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#_builder模式">4.6. Builder模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_6">4.6.1. 使用场景</a></li>
+<li><a href="#_组成">4.6.2. 组成</a></li>
+<li><a href="#_优点_6">4.6.3. 优点</a></li>
+<li><a href="#_缺点_6">4.6.4. 缺点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_结构型模式">5. 结构型模式</a>
+<ul class="sectlevel2">
+<li><a href="#adapter">5.1. Adapter模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_7">5.1.1. 使用场景</a></li>
+<li><a href="#_结构_6">5.1.2. 结构</a></li>
+<li><a href="#_缺点_7">5.1.3. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#bridge">5.2. Bridge模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_8">5.2.1. 使用场景</a></li>
+<li><a href="#_结构_7">5.2.2. 结构</a></li>
+<li><a href="#_优点_7">5.2.3. 优点</a></li>
+<li><a href="#_缺点_8">5.2.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#decorator">5.3. Decorator模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_9">5.3.1. 使用场景</a></li>
+<li><a href="#_结构_8">5.3.2. 结构</a></li>
+<li><a href="#_优点_8">5.3.3. 优点</a></li>
+<li><a href="#_缺点_9">5.3.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#composite">5.4. Composite模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_10">5.4.1. 使用场景</a></li>
+<li><a href="#_结构_9">5.4.2. 结构</a></li>
+<li><a href="#_优点_9">5.4.3. 优点</a></li>
+</ul>
+</li>
+<li><a href="#facade">5.5. Facade模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_11">5.5.1. 使用场景</a></li>
+<li><a href="#_结构_10">5.5.2. 结构</a></li>
+<li><a href="#_优点_10">5.5.3. 优点</a></li>
+</ul>
+</li>
+<li><a href="#fly-weight">5.6. FlyWeight模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_12">5.6.1. 使用场景</a></li>
+<li><a href="#_结构_11">5.6.2. 结构</a></li>
+<li><a href="#_优点_11">5.6.3. 优点</a></li>
+<li><a href="#_缺点_10">5.6.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#proxy">5.7. Proxy模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_13">5.7.1. 使用场景</a></li>
+<li><a href="#_结构_12">5.7.2. 结构</a></li>
+<li><a href="#_优点_12">5.7.3. 优点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_行为型模式">6. 行为型模式</a>
+<ul class="sectlevel2">
+<li><a href="#template-method">6.1. Template Method模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_14">6.1.1. 使用场景</a></li>
+<li><a href="#_结构_13">6.1.2. 结构</a></li>
+<li><a href="#_优点_13">6.1.3. 优点</a></li>
+<li><a href="#_缺点_11">6.1.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#command">6.2. Command模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_15">6.2.1. 使用场景</a></li>
+<li><a href="#_结构_14">6.2.2. 结构</a></li>
+<li><a href="#_优点_14">6.2.3. 优点</a></li>
+<li><a href="#_缺点_12">6.2.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#visitor">6.3. Visitor模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_16">6.3.1. 使用场景</a></li>
+<li><a href="#_结构_15">6.3.2. 结构</a></li>
+<li><a href="#_优点_15">6.3.3. 优点</a></li>
+<li><a href="#_缺点_13">6.3.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#iterator">6.4. Iterator模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_17">6.4.1. 使用场景</a></li>
+<li><a href="#_结构_16">6.4.2. 结构</a></li>
+<li><a href="#_优点_16">6.4.3. 优点</a></li>
+<li><a href="#_缺点_14">6.4.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#observer">6.5. Observer模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_18">6.5.1. 使用场景</a></li>
+<li><a href="#_结构_17">6.5.2. 结构</a></li>
+<li><a href="#_优点_17">6.5.3. 优点</a></li>
+<li><a href="#_缺点_15">6.5.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#mediator">6.6. Mediator模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_19">6.6.1. 使用场景</a></li>
+<li><a href="#_结构_18">6.6.2. 结构</a></li>
+<li><a href="#_优点_18">6.6.3. 优点</a></li>
+<li><a href="#_缺点_16">6.6.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#memento">6.7. Memento模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_20">6.7.1. 使用场景</a></li>
+<li><a href="#_结构_19">6.7.2. 结构</a></li>
+<li><a href="#_优点_19">6.7.3. 优点</a></li>
+<li><a href="#_缺点_17">6.7.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#interpreter">6.8. Interpreter模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_21">6.8.1. 使用场景</a></li>
+<li><a href="#_结构_20">6.8.2. 结构</a></li>
+<li><a href="#_优点_20">6.8.3. 优点</a></li>
+<li><a href="#_缺点_18">6.8.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#state">6.9. State模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_22">6.9.1. 使用场景</a></li>
+<li><a href="#_结构_21">6.9.2. 结构</a></li>
+<li><a href="#_优点_21">6.9.3. 优点</a></li>
+<li><a href="#_缺点_19">6.9.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#strategy">6.10. Strategy模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_23">6.10.1. 使用场景</a></li>
+<li><a href="#_结构_22">6.10.2. 结构</a></li>
+<li><a href="#_优点_22">6.10.3. 优点</a></li>
+<li><a href="#_缺点_20">6.10.4. 缺点</a></li>
+</ul>
+</li>
+<li><a href="#chain-of-responsibility">6.11. Chain of Responsibility模式</a>
+<ul class="sectlevel3">
+<li><a href="#_使用场景_24">6.11.1. 使用场景</a></li>
+<li><a href="#_结构_23">6.11.2. 结构</a></li>
+<li><a href="#_优点_23">6.11.3. 优点</a></li>
+<li><a href="#_缺点_21">6.11.4. 缺点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_设计模式概述"><a class="link" href="#_设计模式概述">1. 设计模式概述</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_定义"><a class="link" href="#_定义">1.1. 定义</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>对在特定场景下解决设计问题的类或对象的描述.</p>
+</div>
+</blockquote>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_特性"><a class="link" href="#_特性">1.2. 特性</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>代码重用性: 相同功能的代码不用多次编写.</p>
+</li>
+<li>
+<p>可读性: 代码规范性, 便于其他程序员的阅读和理解.</p>
+</li>
+<li>
+<p>可扩展性: 便于增加新的功能.</p>
+</li>
+<li>
+<p>可靠性: 当增加新的功能后, 对原有的功能没有影响.</p>
+</li>
+<li>
+<p>高内聚低耦合: 每个功能模块内部关系紧密, 但是模块之间不会相互影响.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_要素"><a class="link" href="#_要素">1.3. 要素</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>名称</p>
+</li>
+<li>
+<p>使用场景</p>
+</li>
+<li>
+<p>模式的组成和设计</p>
+</li>
+<li>
+<p>效果(优缺点)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_原则"><a class="link" href="#_原则">1.4. 原则</a></h3>
+<div class="sect3">
+<h4 id="_单一职责原则"><a class="link" href="#_单一职责原则">1.4.1. 单一职责原则</a></h4>
+<div class="paragraph">
+<p>一个类/方法应该只负责一项职责.
+降低类/方法的复杂度, 从而降低改动造成的风险.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_接口隔离原则"><a class="link" href="#_接口隔离原则">1.4.2. 接口隔离原则</a></h4>
+<div class="paragraph">
+<p>使用方不应该依赖它不需要的接口.
+一个类对另一个类的依赖应该建立在最小的接口上.
+可以将一个接口分成几个小接口.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_依赖倒转原则"><a class="link" href="#_依赖倒转原则">1.4.3. 依赖倒转原则</a></h4>
+<div class="paragraph">
+<p>底层模块尽量要有抽象类和接口.
+而高层模块不应该直接依赖底层模块的具体实现类, 而应该依赖其抽象.
+尽量面向接口编程.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_里氏替换原则"><a class="link" href="#_里氏替换原则">1.4.4. 里氏替换原则</a></h4>
+<div class="paragraph">
+<p>所有引用父类的地方必须能够透明地使用其子类的对象.
+在子类中尽量不要重写父类的方法, 或者使用聚合/组合/依赖来解决问题.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_开闭原则"><a class="link" href="#_开闭原则">1.4.5. 开闭原则</a></h4>
+<div class="paragraph">
+<p>对功能提供者开放扩展, 对使用方关闭修改.
+尽量在原有类上新增功能.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_迪米特原则"><a class="link" href="#_迪米特原则">1.4.6. 迪米特原则</a></h4>
+<div class="paragraph">
+<p>尽量减少类之间的交互.
+一个类对自己依赖的类知道的越少越好.
+尽量避免在局部变量中直接使用其他类.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_合成复用原则"><a class="link" href="#_合成复用原则">1.4.7. 合成复用原则</a></h4>
+<div class="paragraph">
+<p>尽量使用聚合/组合/依赖的方式使用与自己不相关的类的功能, 而不是使用继承.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_uml"><a class="link" href="#_uml">2. UML</a></h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>用来描述系统中的类/对象本身的组成和类和类之间的各种静态关系.</p>
+</div>
+</blockquote>
+</div>
+<div class="sect2">
+<h3 id="_类之间的关系"><a class="link" href="#_类之间的关系">2.1. 类之间的关系</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>依赖: 一个类用到了另外一个类, 则两个类之间存在依赖关系. <code>虚线+箭头</code>
+(成员属性/返回类型/方法参数类型/局部变量类型)</p>
+</li>
+<li>
+<p>关联: 1对1/1对多/多对多的关系. <code>实线+箭头</code></p>
+</li>
+<li>
+<p>泛化: 继承一个类. <code>实线+空心箭头</code></p>
+</li>
+<li>
+<p>实现: 实现一个接口. <code>虚线+空心箭头</code></p>
+</li>
+<li>
+<p>聚合: 表示整体和部分的关系, 整体和部分可以分别运行. (通过set方法设置依赖类的对象) <code>实线+空心菱形</code></p>
+</li>
+<li>
+<p>组合: 表示整体和部分的关系, 整体和部分不可以分开, (实例化时就初始化依赖的类) <code>实线+实心菱形</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_设计模式分类"><a class="link" href="#_设计模式分类">3. 设计模式分类</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>创建型: 将对象的部分创建工作延迟到具体实现类.</p>
+</li>
+<li>
+<p>结构型: 描述了对象的依赖方法.</p>
+</li>
+<li>
+<p>行为型: 描述一组对象协作来完成单个对象无法完成的任务.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="DesignPattern.svg" alt="Diagram" width="1312" height="1575">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_创建型模式"><a class="link" href="#_创建型模式">4. 创建型模式</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="singleton"><a class="link" href="#singleton">4.1. Singleton模式</a></h3>
+<div class="paragraph">
+<p>采取一定的方法保证整个软件系统中对某个类只能存在一个对象实例, 并且该类只提供一个取得其对象实例的方法.
+内部提供一个静态的工厂方法, 获取单个实例.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景"><a class="link" href="#_使用场景">4.1.1. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>系统中该类不需要多个实例.</p>
+</li>
+<li>
+<p>重量级对象.</p>
+</li>
+<li>
+<p>工具类.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构"><a class="link" href="#_结构">4.1.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="singleton.svg" alt="singleton" width="412" height="181">
+</div>
+<div class="title">Figure 1. 单例模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点"><a class="link" href="#_优点">4.1.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>节约系统资源.</p>
+</li>
+<li>
+<p>限制了对实例的访问.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点"><a class="link" href="#_缺点">4.1.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>扩展困难</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_单例模式写法"><a class="link" href="#_单例模式写法">4.1.5. 单例模式写法</a></h4>
+<div class="listingblock">
+<div class="title">饿汉式 - 静态常量</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private static class S1 {
+
+        private static final S1 INSTANCE = new S1();
+
+        public static S1 getInstance() {
+            return INSTANCE;
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">饿汉式 - 静态代码块</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private static class S2 {
+        private static final S2 INSTANCE;
+
+        static {
+            INSTANCE = new S2();
+        }
+
+        public static S2 getInstance() {
+            return INSTANCE;
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">懒汉式 - 同步方法</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private static class S3 {
+        private static volatile S3 INSTANCE;
+
+        public synchronized static S3 getInstance() {
+            if (INSTANCE == null) {
+                INSTANCE = new S3();
+            }
+            return INSTANCE;
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">懒汉式 - 同步代码块双重检查锁</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private static class S4 {
+        private static volatile S4 INSTANCE;
+
+        public static S4 getInstance() {
+            if (INSTANCE == null) {
+                synchronized (S4.class) {
+                    if (INSTANCE == null) {
+                        INSTANCE = new S4();
+                    }
+                }
+            }
+            return INSTANCE;
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">静态内部类</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private static class S5 {
+
+        public static S5 getInstance() {
+            return S5Holder.INSTANCE;
+        }
+
+        private static class S5Holder {
+            private static final S5 INSTANCE = new S5();
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">枚举</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    private enum S6 {
+        INSTANCE;
+
+        public void doStuff() {
+            // NO-OP
+        }
+    }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="simple-factory"><a class="link" href="#simple-factory">4.2. 简单工厂模式</a></h3>
+<div class="paragraph">
+<p>定义一个工厂类, 根据不同的参数返回不同的类型.
+被创建的对象类型通常具有共同的父类.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_2"><a class="link" href="#_使用场景_2">4.2.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>调用方知道创建对象需要的参数, 不关心对象的创建过程.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_2"><a class="link" href="#_结构_2">4.2.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="simple-factory.svg" alt="simple factory" width="906" height="381">
+</div>
+<div class="title">Figure 2. 简单工厂模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_2"><a class="link" href="#_优点_2">4.2.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>将对象的创建和对象的使用分离开, 客户端无需知道具体的创建逻辑.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_2"><a class="link" href="#_缺点_2">4.2.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>工厂类职责过重, 如果工厂类出现问题, 就会影响整个系统.</p>
+</li>
+<li>
+<p>系统扩展困难, 一旦添加新的产品就要修改工厂逻辑, 违反了开闭原则.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="factoy-method"><a class="link" href="#factoy-method">4.3. Factory Method模式</a></h3>
+<div class="paragraph">
+<p>定义一个创建对象的接口, 让子类决定将哪个类实例化.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_3"><a class="link" href="#_使用场景_3">4.3.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>调用方不知道它需要的对象的类型.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_3"><a class="link" href="#_结构_3">4.3.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="factoy-method.svg" alt="factoy method" width="979" height="631">
+</div>
+<div class="title">Figure 3. 工厂方法模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_3"><a class="link" href="#_优点_3">4.3.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>客户端只需要关心创建产品需要的工厂, 无需关心创建细节.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_3"><a class="link" href="#_缺点_3">4.3.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>系统文件个数增加</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="abstract-factory"><a class="link" href="#abstract-factory">4.4. Abstract Factory模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_4"><a class="link" href="#_使用场景_4">4.4.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>需要多种类型的多种对象, 且每次只使用同一类型的对象.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_4"><a class="link" href="#_结构_4">4.4.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="abstract-factoy.svg" alt="abstract factoy" width="1777" height="685">
+</div>
+<div class="title">Figure 4. 抽象工厂模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_4"><a class="link" href="#_优点_4">4.4.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>增加一个产品族的时候只需要增加一个工厂类就行了.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_4"><a class="link" href="#_缺点_4">4.4.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>增加一个产品需要修改所有的工厂类.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="prototype"><a class="link" href="#prototype">4.5. 原型模式</a></h3>
+<div class="paragraph">
+<p>使用原型实例指定创建对象的种类, 并且通过拷贝这些原型创建新的对象.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_5"><a class="link" href="#_使用场景_5">4.5.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>创建大量内容相同的对象.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_5"><a class="link" href="#_结构_5">4.5.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="prototype.svg" alt="prototype" width="347" height="154">
+</div>
+<div class="title">Figure 5. 原型模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_5"><a class="link" href="#_优点_5">4.5.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>简化对象的创建过程, 提高新对象的创建效率</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_5"><a class="link" href="#_缺点_5">4.5.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>为了deep clone, 对象的每一个属性都必须实现deep clone.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_builder模式"><a class="link" href="#_builder模式">4.6. Builder模式</a></h3>
+<div class="paragraph">
+<p>提供Builder类组装对象</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_6"><a class="link" href="#_使用场景_6">4.6.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>组装的类属性很多, 创建过程复杂, 可以引入builder简化客户端调用.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_组成"><a class="link" href="#_组成">4.6.2. 组成</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="builder.svg" alt="builder" width="531" height="568">
+</div>
+<div class="title">Figure 6. 建造者模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_6"><a class="link" href="#_优点_6">4.6.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>隔离复杂对象的创建和使用, 并使得相同的创建过程可以创建不同的对象.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_6"><a class="link" href="#_缺点_6">4.6.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果产品内部变化复杂, 则会导致需要定义很多具体的建造者来实现这些变化, 导致系统臃肿.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_结构型模式"><a class="link" href="#_结构型模式">5. 结构型模式</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="adapter"><a class="link" href="#adapter">5.1. Adapter模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_7"><a class="link" href="#_使用场景_7">5.1.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>现有的类提供的接口不是调用方所期望的.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_6"><a class="link" href="#_结构_6">5.1.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="adapter.svg" alt="adapter" width="1310" height="539">
+</div>
+<div class="title">Figure 7. 对象适配器模式UML</div>
+</div>
+<div class="paragraph">
+<p>@enduml
+==== 优点</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>将目标类和实现解耦</p>
+</li>
+<li>
+<p>adaptee类可以重用</p>
+</li>
+<li>
+<p>可以集成多个适配类</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_7"><a class="link" href="#_缺点_7">5.1.3. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果Target不是接口, 则最多只能继承一个Target.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="bridge"><a class="link" href="#bridge">5.2. Bridge模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_8"><a class="link" href="#_使用场景_8">5.2.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>可以将复杂系统按照抽象和实现两个维度拆分.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_7"><a class="link" href="#_结构_7">5.2.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="bridge.svg" alt="bridge" width="1239" height="460">
+</div>
+<div class="title">Figure 8. bridge模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_7"><a class="link" href="#_优点_7">5.2.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>能灵活扩展一个维度而不影响其他维度</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_8"><a class="link" href="#_缺点_8">5.2.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>难以分离维度</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="decorator"><a class="link" href="#decorator">5.3. Decorator模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_9"><a class="link" href="#_使用场景_9">5.3.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>在不改变原有类的基础上, 扩展现有的功能.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_8"><a class="link" href="#_结构_8">5.3.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="decorator.svg" alt="decorator" width="860" height="658">
+</div>
+<div class="title">Figure 9. Decorator模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_8"><a class="link" href="#_优点_8">5.3.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>减少了子类的个数, 扩展性提高</p>
+</li>
+<li>
+<p>可以通过不同的装饰创造出不同行为的组合.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_9"><a class="link" href="#_缺点_9">5.3.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>产生较多的对象</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="composite"><a class="link" href="#composite">5.4. Composite模式</a></h3>
+<div class="paragraph">
+<p>定义一个结构类, 包含所有的组件方法, 组合所有子组件和容器组件.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_10"><a class="link" href="#_使用场景_10">5.4.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>希望忽略整体和部分的差异, 让客户端一致地对待他们</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_9"><a class="link" href="#_结构_9">5.4.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="composite.svg" alt="composite" width="652" height="460">
+</div>
+<div class="title">Figure 10. Composite模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_9"><a class="link" href="#_优点_9">5.4.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>可以清楚地定义分层次的复杂对象.</p>
+</li>
+<li>
+<p>方便增加组件</p>
+</li>
+<li>
+<p>客户端可以无需关心子组件的层次结构, 统一处理.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="facade"><a class="link" href="#facade">5.5. Facade模式</a></h3>
+<div class="paragraph">
+<p>为子系统提供统一的入口</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_11"><a class="link" href="#_使用场景_11">5.5.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>客户端程序与子系统有很大的关联性. 但不需要关系子系统的内部实现细节.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_10"><a class="link" href="#_结构_10">5.5.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="facade.svg" alt="facade" width="802" height="406">
+</div>
+<div class="title">Figure 11. Facade模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_10"><a class="link" href="#_优点_10">5.5.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>降低客户端与子系统的耦合度.</p>
+</li>
+<li>
+<p>一个子系统的修改与其他系统没有影响</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fly-weight"><a class="link" href="#fly-weight">5.6. FlyWeight模式</a></h3>
+<div class="paragraph">
+<p>实现多个细粒度对象的复用. 使用工厂获取对象.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_12"><a class="link" href="#_使用场景_12">5.6.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>对象需要的数量较多但对象内部状态统一.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>内部状态是存储在享元对象内部并且不会随环境改变而改变的状态, 因此内部状态可以共享.</p>
+</li>
+<li>
+<p>外部状态是随环境改变而改变的、不可以共享的状态. 享元对象的外部状态必须由客户端保存, 并在享元对象被创建之后, 在需要使用的时候再传入到享元对象内部。一个外部状态与另一个外部状态之间是相互独立的.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_11"><a class="link" href="#_结构_11">5.6.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="fly-weight.svg" alt="fly weight" width="814" height="433">
+</div>
+<div class="title">Figure 12. FlyWeight模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_11"><a class="link" href="#_优点_11">5.6.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>可以极大减少内存中对象的数量.</p>
+</li>
+<li>
+<p>内外部状态独立.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_10"><a class="link" href="#_缺点_10">5.6.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>分离内外部状态, 使系统更复杂.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="proxy"><a class="link" href="#proxy">5.7. Proxy模式</a></h3>
+<div class="paragraph">
+<p>给某一个对象提供一个代理对象, 由他控制对原对象的访问.</p>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_13"><a class="link" href="#_使用场景_13">5.7.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>无法直接访问某个对象, 或者访问困难.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_12"><a class="link" href="#_结构_12">5.7.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="proxy.svg" alt="proxy" width="650" height="460">
+</div>
+<div class="title">Figure 13. Proxy模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_12"><a class="link" href="#_优点_12">5.7.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>协调调用者和被调用者, 降低系统耦合度.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_行为型模式"><a class="link" href="#_行为型模式">6. 行为型模式</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="template-method"><a class="link" href="#template-method">6.1. Template Method模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_14"><a class="link" href="#_使用场景_14">6.1.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>描述算法大致的流程, 具体细节交给子类去实现.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_13"><a class="link" href="#_结构_13">6.1.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="template-method.svg" alt="template method" width="333" height="433">
+</div>
+<div class="title">Figure 14. TemplateMethod模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_13"><a class="link" href="#_优点_13">6.1.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>把公用的行为搬到父类去, 去除子类的重复代码.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_11"><a class="link" href="#_缺点_11">6.1.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>子类执行的结果影响到了父类.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="command"><a class="link" href="#command">6.2. Command模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_15"><a class="link" href="#_使用场景_15">6.2.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>向对象发送请求, 但不需要知道谁接收并处理请求.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_14"><a class="link" href="#_结构_14">6.2.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="command.svg" alt="command" width="810" height="433">
+</div>
+<div class="title">Figure 15. Command模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_14"><a class="link" href="#_优点_14">6.2.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>调用者和接收者解耦.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_12"><a class="link" href="#_缺点_12">6.2.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>系统需要大量的命令类.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="visitor"><a class="link" href="#visitor">6.3. Visitor模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_16"><a class="link" href="#_使用场景_16">6.3.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>封装作用于各种对象的不同操作.
+在被访问的类里加一个对外提供接待访问者的方法.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_15"><a class="link" href="#_结构_15">6.3.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="visitor.svg" alt="visitor" width="1087" height="433">
+</div>
+<div class="title">Figure 16. Visitor模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_15"><a class="link" href="#_优点_15">6.3.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>将某一类型的行为统一管理.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_13"><a class="link" href="#_缺点_13">6.3.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果新增一个Element, 那么所有的Visitor都要改动.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="iterator"><a class="link" href="#iterator">6.4. Iterator模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_17"><a class="link" href="#_使用场景_17">6.4.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>用一致的接口遍历元素, 而不需要数组元素的底层存储方式.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_16"><a class="link" href="#_结构_16">6.4.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="iterator.svg" alt="iterator" width="658" height="460">
+</div>
+<div class="title">Figure 17. Iterator模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_16"><a class="link" href="#_优点_16">6.4.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>调用方不需要关系聚合类型的数据组织形式.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_14"><a class="link" href="#_缺点_14">6.4.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>每个聚合对象都需要一个迭代器.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="observer"><a class="link" href="#observer">6.5. Observer模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_18"><a class="link" href="#_使用场景_18">6.5.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>一个对象的变更需要通知其他对象.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_17"><a class="link" href="#_结构_17">6.5.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="observer.svg" alt="observer" width="933" height="435">
+</div>
+<div class="title">Figure 18. Observer模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_17"><a class="link" href="#_优点_17">6.5.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>将表示层和逻辑层分离</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_15"><a class="link" href="#_缺点_15">6.5.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>观察者只能知道数据发生变化, 而不知道变化的来源和过程.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="mediator"><a class="link" href="#mediator">6.6. Mediator模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_19"><a class="link" href="#_使用场景_19">6.6.1. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>通过一个中间类来封装多个类的行为.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_18"><a class="link" href="#_结构_18">6.6.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="mediator.svg" alt="mediator" width="1097" height="406">
+</div>
+<div class="title">Figure 19. Mediator模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_18"><a class="link" href="#_优点_18">6.6.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>简化对象之间的交互.</p>
+</li>
+<li>
+<p>简化行为的实现.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_16"><a class="link" href="#_缺点_16">6.6.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>中介者逻辑复杂.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="memento"><a class="link" href="#memento">6.7. Memento模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_20"><a class="link" href="#_使用场景_20">6.7.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>在不破坏封装性的前提下, 需要暂时在对象之外保存它的状态. 等待恢复到这个状态.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_19"><a class="link" href="#_结构_19">6.7.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="memento.svg" alt="memento" width="764" height="514">
+</div>
+<div class="title">Figure 20. Memento模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_19"><a class="link" href="#_优点_19">6.7.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>调用方不需要关心状态保存的细节.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_17"><a class="link" href="#_缺点_17">6.7.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果类的成员变量过多, 则会占用较多的资源.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="interpreter"><a class="link" href="#interpreter">6.8. Interpreter模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_21"><a class="link" href="#_使用场景_21">6.8.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>解析一定语义的表达式得到结果.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_20"><a class="link" href="#_结构_20">6.8.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="interpreter.svg" alt="interpreter" width="1483" height="558">
+</div>
+<div class="title">Figure 21. Interpreter模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_20"><a class="link" href="#_优点_20">6.8.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>易于改变和扩展文法.</p>
+</li>
+<li>
+<p>增加新的解释表达式比较容易.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_18"><a class="link" href="#_缺点_18">6.8.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>对于复杂文法难以维护.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="state"><a class="link" href="#state">6.9. State模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_22"><a class="link" href="#_使用场景_22">6.9.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>解决对象在不同状态转换时, 需要对外输出不同行为的问题.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_21"><a class="link" href="#_结构_21">6.9.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="state.svg" alt="state" width="793" height="489">
+</div>
+<div class="title">Figure 22. State模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_21"><a class="link" href="#_优点_21">6.9.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>代码可读性强.</p>
+</li>
+<li>
+<p>方便维护, 减少if-else.</p>
+</li>
+<li>
+<p>符合开闭原则, 容易增删状态.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_19"><a class="link" href="#_缺点_19">6.9.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>如果状态较多, 则会产生很多状态类.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="strategy"><a class="link" href="#strategy">6.10. Strategy模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_23"><a class="link" href="#_使用场景_23">6.10.1. 使用场景</a></h4>
+<div class="paragraph">
+<p>定义一些算法, 封装起来, 这些算法可以互相替换.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_22"><a class="link" href="#_结构_22">6.10.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="strategy.svg" alt="strategy" width="864" height="381">
+</div>
+<div class="title">Figure 23. Strategy模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_22"><a class="link" href="#_优点_22">6.10.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>将责任和具体算法分离, 便于替换.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_20"><a class="link" href="#_缺点_20">6.10.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>调用方需要知道所有具体的策略, 以便使用合适的算法.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="chain-of-responsibility"><a class="link" href="#chain-of-responsibility">6.11. Chain of Responsibility模式</a></h3>
+<div class="sect3">
+<h4 id="_使用场景_24"><a class="link" href="#_使用场景_24">6.11.1. 使用场景</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>系统中有多个对象处理请求, 所有对象构成链式结构.</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_结构_23"><a class="link" href="#_结构_23">6.11.2. 结构</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="chain-of-responsibility.svg" alt="chain of responsibility" width="670" height="433">
+</div>
+<div class="title">Figure 24. Responsibility Of Chain模式UML</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_优点_23"><a class="link" href="#_优点_23">6.11.3. 优点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>职责链中的对象无需关心链的结构.</p>
+</li>
+<li>
+<p>新增或者删除handler的时候只需要修改客户端类.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缺点_21"><a class="link" href="#_缺点_21">6.11.4. 缺点</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>客户端责任较重.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-12-15 09:53:31 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

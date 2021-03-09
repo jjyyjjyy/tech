@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Postgresql</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Postgresql</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_安装">1. 安装</a>
+<ul class="sectlevel2">
+<li><a href="#_docker">1.1. docker</a></li>
+<li><a href="#_安装包安装">1.2. 安装包安装</a></li>
+</ul>
+</li>
+<li><a href="#_基本命令">2. 基本命令</a></li>
+<li><a href="#_配置">3. 配置</a>
+<ul class="sectlevel2">
+<li><a href="#_pg_hba_conf">3.1. pg_hba.conf</a></li>
+<li><a href="#_postgresql_conf">3.2. postgresql.conf</a></li>
+</ul>
+</li>
+<li><a href="#_psql命令">4. psql命令</a></li>
+<li><a href="#_数据类型">5. 数据类型</a>
+<ul class="sectlevel2">
+<li><a href="#_数字类型">5.1. 数字类型</a></li>
+<li><a href="#_字符串类型">5.2. 字符串类型</a></li>
+<li><a href="#_日期类型">5.3. 日期类型</a></li>
+<li><a href="#_range类型">5.4. range类型</a></li>
+<li><a href="#_其他">5.5. 其他</a></li>
+</ul>
+</li>
+<li><a href="#_函数">6. 函数</a></li>
+<li><a href="#_高级特性">7. 高级特性</a></li>
+<li><a href="#_monitor">8. Monitor</a>
+<ul class="sectlevel2">
+<li><a href="#_pg_stat_activity">8.1. pg_stat_activity</a></li>
+<li><a href="#_pg_stat_database">8.2. pg_stat_database</a></li>
+<li><a href="#_pg_stat_user_tables">8.3. pg_stat_user_tables</a></li>
+<li><a href="#_pg_stat_statements">8.4. pg_stat_statements</a></li>
+</ul>
+</li>
+<li><a href="#_体系结构">9. 体系结构</a>
+<ul class="sectlevel2">
+<li><a href="#_逻辑结构">9.1. 逻辑结构</a></li>
+<li><a href="#_物理结构">9.2. 物理结构</a>
+<ul class="sectlevel3">
+<li><a href="#_oid">9.2.1. OID</a></li>
+<li><a href="#_表空间">9.2.2. 表空间</a></li>
+</ul>
+</li>
+<li><a href="#_进程结构">9.3. 进程结构</a></li>
+<li><a href="#_内存结构">9.4. 内存结构</a></li>
+</ul>
+</li>
+<li><a href="#_事务">10. 事务</a>
+<ul class="sectlevel2">
+<li><a href="#_脏读">10.1. 脏读</a></li>
+<li><a href="#_不可重复读">10.2. 不可重复读</a></li>
+<li><a href="#_幻读">10.3. 幻读</a></li>
+<li><a href="#_查看全局事务默认隔离级别">10.4. 查看全局事务默认隔离级别</a></li>
+<li><a href="#_修改全局事务默认隔离级别">10.5. 修改全局事务默认隔离级别</a></li>
+<li><a href="#_查看当前会话事务默认隔离级别">10.6. 查看当前会话事务默认隔离级别</a></li>
+<li><a href="#_设置当前会话事务默认隔离级别">10.7. 设置当前会话事务默认隔离级别</a></li>
+</ul>
+</li>
+<li><a href="#_分区">11. 分区</a>
+<ul class="sectlevel2">
+<li><a href="#_优势">11.1. 优势</a></li>
+<li><a href="#_分区方式">11.2. 分区方式</a></li>
+<li><a href="#_sql">11.3. SQL</a></li>
+</ul>
+</li>
+<li><a href="#_清除wal日志">12. 清除WAL日志</a></li>
+<li><a href="#_查询优化">13. 查询优化</a>
+<ul class="sectlevel2">
+<li><a href="#_逻辑优化">13.1. 逻辑优化</a></li>
+<li><a href="#_物理优化">13.2. 物理优化</a></li>
+</ul>
+</li>
+<li><a href="#_pg12参考配置文件">14. PG12参考配置文件</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">1. 安装</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_docker"><a class="link" href="#_docker">1.1. docker</a></h3>
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">version: '3'
+services:
+    postgresql:
+        image: postgres:alpine
+        container_name: postgresql
+        volumes:
+            - ~/volumes/postgresql/:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_USER=jy
+            - POSTGRES_PASSWORD=123456
+            - TZ=Asia/Shanghai
+        network_mode: host</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_安装包安装"><a class="link" href="#_安装包安装">1.2. 安装包安装</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">groupadd postgres
+useradd postgres -g postgres
+passwd postgres
+mkdir -p /database/pg/pg_root
+chown -R postgres:postgres /database/pg
+
+sudo apt install postgresql-all
+initdb -D /database/pg/pg_root -E UTF8 --locale=C -U postgres -W</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_基本命令"><a class="link" href="#_基本命令">2. 基本命令</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># 创建db
+createdb -U &lt;username&gt; &lt;dbName&gt;
+# 删除b
+dropdb -U &lt;username&gt; &lt;dbName&gt;
+# 重建索引
+reindexdb -d &lt;dbName&gt;
+# 对数据库物理文件垃圾回收
+vacuumdb &lt;dbName&gt;
+# 清除数据库中未引用的大对象
+vacuumlo &lt;dbName&gt;
+
+pgdump
+pgrestore
+pgbench
+# 登录数据库
+psql [-h HOST] [-p PORT] DB [USERNAME]
+# 获取pg配置
+pg_config
+# 获取数据库状态
+pg_ctl -D &lt;data-dir&gt; status
+# 启动数据库
+postgres -D &lt;data-dir&gt; &amp;
+# 关闭数据库
+pg_ctl -D &lt;data-dir&gt; -m [fast|smart|immediate]  -t &lt;timeout&gt; stop</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_配置"><a class="link" href="#_配置">3. 配置</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_pg_hba_conf"><a class="link" href="#_pg_hba_conf">3.1. pg_hba.conf</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">TYPE  DATABASE  USER  ADDRESS  METHOD</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>TYPE: 允许连接的方式</p>
+<div class="ulist">
+<ul>
+<li>
+<p>local: Unix domain socket</p>
+</li>
+<li>
+<p>host: TCP/IP, localhost default</p>
+</li>
+<li>
+<p>hostssl: OpenSSL restrict</p>
+</li>
+<li>
+<p>hostnossl: SSL not permitted</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>METHOD: 认证方法</p>
+<div class="ulist">
+<ul>
+<li>
+<p>trust</p>
+</li>
+<li>
+<p>password: 明文密码</p>
+</li>
+<li>
+<p>md5</p>
+</li>
+<li>
+<p>reject: 拒绝访问</p>
+</li>
+<li>
+<p>scram-sha-256</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_postgresql_conf"><a class="link" href="#_postgresql_conf">3.2. postgresql.conf</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>postgresql 启动时postgresql.auto.conf会覆盖postgresql.conf内容
+更改配置生效: pg_ctl -D &lt;data-dir&gt; reload</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_psql命令"><a class="link" href="#_psql命令">4. psql命令</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>psql -c "SQL" [-d DB_NAME] [-U USERNAME] [-W PASSWORD] [-f SQL_FILE]</p>
+</li>
+<li>
+<p>\db: 查看表空间</p>
+</li>
+<li>
+<p>\l: 查看数据库</p>
+</li>
+<li>
+<p>\d &lt;DB_NAME&gt;: 查看表定义</p>
+</li>
+<li>
+<p>\dt+ &lt;DB_NAME&gt;: 查看表空间大小</p>
+</li>
+<li>
+<p>\di+ &lt;IDX_NAME&gt;: 查看索引空间大小</p>
+</li>
+<li>
+<p>\x: 切换查询显示模式</p>
+</li>
+<li>
+<p>COPY &lt;DB&gt; FROM|TO "FILE_PATH" : (大表)导入导出数据(必须有superuser权限)</p>
+</li>
+<li>
+<p>\copy &lt;DB&gt; FROM|TO "FILE_PATH" : (小表)导入导出数据</p>
+</li>
+<li>
+<p>\set VAR_NAME VALUE: 设置变量, :VAR_NAME 使用</p>
+</li>
+<li>
+<p>\timing: 开启sql计时</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据类型"><a class="link" href="#_数据类型">5. 数据类型</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_数字类型"><a class="link" href="#_数字类型">5.1. 数字类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>int2 int4 int8</p>
+</li>
+<li>
+<p>decimal/numeric[(precision,scale)]</p>
+</li>
+<li>
+<p>real 6位十进制精度浮点数</p>
+</li>
+<li>
+<p>double precision 15位十进制精度浮点数</p>
+</li>
+<li>
+<p>smallserial/serial/bigserial 2/4/8字节自增序列</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_字符串类型"><a class="link" href="#_字符串类型">5.2. 字符串类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>varchar/character varying 变长</p>
+</li>
+<li>
+<p>character/char 定长</p>
+</li>
+<li>
+<p>text 变长, 长度小于1GB</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_日期类型"><a class="link" href="#_日期类型">5.3. 日期类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>timestamp[without time zone] 不带时区的时间戳</p>
+</li>
+<li>
+<p>timestamp[with time zone] / timestamptz 带时区的时间戳</p>
+</li>
+<li>
+<p>date 日期</p>
+</li>
+<li>
+<p>time[with[out] time zone] 一天的时间</p>
+</li>
+<li>
+<p>interval 时间间隔</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_range类型"><a class="link" href="#_range类型">5.4. range类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>int4range</p>
+</li>
+<li>
+<p>int8range</p>
+</li>
+<li>
+<p>numrange</p>
+</li>
+<li>
+<p>tsrange</p>
+</li>
+<li>
+<p>tstzrange</p>
+</li>
+<li>
+<p>daterange</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_其他"><a class="link" href="#_其他">5.5. 其他</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>boolean</p>
+</li>
+<li>
+<p>cidr/inet/macaddr/macaddr8</p>
+</li>
+<li>
+<p>数组</p>
+</li>
+<li>
+<p>json/jsonb</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">json和jsonb的区别</div>
+<ul>
+<li>
+<p>json以文本格式存储, jsonb以二进制存储.</p>
+</li>
+<li>
+<p>json输入和输出的键顺序保持一致, jsonb不保证.</p>
+</li>
+<li>
+<p>json会保留输入中的空格, jsonb不会.</p>
+</li>
+<li>
+<p>jsonb会删除重复的键, 只保留最后一个.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_函数"><a class="link" href="#_函数">6. 函数</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="postgresql" class="language-postgresql hljs">-- 计算字符串中的字符数
+select char_length('abcd'); -- 4
+-- 计算字符串占用的字节数
+select octet_length('abcd'); -- 4
+-- 获取字符在字符串中的位置, 位置从1开始
+select position('bc' in 'abcd'); -- 2
+-- 提取字符串中的子串
+select substring('abcd' from 2 for 3); -- bcd
+-- 分割字符串
+select split_part('abc,def,ghi', ',', 2); -- def
+
+-- 时间字段提取
+select extract(year from '2019-07-15:12:34:56'::timestamp); -- 2019
+
+-- 数组两种形式
+select array[1,2,3];
+select '{1,2,3}';
+-- 获取数组指定下标元素, 位置从1开始
+select arr[1] from (select array[1,2,3] arr) a; -- 1
+-- 数组追加元素
+select array_append(array[1,2,3],4); -- {1,2,3,4}
+select array[1,2,3]||4;
+select array[1,2,3] || array[1,2,3]; -- {1,2,3,1,2,3}
+-- 数组删除元素
+select array_remove(array[1,2,2,2,3],2); -- {1,3}
+-- 判断数组是否相等
+select array[1,2,3] = array [1,2,2,2,3]; -- false
+-- 判断数组是否不相等
+select array[1,2,3] &lt;&gt; array [1,2,2,2,3]; -- true
+-- 比较数组
+select array[1,2,3] &lt;= array[2,1]; -- true
+select array[1,2,3] &gt;= array[2,1]; -- false
+-- 判断数组包含关系
+select array[1,2,3] @&gt; array[1]; -- true
+select array[1,2,3] &lt;@ array[1,2,3,4,5]; -- true
+-- 判断数组是否有公共元素
+select array[1,2,3] &amp;&amp; array[22]; -- false
+-- 获取数组维度
+select array_dims(array[[4],[3],[2],[1]]); -- [1:4] [1:1]
+-- 获取数组指定维度的长度
+select array_length(array[1,2,3,4],1); -- 3
+select array_length(array[[4],[3],[2],[1]],2); -- 1
+-- 获取数组某一个元素第一次出现的位置, 位置从1开始
+select array_position(array[1,2,3],3); -- 3
+-- 替换数组指定元素
+select array_replace(array[1,2,3],2,11); -- {1,11,3}
+-- 数组转为字符串
+select array_to_string(array[1,2,3,null],',','99'); -- 1,2,3
+
+-- 范围
+select int4range(1,10,'[]'); -- [1,11)
+select daterange('2019-06-01','2019-07-02'); -- [2019-06-01,2019-07-02)
+-- 获取范围下界
+select lower(int4range(1,10));
+-- 获取范围上界
+select upper(int4range(1,10));
+-- 判断范围是否为空
+select isempty(int4range(1,10));
+
+-- json表示
+select '{"a":1}'::json;
+-- json字段值获取
+select j -&gt; 'a' from ( select '{"a":1}'::json j) sub; -- 1
+-- 提取json中的键值对
+select * from json_each('{"a":1,"b":2}'::json); -- a 1 b 2
+select * from json_each_text('{"a":"aaa","b":2}'::json); -- a 1 b 2
+-- 删除jsonb中的key
+select '{"a":1,"b":2}'::jsonb - 'a'; -- {"b":2}
+-- 判断key是否为顶层key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb ? 'd'; -- false
+-- 获取json所有key
+select json_object_keys('{"a":1,"b":2}'); -- a b
+-- 删除json指定key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb - 'a'; -- {"b": 2, "c": {"d": 4}}
+-- 删除json嵌套key
+select '{"a":1,"b":2, "c":{"d":4}}'::jsonb #- '{c,d}'::text[];</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_高级特性"><a class="link" href="#_高级特性">7. 高级特性</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>with从句</p>
+</li>
+<li>
+<p>批量插入: insert into select from / insert into values (),() / COPY</p>
+</li>
+<li>
+<p>upsert:
+insert into &#8230;&#8203; on conflict do {NOTHING | update set &lt;colName&gt; = EXCLUDED.colName}</p>
+</li>
+<li>
+<p>insert/update/delete .. returning *</p>
+</li>
+<li>
+<p>select from &lt;table&gt; TABLESAMPLE {SYSTEM | BERNOULLI}</p>
+</li>
+<li>
+<p>string_agg() / array_agg()</p>
+</li>
+<li>
+<p>窗口函数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>row_number() : <code>select row_number() OVER partition by &lt;colName&gt;</code>,eg: 1,2,3, 1</p>
+</li>
+<li>
+<p>rank() : 分组重复则序号相同, 但下一个分组内不同行的序号保持增长,eg: 1,1,3</p>
+</li>
+<li>
+<p>dense_rank() : 分组重复则序号相同, 下一个分组内不同行的序号继续增长,eg: 1,1,2</p>
+</li>
+<li>
+<p>lag(field,offset,defaultValue): 获取行偏移offset那行某个字段的数据(offset为正向上偏移,为负则相反)</p>
+</li>
+<li>
+<p>first_value(field): 取分组第一行数据</p>
+</li>
+<li>
+<p>last_value(field): 取分组最后一行数据</p>
+</li>
+<li>
+<p>nth_value(field,line): 取分组指定行数据</p>
+</li>
+<li>
+<p>别名: select &#8230;&#8203;[rank() over NAME] from &lt;table&gt; WINDOW &lt;NAME&gt; AS ()</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_monitor"><a class="link" href="#_monitor">8. Monitor</a></h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p><a href="https://www.postgresql.org/docs/current/monitoring-stats.html" class="bare">https://www.postgresql.org/docs/current/monitoring-stats.html</a></p>
+</div>
+</blockquote>
+</div>
+<div class="sect2">
+<h3 id="_pg_stat_activity"><a class="link" href="#_pg_stat_activity">8.1. pg_stat_activity</a></h3>
+<div class="paragraph">
+<p>查看实时连接.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. pg_stat_activity schema</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">列名</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">datid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据库id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">datname</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据库名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">服务于这个连接的进程id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">usesysid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">连接的用户id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">usename</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">连接的用户名</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">application_name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">应用名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">client_addr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">客户端ip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">client_hostname</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">客户端主机名</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">client_port</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">客户端端口号</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">backend_start</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">连接何时被启动</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xact_start</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">事务何时被启动</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">query_start</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">连接查询起始时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">state_change</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">state列修改时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">wait_event_type</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">wait_event</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">连接状态:
+* active: 后台进程正在执行该SQL.
+* idle: 后台进程处于空闲状态, 等待后续客户端发出命令.
+* idle in transaction: 后台进程正在事务中.
+* idle in transaction(aborted): 事务中的部分SQL异常.
+* fastpath function call: 正在执行fast-path函数.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">query</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前或上一次的sql语句</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">backend_xid</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">backend_xmin</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">backend_type</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="postgresql" class="language-postgresql hljs">-- 查看活动会话
+select pid, client_addr, query_start, state, query, wait_event, wait_event_type
+from pg_stat_activity
+where datid is not null
+  and pid &lt;&gt; pg_backend_pid()
+order by query_start desc;
+
+-- 查看数据库连接数
+select datname, client_addr, count(*)
+from pg_stat_activity
+where pid &lt;&gt; pg_backend_pid()
+group by datname, client_addr
+order by 1, 2, 3 desc;
+
+-- 查看会话状态统计
+select datname,
+       count(*)                                                AS open,
+       count(*) filter ( where state = 'active' )              AS active,
+       count(*) filter ( where state = 'idle' )                AS idle,
+       count(*) filter ( where state = 'idle in transaction' ) AS idle_in_tx
+from pg_stat_activity
+where backend_type = 'client backend'
+group by rollup (1);
+
+-- 查看当前事务
+select pid, xact_start, now() - xact_start AS duration
+from pg_stat_activity
+where state like '%transaction%'
+order by 3 desc;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pg_stat_database"><a class="link" href="#_pg_stat_database">8.2. pg_stat_database</a></h3>
+<div class="paragraph">
+<p>查看数据库统计信息.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. pg_stat_database schema</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">列名</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">datid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据库id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">datname</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据库名</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">numbackends</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前打开的数据库连接数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xact_commit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">倾向于事务提交</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xact_rollback</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">倾向于事务回滚</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">blks_read</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">缓冲未命中数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">blks_hit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">缓冲命中数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tup_returned</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回行数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tup_fetched</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">查询行数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tup_inserted</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">插入行数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tup_updated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">更新行数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tup_deleted</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">删除行数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">conflicts</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">temp_files</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">磁盘临时文件数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">temp_bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">磁盘临时文件大小</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deadlocks</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">死锁次数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">blk_read_time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IO读操作花费时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">blk_write_time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IO写操作花费时间</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>blk_read_time/blk_write_time默认为空, 需要打开 <code>track_io_time</code> 参数, 可以使用 <code>pg_test_timing</code> 命令测试计时性能.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pg_stat_user_tables"><a class="link" href="#_pg_stat_user_tables">8.3. pg_stat_user_tables</a></h3>
+<div class="paragraph">
+<p>显示各个表的活动.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. pg_stat_user_tables schema</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">列名</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">relid</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">表id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">schemaname</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">schema名</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">relname</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">表名</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seq_scan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">顺序扫描次数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">seq_tup_read</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">顺序扫描时元组读取个数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">idx_scan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">索引使用次数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">idx_tup_fetch</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">索引元组返回个数</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">检测哪些表可能需要索引</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">select schemaname, relname, seq_scan, seq_tup_read, seq_tup_read / seq_scan as avg, idx_scan
+from pg_stat_user_tables
+where seq_scan &gt; 0
+order by seq_tup_read desc
+limit 25;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pg_stat_statements"><a class="link" href="#_pg_stat_statements">8.4. pg_stat_statements</a></h3>
+<div class="listingblock">
+<div class="title">查看耗時最多的sql</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">select round((100 * total_time / sum(total_time) over ())::numeric, 2) AS percent,
+       round(total_time::numeric, 2)                                   AS total,
+       calls,
+       round(mean_time::numeric, 2)                                    AS mean,
+       query
+from pg_stat_statements
+order by total_time desc
+limit 10;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_体系结构"><a class="link" href="#_体系结构">9. 体系结构</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_逻辑结构"><a class="link" href="#_逻辑结构">9.1. 逻辑结构</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>创建一个Database时会为这个Database创建一个名为public的默认schema.
+相同数据库不同schema可以拥有相同名称的table/index/view/sequence/function等</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_物理结构"><a class="link" href="#_物理结构">9.2. 物理结构</a></h3>
+<div class="sect3">
+<h4 id="_oid"><a class="link" href="#_oid">9.2.1. OID</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>OID,对象标识符,无符号4字节整数.所有的数据库对象由各自的OID管理</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>数据库对象OID保存在pg_database系统表里.</p>
+</li>
+<li>
+<p>表/索引/序列等对象OID保存在pg_class系统表里.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_表空间"><a class="link" href="#_表空间">9.2.2. 表空间</a></h4>
+<div class="literalblock">
+<div class="content">
+<pre>初始化数据库目录时会自动创建两个表空间: pg_global和pg_default</pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>pg_global保存在global目录中, 用来保存系统表</p>
+</li>
+<li>
+<p>pg_default保存在base目录中, 默认数据库表空间</p>
+<div class="literalblock">
+<div class="content">
+<pre>每个数据库的oid都是base目录下的子目录, 表文件在所属数据库目录下以表OID命名.
+杜宇超过1GB大小的表文件则会自动切分为多个文件存储,以OID.&lt;seq&gt; 命名</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_进程结构"><a class="link" href="#_进程结构">9.3. 进程结构</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>postmaster</p>
+</li>
+<li>
+<p>postgres</p>
+</li>
+<li>
+<p>syslogger</p>
+</li>
+<li>
+<p>checkpointer</p>
+</li>
+<li>
+<p>bgwriter</p>
+</li>
+<li>
+<p>walwriter</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_内存结构"><a class="link" href="#_内存结构">9.4. 内存结构</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>本地内存</p>
+<div class="ulist">
+<ul>
+<li>
+<p>work_mem: ORDER BY/DISTINCT会用到</p>
+</li>
+<li>
+<p>maintenance_work_mem: VACUUM/REINDEX/CREATE INDEX会用到</p>
+</li>
+<li>
+<p>temp_buffers: 临时表操作会用到</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>共享内存</p>
+<div class="ulist">
+<ul>
+<li>
+<p>shared buffer pool: 将表/索引文件载入内存</p>
+</li>
+<li>
+<p>WAL buffer: WAL文件持久化缓冲区</p>
+</li>
+<li>
+<p>CommitLog buffer: commit log中保存事务的状态,保存在缓冲区</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_事务"><a class="link" href="#_事务">10. 事务</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">create table tbl_mvcc
+(
+    id   bigserial primary key,
+    ival integer
+);
+insert into tbl_mvcc(ival) values (1);</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_脏读"><a class="link" href="#_脏读">10.1. 脏读</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>一个事务看到了另外一个事务未提交的数据.
+(PostgreSQL下不可复现)</p>
+</div>
+</blockquote>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. Dirty Read</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">console1</th>
+<th class="tableblock halign-left valign-top">console2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">-- MySQL
+set session transaction isolation level read uncommitted;
+start transaction;
+select * from tbl_mvcc where id = 1; -- 1</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">start transaction;
+update tbl_mvcc set ival = 10 where id = 1;</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">select * from tbl_mvcc where id = 1; -- 10</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_不可重复读"><a class="link" href="#_不可重复读">10.2. 不可重复读</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>一个事务查询结果与第一次的结果不同.(受到其他已提交事务 <strong>UPDATE</strong> 的影响)</p>
+</div>
+</blockquote>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. Non-repeatable Read</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">console1</th>
+<th class="tableblock halign-left valign-top">console2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">begin transaction isolation level read committed;
+select * from tbl_mvcc where id = 1; -- 1</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">begin;
+update tbl_mvcc set ival = 10 where id = 1;
+end;</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">select * from tbl_mvcc where id = 1; -- 10</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_幻读"><a class="link" href="#_幻读">10.3. 幻读</a></h3>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>一个事务两次查询的结果集数量不一致.(受到其他已提交事务 <strong>INSERT/DELETE</strong> 的影响)</p>
+</div>
+</blockquote>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 6. Phantom Read</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">console1</th>
+<th class="tableblock halign-left valign-top">console2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">begin transaction isolation level read committed;
+select * from tbl_mvcc where id between 1 and 10;</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">begin;
+delete from tbl_mvcc where id &gt; 5 ;
+end;</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">-- 与之前结果相比少了一些数据
+select * from tbl_mvcc where id between 1 and 10;</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 7. Serialization Anomaly</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">console1</th>
+<th class="tableblock halign-left valign-top">console2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">begin transaction isolation level repeatable read;
+select ival from tbl_mvcc where id =1;</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">update tbl_mvcc set ival = 10 where id = 1;</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="sql" class="language-sql hljs">update tbl_mvcc set ival = 100 where id = 1;
+-- [40001] ERROR: could not serialize access due to concurrent update</code></pre>
+</div>
+</div></div></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 8. PostgreSQL事务隔离级别</caption>
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">隔离级别</th>
+<th class="tableblock halign-left valign-top">脏读</th>
+<th class="tableblock halign-left valign-top">不可重复读</th>
+<th class="tableblock halign-left valign-top">幻读</th>
+<th class="tableblock halign-left valign-top">序列化异常</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Read Uncommitted</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Read Committed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Repeatable Read</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Serializable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">x</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_查看全局事务默认隔离级别"><a class="link" href="#_查看全局事务默认隔离级别">10.4. 查看全局事务默认隔离级别</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>select name,setting from pg_settings where name='default_transaction_isolation';</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_修改全局事务默认隔离级别"><a class="link" href="#_修改全局事务默认隔离级别">10.5. 修改全局事务默认隔离级别</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>修改postgresql.conf的default_transaction_isolation参数</p>
+</li>
+<li>
+<p><code>ALTER SYSTEM SET default_transaction_isolation TO 'REPEATABLE READ';</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查看当前会话事务默认隔离级别"><a class="link" href="#_查看当前会话事务默认隔离级别">10.6. 查看当前会话事务默认隔离级别</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>SHOW transaction_isolation;</code></p>
+</li>
+<li>
+<p><code>select current_setting('transaction_isolation');</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_设置当前会话事务默认隔离级别"><a class="link" href="#_设置当前会话事务默认隔离级别">10.7. 设置当前会话事务默认隔离级别</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>set session characteristics as transaction isolation level REPEATABLE READ</code></p>
+</li>
+<li>
+<p><code>START|BEGIN TRANSACTION ISOLATION LEVEL READ UNCOMMITTED &#8230;&#8203; END</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_分区"><a class="link" href="#_分区">11. 分区</a></h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>将一个表根据不同的规则分成多个块的行为, 称为分区, 每一个分区称为分区表.</p>
+</div>
+</blockquote>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>应用了分区规则的列会自动添加not null的约束.</p>
+</li>
+<li>
+<p>如果插入的值根据规则找不到匹配的分区, 则会报错.</p>
+</li>
+<li>
+<p>PostgreSQL 10之后才内置分区功能, 支持Range和List分区, 11之后支持Hash分区.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_优势"><a class="link" href="#_优势">11.1. 优势</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>每个分区表的索引相对于单表的索引大小会减小, 查询和更新的性能会提高</p>
+</li>
+<li>
+<p>删除特定范围的数据可以通过直接删除某个分区表实现</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+只有当表本身大小超过了物理内存的大小, 分区后才会受益.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_分区方式"><a class="link" href="#_分区方式">11.2. 分区方式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Range分区</p>
+<div class="literalblock">
+<div class="content">
+<pre>根据某一列值的范围插入相应的分区表, 比如根据日期范围分区, 仅支持单个列.</pre>
+</div>
+</div>
+</li>
+<li>
+<p>List分区</p>
+<div class="literalblock">
+<div class="content">
+<pre>根据每个分区表的某一列值的集合分区. 支持多列/多表达式</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Hash分区</p>
+<div class="literalblock">
+<div class="content">
+<pre>根据某一列值的hash值分区</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sql"><a class="link" href="#_sql">11.3. SQL</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="postgresql" class="language-postgresql hljs">-- 创建主表
+CREATE TABLE [ IF NOT EXISTS ] parent_table ( [
+  { column_name data_type [ COLLATE collation ] [ column_constraint [ ... ] ]
+ ] ) PARTITION BY { RANGE | LIST | HASH } ( { column_name | ( expression ) }
+-- 创建range型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES FROM (start) TO (end);
+-- 创建list型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES IN (val1, val2) ;
+-- 创建hash型分区表
+CREATE TABLE partition_table_name PARTITION OF parent_table FOR VALUES WITH (MODULUS 4, REMAINDER 3);
+
+-- 删除分区关系
+ALTER TABLE parent_table ATTACH PARTITION partition_table_name</code></pre>
+</div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+update语句违反了当前分区键的约束会报错
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_清除wal日志"><a class="link" href="#_清除wal日志">12. 清除WAL日志</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>文档: <a href="https://www.postgresql.org/docs/current/pgarchivecleanup.html" class="bare">https://www.postgresql.org/docs/current/pgarchivecleanup.html</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">pg_archivecleanup -d &lt;archive_location&gt; &lt;oldest_kept_walfile&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如: <code>pg_archivecleanup -d /var/lib/postgresql/data/pg_wal 000000010000000000000036</code>
+会将 000000010000000000000001~000000010000000000000035所有文件删除</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<code>pg_archivecleanup -d . `ls -r | head -2 | tail -1`</code>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_查询优化"><a class="link" href="#_查询优化">13. 查询优化</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_逻辑优化"><a class="link" href="#_逻辑优化">13.1. 逻辑优化</a></h3>
+<div class="paragraph">
+<p>根据关系代数等价式优化查询</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>尽量将选择操作下推到叶子节点来做</p>
+</li>
+<li>
+<p>尽量在叶子节点上使用投影缩小中间结果</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_物理优化"><a class="link" href="#_物理优化">13.2. 物理优化</a></h3>
+<div class="paragraph">
+<p>通过代价估算的方式挑选代价比较低的物理路径</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pg12参考配置文件"><a class="link" href="#_pg12参考配置文件">14. PG12参考配置文件</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">postgresql.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="conf" class="language-conf hljs"># -----------------------------
+# PostgreSQL configuration file
+# -----------------------------
+#
+# This file consists of lines of the form:
+#
+#   name = value
+#
+# (The "=" is optional.)  Whitespace may be used.  Comments are introduced with
+# "#" anywhere on a line.  The complete list of parameter names and allowed
+# values can be found in the PostgreSQL documentation.
+#
+# The commented-out settings shown in this file represent the default values.
+# Re-commenting a setting is NOT sufficient to revert it to the default value;
+# you need to reload the server.
+#
+# This file is read on server startup and when the server receives a SIGHUP
+# signal.  If you edit the file on a running system, you have to SIGHUP the
+# server for the changes to take effect, run "pg_ctl reload", or execute
+# "SELECT pg_reload_conf()".  Some parameters, which are marked below,
+# require a server shutdown and restart to take effect.
+#
+# Any parameter can also be given as a command-line option to the server, e.g.,
+# "postgres -c log_connections=on".  Some parameters can be changed at run time
+# with the "SET" SQL command.
+#
+# Memory units:  kB = kilobytes        Time units:  ms  = milliseconds
+#                MB = megabytes                     s   = seconds
+#                GB = gigabytes                     min = minutes
+#                TB = terabytes                     h   = hours
+#                                                   d   = days
+
+
+#------------------------------------------------------------------------------
+# FILE LOCATIONS
+#------------------------------------------------------------------------------
+
+# The default values of these variables are driven from the -D command-line
+# option or PGDATA environment variable, represented here as ConfigDir.
+
+#data_directory = 'ConfigDir'       # use data in another directory
+                    # (change requires restart)
+#hba_file = 'ConfigDir/pg_hba.conf' # host-based authentication file
+                    # (change requires restart)
+#ident_file = 'ConfigDir/pg_ident.conf' # ident configuration file
+                    # (change requires restart)
+
+# If external_pid_file is not explicitly set, no extra PID file is written.
+#external_pid_file = ''         # write an extra PID file
+                    # (change requires restart)
+
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+# - Connection Settings -
+
+listen_addresses = '*'
+                    # comma-separated list of addresses;
+                    # defaults to 'localhost'; use '*' for all
+                    # (change requires restart)
+#port = 5432                # (change requires restart)
+max_connections = 2000          # (change requires restart)
+#superuser_reserved_connections = 3 # (change requires restart)
+#unix_socket_directories = '/var/run/postgresql'    # comma-separated list of directories
+                    # (change requires restart)
+#unix_socket_group = ''         # (change requires restart)
+#unix_socket_permissions = 0777     # begin with 0 to use octal notation
+                    # (change requires restart)
+#bonjour = off              # advertise server via Bonjour
+                    # (change requires restart)
+#bonjour_name = ''          # defaults to the computer name
+                    # (change requires restart)
+
+# - TCP settings -
+# see "man 7 tcp" for details
+
+#tcp_keepalives_idle = 0        # TCP_KEEPIDLE, in seconds;
+                    # 0 selects the system default
+#tcp_keepalives_interval = 0        # TCP_KEEPINTVL, in seconds;
+                    # 0 selects the system default
+#tcp_keepalives_count = 0       # TCP_KEEPCNT;
+                    # 0 selects the system default
+#tcp_user_timeout = 0           # TCP_USER_TIMEOUT, in milliseconds;
+                    # 0 selects the system default
+
+# - Authentication -
+
+#authentication_timeout = 1min      # 1s-600s
+#password_encryption = md5      # md5 or scram-sha-256
+#db_user_namespace = off
+
+# GSSAPI using Kerberos
+#krb_server_keyfile = ''
+#krb_caseins_users = off
+
+# - SSL -
+
+#ssl = off
+#ssl_ca_file = ''
+#ssl_cert_file = 'server.crt'
+#ssl_crl_file = ''
+#ssl_key_file = 'server.key'
+#ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
+#ssl_prefer_server_ciphers = on
+#ssl_ecdh_curve = 'prime256v1'
+#ssl_min_protocol_version = 'TLSv1'
+#ssl_max_protocol_version = ''
+#ssl_dh_params_file = ''
+#ssl_passphrase_command = ''
+#ssl_passphrase_command_supports_reload = off
+
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+
+shared_buffers = 8GB            # min 128kB
+                    # (change requires restart)
+#huge_pages = try           # on, off, or try
+                    # (change requires restart)
+#temp_buffers = 8MB         # min 800kB
+#max_prepared_transactions = 0      # zero disables the feature
+                    # (change requires restart)
+# Caution: it is not advisable to set max_prepared_transactions nonzero unless
+# you actively intend to use prepared transactions.
+work_mem = 8MB              # min 64kB
+maintenance_work_mem = 1GB      # min 1MB
+#autovacuum_work_mem = -1       # min 1MB, or -1 to use maintenance_work_mem
+#max_stack_depth = 2MB          # min 100kB
+#shared_memory_type = mmap      # the default is the first option
+                    # supported by the operating system:
+                    #   mmap
+                    #   sysv
+                    #   windows
+                    # (change requires restart)
+dynamic_shared_memory_type = posix  # the default is the first option
+                    # supported by the operating system:
+                    #   posix
+                    #   sysv
+                    #   windows
+                    #   mmap
+                    # (change requires restart)
+
+# - Disk -
+
+#temp_file_limit = -1           # limits per-process temp file space
+                    # in kB, or -1 for no limit
+
+# - Kernel Resources -
+
+#max_files_per_process = 1000       # min 25
+                    # (change requires restart)
+
+# - Cost-Based Vacuum Delay -
+
+#vacuum_cost_delay = 0          # 0-100 milliseconds (0 disables)
+#vacuum_cost_page_hit = 1       # 0-10000 credits
+#vacuum_cost_page_miss = 10     # 0-10000 credits
+#vacuum_cost_page_dirty = 20        # 0-10000 credits
+#vacuum_cost_limit = 200        # 1-10000 credits
+
+# - Background Writer -
+
+#bgwriter_delay = 200ms         # 10-10000ms between rounds
+#bgwriter_lru_maxpages = 100        # max buffers written/round, 0 disables
+#bgwriter_lru_multiplier = 2.0      # 0-10.0 multiplier on buffers scanned/round
+#bgwriter_flush_after = 512kB       # measured in pages, 0 disables
+
+# - Asynchronous Behavior -
+
+#effective_io_concurrency = 1       # 1-1000; 0 disables prefetching
+max_worker_processes = 256      # (change requires restart)
+max_parallel_maintenance_workers = 4    # taken from max_parallel_workers
+max_parallel_workers_per_gather = 4 # taken from max_parallel_workers
+#parallel_leader_participation = on
+max_parallel_workers = 4        # maximum number of max_worker_processes that
+                    # can be used in parallel operations
+#old_snapshot_threshold = -1        # 1min-60d; -1 disables; 0 is immediate
+                    # (change requires restart)
+#backend_flush_after = 0        # measured in pages, 0 disables
+
+
+#------------------------------------------------------------------------------
+# WRITE-AHEAD LOG
+#------------------------------------------------------------------------------
+
+# - Settings -
+
+#wal_level = replica            # minimal, replica, or logical
+                    # (change requires restart)
+#fsync = on             # flush data to disk for crash safety
+                    # (turning this off can cause
+                    # unrecoverable data corruption)
+#synchronous_commit = on        # synchronization level;
+                    # off, local, remote_write, remote_apply, or on
+#wal_sync_method = fsync        # the default is the first option
+                    # supported by the operating system:
+                    #   open_datasync
+                    #   fdatasync (default on Linux)
+                    #   fsync
+                    #   fsync_writethrough
+                    #   open_sync
+#full_page_writes = on          # recover from partial page writes
+#wal_compression = off          # enable compression of full-page writes
+#wal_log_hints = off            # also do full page writes of non-critical updates
+                    # (change requires restart)
+#wal_init_zero = on         # zero-fill new WAL files
+#wal_recycle = on           # recycle WAL files
+#wal_buffers = -1           # min 32kB, -1 sets based on shared_buffers
+                    # (change requires restart)
+#wal_writer_delay = 200ms       # 1-10000 milliseconds
+#wal_writer_flush_after = 1MB       # measured in pages, 0 disables
+
+#commit_delay = 0           # range 0-100000, in microseconds
+#commit_siblings = 5            # range 1-1000
+
+# - Checkpoints -
+
+checkpoint_timeout = 30min      # range 30s-1d
+max_wal_size = 16GB
+min_wal_size = 4GB
+#checkpoint_completion_target = 0.5 # checkpoint target duration, 0.0 - 1.0
+#checkpoint_flush_after = 256kB     # measured in pages, 0 disables
+#checkpoint_warning = 30s       # 0 disables
+
+# - Archiving -
+
+#archive_mode = off     # enables archiving; off, on, or always
+                # (change requires restart)
+#archive_command = ''       # command to use to archive a logfile segment
+                # placeholders: %p = path of file to archive
+                #               %f = file name only
+                # e.g. 'test ! -f /mnt/server/archivedir/%f &amp;&amp; cp %p /mnt/server/archivedir/%f'
+#archive_timeout = 0        # force a logfile segment switch after this
+                # number of seconds; 0 disables
+
+# - Archive Recovery -
+
+# These are only used in recovery mode.
+
+#restore_command = ''       # command to use to restore an archived logfile segment
+                # placeholders: %p = path of file to restore
+                #               %f = file name only
+                # e.g. 'cp /mnt/server/archivedir/%f %p'
+                # (change requires restart)
+#archive_cleanup_command = ''   # command to execute at every restartpoint
+#recovery_end_command = ''  # command to execute at completion of recovery
+
+# - Recovery Target -
+
+# Set these only when performing a targeted recovery.
+
+#recovery_target = ''       # 'immediate' to end recovery as soon as a
+                                # consistent state is reached
+                # (change requires restart)
+#recovery_target_name = ''  # the named restore point to which recovery will proceed
+                # (change requires restart)
+#recovery_target_time = ''  # the time stamp up to which recovery will proceed
+                # (change requires restart)
+#recovery_target_xid = ''   # the transaction ID up to which recovery will proceed
+                # (change requires restart)
+#recovery_target_lsn = ''   # the WAL LSN up to which recovery will proceed
+                # (change requires restart)
+#recovery_target_inclusive = on # Specifies whether to stop:
+                # just after the specified recovery target (on)
+                # just before the recovery target (off)
+                # (change requires restart)
+#recovery_target_timeline = 'latest'    # 'current', 'latest', or timeline ID
+                # (change requires restart)
+#recovery_target_action = 'pause'   # 'pause', 'promote', 'shutdown'
+                # (change requires restart)
+
+
+#------------------------------------------------------------------------------
+# REPLICATION
+#------------------------------------------------------------------------------
+
+# - Sending Servers -
+
+# Set these on the master and on any standby that will send replication data.
+
+#max_wal_senders = 10       # max number of walsender processes
+                # (change requires restart)
+#wal_keep_segments = 0      # in logfile segments; 0 disables
+#wal_sender_timeout = 60s   # in milliseconds; 0 disables
+
+#max_replication_slots = 10 # max number of replication slots
+                # (change requires restart)
+#track_commit_timestamp = off   # collect timestamp of transaction commit
+                # (change requires restart)
+
+# - Master Server -
+
+# These settings are ignored on a standby server.
+
+#synchronous_standby_names = '' # standby servers that provide sync rep
+                # method to choose sync standbys, number of sync standbys,
+                # and comma-separated list of application_name
+                # from standby(s); '*' = all
+#vacuum_defer_cleanup_age = 0   # number of xacts by which cleanup is delayed
+
+# - Standby Servers -
+
+# These settings are ignored on a master server.
+
+#primary_conninfo = ''          # connection string to sending server
+                    # (change requires restart)
+#primary_slot_name = ''         # replication slot on sending server
+                    # (change requires restart)
+#promote_trigger_file = ''      # file name whose presence ends recovery
+#hot_standby = on           # "off" disallows queries during recovery
+                    # (change requires restart)
+#max_standby_archive_delay = 30s    # max delay before canceling queries
+                    # when reading WAL from archive;
+                    # -1 allows indefinite delay
+#max_standby_streaming_delay = 30s  # max delay before canceling queries
+                    # when reading streaming WAL;
+                    # -1 allows indefinite delay
+#wal_receiver_status_interval = 10s # send replies at least this often
+                    # 0 disables
+#hot_standby_feedback = off     # send info from standby to prevent
+                    # query conflicts
+#wal_receiver_timeout = 60s     # time that receiver waits for
+                    # communication from master
+                    # in milliseconds; 0 disables
+#wal_retrieve_retry_interval = 5s   # time to wait before retrying to
+                    # retrieve WAL after a failed attempt
+#recovery_min_apply_delay = 0       # minimum delay for applying changes during recovery
+
+# - Subscribers -
+
+# These settings are ignored on a publisher.
+
+#max_logical_replication_workers = 4    # taken from max_worker_processes
+                    # (change requires restart)
+max_sync_workers_per_subscription = 4   # taken from max_logical_replication_workers
+
+
+#------------------------------------------------------------------------------
+# QUERY TUNING
+#------------------------------------------------------------------------------
+
+# - Planner Method Configuration -
+
+#enable_bitmapscan = on
+#enable_hashagg = on
+#enable_hashjoin = on
+#enable_indexscan = on
+#enable_indexonlyscan = on
+#enable_material = on
+#enable_mergejoin = on
+#enable_nestloop = on
+#enable_parallel_append = on
+#enable_seqscan = on
+#enable_sort = on
+#enable_tidscan = on
+enable_partitionwise_join = on
+enable_partitionwise_aggregate = on
+#enable_parallel_hash = on
+#enable_partition_pruning = on
+
+# - Planner Cost Constants -
+
+#seq_page_cost = 1.0            # measured on an arbitrary scale
+#random_page_cost = 4.0         # same scale as above
+#cpu_tuple_cost = 0.01          # same scale as above
+#cpu_index_tuple_cost = 0.005       # same scale as above
+#cpu_operator_cost = 0.0025     # same scale as above
+#parallel_tuple_cost = 0.1      # same scale as above
+#parallel_setup_cost = 1000.0   # same scale as above
+
+#jit_above_cost = 100000        # perform JIT compilation if available
+                    # and query more expensive than this;
+                    # -1 disables
+#jit_inline_above_cost = 500000     # inline small functions if query is
+                    # more expensive than this; -1 disables
+#jit_optimize_above_cost = 500000   # use expensive JIT optimizations if
+                    # query is more expensive than this;
+                    # -1 disables
+
+#min_parallel_table_scan_size = 8MB
+#min_parallel_index_scan_size = 512kB
+effective_cache_size = 16GB
+
+# - Genetic Query Optimizer -
+
+#geqo = on
+#geqo_threshold = 12
+#geqo_effort = 5            # range 1-10
+#geqo_pool_size = 0         # selects default based on effort
+#geqo_generations = 0           # selects default based on effort
+#geqo_selection_bias = 2.0      # range 1.5-2.0
+#geqo_seed = 0.0            # range 0.0-1.0
+
+# - Other Planner Options -
+
+#default_statistics_target = 100    # range 1-10000
+#constraint_exclusion = partition   # on, off, or partition
+#cursor_tuple_fraction = 0.1        # range 0.0-1.0
+#from_collapse_limit = 8
+#join_collapse_limit = 8        # 1 disables collapsing of explicit
+                    # JOIN clauses
+#force_parallel_mode = off
+#jit = on               # allow JIT compilation
+#plan_cache_mode = auto         # auto, force_generic_plan or
+                    # force_custom_plan
+
+
+#------------------------------------------------------------------------------
+# REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+# - Where to Log -
+
+log_destination = 'csvlog'      # Valid values are combinations of
+                    # stderr, csvlog, syslog, and eventlog,
+                    # depending on platform.  csvlog
+                    # requires logging_collector to be on.
+
+# This is used when logging to stderr:
+logging_collector = on      # Enable capturing of stderr and csvlog
+                    # into log files. Required to be on for
+                    # csvlogs.
+                    # (change requires restart)
+
+# These are only used if logging_collector is on:
+#log_directory = 'log'          # directory where log files are written,
+                    # can be absolute or relative to PGDATA
+#log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'    # log file name pattern,
+                    # can include strftime() escapes
+#log_file_mode = 0600           # creation mode for log files,
+                    # begin with 0 to use octal notation
+log_truncate_on_rotation = on       # If on, an existing log file with the
+                    # same name as the new log file will be
+                    # truncated rather than appended to.
+                    # But such truncation only occurs on
+                    # time-driven rotation, not on restarts
+                    # or size-driven rotation.  Default is
+                    # off, meaning append to existing files
+                    # in all cases.
+log_rotation_age = 1d           # Automatic rotation of logfiles will
+                    # happen after that time.  0 disables.
+log_rotation_size = 500MB       # Automatic rotation of logfiles will
+                    # happen after that much log output.
+                    # 0 disables.
+
+# These are relevant when logging to syslog:
+#syslog_facility = 'LOCAL0'
+#syslog_ident = 'postgres'
+#syslog_sequence_numbers = on
+#syslog_split_messages = on
+
+# This is only relevant when logging to eventlog (win32):
+# (change requires restart)
+#event_source = 'PostgreSQL'
+
+# - When to Log -
+
+#log_min_messages = warning     # values in order of decreasing detail:
+                    #   debug5
+                    #   debug4
+                    #   debug3
+                    #   debug2
+                    #   debug1
+                    #   info
+                    #   notice
+                    #   warning
+                    #   error
+                    #   log
+                    #   fatal
+                    #   panic
+
+#log_min_error_statement = error    # values in order of decreasing detail:
+                    #   debug5
+                    #   debug4
+                    #   debug3
+                    #   debug2
+                    #   debug1
+                    #   info
+                    #   notice
+                    #   warning
+                    #   error
+                    #   log
+                    #   fatal
+                    #   panic (effectively off)
+
+log_min_duration_statement = 3s # -1 is disabled, 0 logs all statements
+                    # and their durations, &gt; 0 logs only
+                    # statements running at least this number
+                    # of milliseconds
+
+#log_transaction_sample_rate = 0.0  # Fraction of transactions whose statements
+                    # are logged regardless of their duration. 1.0 logs all
+                    # statements from all transactions, 0.0 never logs.
+
+# - What to Log -
+
+#debug_print_parse = off
+#debug_print_rewritten = off
+#debug_print_plan = off
+#debug_pretty_print = on
+#log_checkpoints = off
+#log_connections = off
+#log_disconnections = off
+#log_duration = off
+log_error_verbosity = verbose       # terse, default, or verbose messages
+#log_hostname = off
+#log_line_prefix = '%m [%p] '       # special values:
+                    #   %a = application name
+                    #   %u = user name
+                    #   %d = database name
+                    #   %r = remote host and port
+                    #   %h = remote host
+                    #   %p = process ID
+                    #   %t = timestamp without milliseconds
+                    #   %m = timestamp with milliseconds
+                    #   %n = timestamp with milliseconds (as a Unix epoch)
+                    #   %i = command tag
+                    #   %e = SQL state
+                    #   %c = session ID
+                    #   %l = session line number
+                    #   %s = session start timestamp
+                    #   %v = virtual transaction ID
+                    #   %x = transaction ID (0 if none)
+                    #   %q = stop here in non-session
+                    #        processes
+                    #   %% = '%'
+                    # e.g. '&lt;%u%%%d&gt; '
+log_lock_waits = on         # log lock waits &gt;= deadlock_timeout
+log_statement = 'ddl'           # none, ddl, mod, all
+#log_replication_commands = off
+log_temp_files = 256MB          # log temporary files equal or larger
+                    # than the specified size in kilobytes;
+                    # -1 disables, 0 logs all temp files
+log_timezone = 'PRC'
+
+#------------------------------------------------------------------------------
+# PROCESS TITLE
+#------------------------------------------------------------------------------
+
+#cluster_name = ''          # added to process titles if nonempty
+                    # (change requires restart)
+#update_process_title = on
+
+
+#------------------------------------------------------------------------------
+# STATISTICS
+#------------------------------------------------------------------------------
+
+# - Query and Index Statistics Collector -
+
+#track_activities = on
+#track_counts = on
+#track_io_timing = off
+#track_functions = none         # none, pl, all
+#track_activity_query_size = 1024   # (change requires restart)
+#stats_temp_directory = 'pg_stat_tmp'
+
+
+# - Monitoring -
+
+#log_parser_stats = off
+#log_planner_stats = off
+#log_executor_stats = off
+#log_statement_stats = off
+
+
+#------------------------------------------------------------------------------
+# AUTOVACUUM
+#------------------------------------------------------------------------------
+
+autovacuum = on         # Enable autovacuum subprocess?  'on'
+                    # requires track_counts to also be on.
+#log_autovacuum_min_duration = -1   # -1 disables, 0 logs all actions and
+                    # their durations, &gt; 0 logs only
+                    # actions running at least this number
+                    # of milliseconds.
+autovacuum_max_workers = 5      # max number of autovacuum subprocesses
+                    # (change requires restart)
+#autovacuum_naptime = 1min      # time between autovacuum runs
+#autovacuum_vacuum_threshold = 50   # min number of row updates before
+                    # vacuum
+#autovacuum_analyze_threshold = 50  # min number of row updates before
+                    # analyze
+autovacuum_vacuum_scale_factor = 0.02   # fraction of table size before vacuum
+autovacuum_analyze_scale_factor = 0.01  # fraction of table size before analyze
+autovacuum_freeze_max_age = 1200000000  # maximum XID age before forced vacuum
+                    # (change requires restart)
+autovacuum_multixact_freeze_max_age = 1250000000    # maximum multixact age
+                    # before forced vacuum
+                    # (change requires restart)
+autovacuum_vacuum_cost_delay = 0ms  # default vacuum cost delay for
+                    # autovacuum, in milliseconds;
+                    # -1 means use vacuum_cost_delay
+#autovacuum_vacuum_cost_limit = -1  # default vacuum cost limit for
+                    # autovacuum, -1 means use
+                    # vacuum_cost_limit
+
+
+#------------------------------------------------------------------------------
+# CLIENT CONNECTION DEFAULTS
+#------------------------------------------------------------------------------
+
+# - Statement Behavior -
+
+#client_min_messages = notice       # values in order of decreasing detail:
+                    #   debug5
+                    #   debug4
+                    #   debug3
+                    #   debug2
+                    #   debug1
+                    #   log
+                    #   notice
+                    #   warning
+                    #   error
+#search_path = '"$user", public'    # schema names
+#row_security = on
+#default_tablespace = ''        # a tablespace name, '' uses the default
+#temp_tablespaces = ''          # a list of tablespace names, '' uses
+                    # only default tablespace
+#default_table_access_method = 'heap'
+#check_function_bodies = on
+#default_transaction_isolation = 'read committed'
+#default_transaction_read_only = off
+#default_transaction_deferrable = off
+#session_replication_role = 'origin'
+#statement_timeout = 0          # in milliseconds, 0 is disabled
+#lock_timeout = 0           # in milliseconds, 0 is disabled
+idle_in_transaction_session_timeout = '6h'  # in milliseconds, 0 is disabled
+#vacuum_freeze_min_age = 50000000
+vacuum_freeze_table_age = 200000000
+#vacuum_multixact_freeze_min_age = 5000000
+vacuum_multixact_freeze_table_age = 200000000
+#vacuum_cleanup_index_scale_factor = 0.1    # fraction of total number of tuples
+                        # before index cleanup, 0 always performs
+                        # index cleanup
+#bytea_output = 'hex'           # hex, escape
+#xmlbinary = 'base64'
+#xmloption = 'content'
+#gin_fuzzy_search_limit = 0
+#gin_pending_list_limit = 4MB
+
+# - Locale and Formatting -
+
+datestyle = 'iso, mdy'
+#intervalstyle = 'postgres'
+timezone = 'PRC'
+#timezone_abbreviations = 'Default'     # Select the set of available time zone
+                    # abbreviations.  Currently, there are
+                    #   Default
+                    #   Australia (historical usage)
+                    #   India
+                    # You can create your own file in
+                    # share/timezonesets/.
+#extra_float_digits = 1         # min -15, max 3; any value &gt;0 actually
+                    # selects precise output mode
+#client_encoding = sql_ascii        # actually, defaults to database
+                    # encoding
+
+# These settings are initialized by initdb, but they can be changed.
+lc_messages = 'en_US.utf8'          # locale for system error message
+                    # strings
+lc_monetary = 'en_US.utf8'          # locale for monetary formatting
+lc_numeric = 'en_US.utf8'           # locale for number formatting
+lc_time = 'en_US.utf8'              # locale for time formatting
+
+# default configuration for text search
+default_text_search_config = 'pg_catalog.english'
+
+# - Shared Library Preloading -
+
+shared_preload_libraries = 'pg_stat_statements' # (change requires restart)
+#local_preload_libraries = ''
+#session_preload_libraries = ''
+#jit_provider = 'llvmjit'       # JIT library to use
+
+# - Other Defaults -
+
+#dynamic_library_path = '$libdir'
+
+
+#------------------------------------------------------------------------------
+# LOCK MANAGEMENT
+#------------------------------------------------------------------------------
+
+#deadlock_timeout = 1s
+#max_locks_per_transaction = 64     # min 10
+                    # (change requires restart)
+#max_pred_locks_per_transaction = 64    # min 10
+                    # (change requires restart)
+#max_pred_locks_per_relation = -2   # negative values mean
+                    # (max_pred_locks_per_transaction
+                    #  / -max_pred_locks_per_relation) - 1
+#max_pred_locks_per_page = 2            # min 0
+
+
+#------------------------------------------------------------------------------
+# VERSION AND PLATFORM COMPATIBILITY
+#------------------------------------------------------------------------------
+
+# - Previous PostgreSQL Versions -
+
+#array_nulls = on
+#backslash_quote = safe_encoding    # on, off, or safe_encoding
+#escape_string_warning = on
+#lo_compat_privileges = off
+#operator_precedence_warning = off
+#quote_all_identifiers = off
+#standard_conforming_strings = on
+#synchronize_seqscans = on
+
+# - Other Platforms and Clients -
+
+#transform_null_equals = off
+
+
+#------------------------------------------------------------------------------
+# ERROR HANDLING
+#------------------------------------------------------------------------------
+
+#exit_on_error = off            # terminate session on any error?
+#restart_after_crash = on       # reinitialize after backend crash?
+#data_sync_retry = off          # retry or panic on failure to fsync
+                    # data?
+                    # (change requires restart)
+
+
+#------------------------------------------------------------------------------
+# CONFIG FILE INCLUDES
+#------------------------------------------------------------------------------
+
+# These options allow settings to be loaded from files other than the
+# default postgresql.conf.  Note that these are directives, not variable
+# assignments, so they can usefully be given more than once.
+
+#include_dir = '...'            # include files ending in '.conf' from
+                    # a directory, e.g., 'conf.d'
+#include_if_exists = '...'      # include file only if it exists
+#include = '...'            # include file
+
+
+#------------------------------------------------------------------------------
+# CUSTOMIZED OPTIONS
+#------------------------------------------------------------------------------
+
+# Add settings for extensions here</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-10-21 16:44:45 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>ComputerScience</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>ComputerScience</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_计算机系统漫游">1. 计算机系统漫游</a>
+<ul class="sectlevel2">
+<li><a href="#_信息等于位上下文">1.1. 信息等于位+上下文</a></li>
+<li><a href="#_程序被其他程序翻译成不同的格式">1.2. 程序被其他程序翻译成不同的格式</a></li>
+<li><a href="#_硬件组成">1.3. 硬件组成</a></li>
+<li><a href="#_存储器层次结构">1.4. 存储器层次结构</a></li>
+<li><a href="#_操作系统">1.5. 操作系统</a>
+<ul class="sectlevel3">
+<li><a href="#_操作系统基本职责">1.5.1. 操作系统基本职责</a></li>
+<li><a href="#_操作系统管理">1.5.2. 操作系统管理</a></li>
+<li><a href="#_操作系统抽象">1.5.3. 操作系统抽象</a></li>
+</ul>
+</li>
+<li><a href="#_amdahl定律">1.6. Amdahl定律</a></li>
+</ul>
+</li>
+<li><a href="#_存储器层次结构_2">2. 存储器层次结构</a>
+<ul class="sectlevel2">
+<li><a href="#_随机访问存储器">2.1. 随机访问存储器</a>
+<ul class="sectlevel3">
+<li><a href="#_sram">2.1.1. SRAM</a></li>
+<li><a href="#_dram">2.1.2. DRAM</a></li>
+<li><a href="#_sram和dram区别">2.1.3. SRAM和DRAM区别</a></li>
+<li><a href="#_常规dram获取数据流程">2.1.4. 常规DRAM获取数据流程</a></li>
+<li><a href="#_内存模块获取数据流程">2.1.5. 内存模块获取数据流程</a></li>
+</ul>
+</li>
+<li><a href="#_cpu访问主存">2.2. CPU访问主存</a>
+<ul class="sectlevel3">
+<li><a href="#_读事务">2.2.1. 读事务</a></li>
+<li><a href="#_写事务">2.2.2. 写事务</a></li>
+</ul>
+</li>
+<li><a href="#_磁盘存储">2.3. 磁盘存储</a>
+<ul class="sectlevel3">
+<li><a href="#_磁盘构造">2.3.1. 磁盘构造</a></li>
+<li><a href="#_磁盘访问时间">2.3.2. 磁盘访问时间</a></li>
+<li><a href="#_磁盘访问流程">2.3.3. 磁盘访问流程</a></li>
+</ul>
+</li>
+<li><a href="#_高速缓存">2.4. 高速缓存</a>
+<ul class="sectlevel3">
+<li><a href="#_结构">2.4.1. 结构</a></li>
+<li><a href="#_缓存读取流程">2.4.2. 缓存读取流程</a></li>
+<li><a href="#_伪共享">2.4.3. 伪共享</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">Resources</div>
+<ul>
+<li>
+<p><a href="https://book.douban.com/subject/26912767" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/26912767</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/27004846" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/27004846</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/26745780" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/26745780</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/19952400" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/19952400</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_计算机系统漫游"><a class="link" href="#_计算机系统漫游">1. 计算机系统漫游</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_信息等于位上下文"><a class="link" href="#_信息等于位上下文">1.1. 信息等于位+上下文</a></h3>
+<div class="paragraph">
+<p>系统中所有的信息, 包括磁盘文件和内存中的程序/用户数据以及网络上的数据, 都是比特组成的.
+区分不同数据对象的唯一方法就是我们读到这些数据对象时的 <strong>上下文</strong>.
+比如, 在不同的上下文中, 一个同样的字节序列可能表示一个整数/浮点数/字符串或者机器指令.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_程序被其他程序翻译成不同的格式"><a class="link" href="#_程序被其他程序翻译成不同的格式">1.2. 程序被其他程序翻译成不同的格式</a></h3>
+<div class="paragraph">
+<p>编译: 高级程序语言必须被其他程序转化为一系列的低级机器语言指令, 然后这些指令按照一种可执行目标程序的格式(可执行文件)打包, 并以二进制文件的形式保存起来.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="CompilerSystem.svg" alt="Diagram" width="2493" height="300">
+</div>
+<div class="title">Figure 1. 程序编译流程</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_硬件组成"><a class="link" href="#_硬件组成">1.3. 硬件组成</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>总线: 携带信息字节并负责在各个组件间传递.</p>
+</li>
+<li>
+<p>I/O设备: 每个I/O设备通过一个设备控制器(主板上的芯片组)或适配器(插在主板插槽上的卡)与I/O总线相连,</p>
+</li>
+<li>
+<p>主存: 处理器执行程序时, 用来存放程序和程序处理的数据.</p>
+</li>
+<li>
+<p>处理器: 解释存储在主存中的指令的引擎.
+处理器的核心是程序计数器(PC), PC指向内存中一条指令的地址, 然后处理器从内存中读取指令数据, 解释并执行, 最后更新PC, 使其指向下一条要执行的指令.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_存储器层次结构"><a class="link" href="#_存储器层次结构">1.4. 存储器层次结构</a></h3>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+较大的存储设备要比较小的存储设备运行的慢, 快速设备的造价远高于同类的低俗设备.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>高速缓存存储器: 作为一个暂存区域, 存放处理器近期可能会需要的信息.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>CPU寄存器保存最常用的数据.</p>
+</li>
+<li>
+<p>靠近CPU的小的, 快速的高速缓存存储器作为主存一部分数据和指令的缓冲区域.</p>
+</li>
+<li>
+<p>主存缓存容量较大的慢速的磁盘上的数据.</p>
+</li>
+<li>
+<p>本地磁盘常常作为存储在通过网络连接的其他机器的磁盘上的数据的缓冲区域.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="StorageDeviceLevel.svg" alt="Diagram" width="176" height="823">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_操作系统"><a class="link" href="#_操作系统">1.5. 操作系统</a></h3>
+<div class="sect3">
+<h4 id="_操作系统基本职责"><a class="link" href="#_操作系统基本职责">1.5.1. 操作系统基本职责</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>防止硬件被应用程序滥用.</p>
+</li>
+<li>
+<p>向应用程序提供简单一致的机制来控制硬件设备.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_操作系统管理"><a class="link" href="#_操作系统管理">1.5.2. 操作系统管理</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>进程</p>
+</li>
+<li>
+<p>线程</p>
+</li>
+<li>
+<p>虚拟内存</p>
+</li>
+<li>
+<p>文件</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_操作系统抽象"><a class="link" href="#_操作系统抽象">1.5.3. 操作系统抽象</a></h4>
+<div class="imageblock">
+<div class="content">
+<img src="CSAbstract.svg" alt="Diagram" width="633" height="346">
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_amdahl定律"><a class="link" href="#_amdahl定律">1.6. Amdahl定律</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>系统执行某应用程序所需要的时间为\$T_(old)\$</p>
+</li>
+<li>
+<p>系统某部分执行时间占比\$alpha\$</p>
+</li>
+<li>
+<p>该部分性能提升比例\$k\$</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<div class="title">新的总执行时间</div>
+<p>\$T_(n\ew)=(1-alpha)T_(old)+alphaT_(old)/k=T_(old)*((1-alpha)+alpha/k)\$</p>
+</div>
+<div class="paragraph">
+<div class="title">加速比</div>
+<p>\$S=T_(old)/ T_(n\ew)=1/((1-alpha)+alpha/k\$</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+当\$k-&gt;oo\$时, 加速比最多能达到 \$1/(1-alpha)\$
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_存储器层次结构_2"><a class="link" href="#_存储器层次结构_2">2. 存储器层次结构</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_随机访问存储器"><a class="link" href="#_随机访问存储器">2.1. 随机访问存储器</a></h3>
+<div class="sect3">
+<h4 id="_sram"><a class="link" href="#_sram">2.1.1. SRAM</a></h4>
+<div class="paragraph">
+<p>只要有电, SRAM存储器就能永远保持它的值.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dram"><a class="link" href="#_dram">2.1.2. DRAM</a></h4>
+<div class="paragraph">
+<p>DRAM存储单元对干扰非常敏感, 当电容的电压被扰乱后, 它就永远不会恢复到原来的状态了.</p>
+</div>
+<div class="paragraph">
+<p>每个DRAM芯片被分为\$d\$个超单元, 排列成r行c列, 每个超单元有w位信息, 所以一个DRAM可以存储\$d*w\$位信息.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_sram和dram区别"><a class="link" href="#_sram和dram区别">2.1.3. SRAM和DRAM区别</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2857%;">
+<col style="width: 14.2858%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top">每位晶体管数</th>
+<th class="tableblock halign-left valign-top">相对访问时间</th>
+<th class="tableblock halign-left valign-top">数据是否持久化</th>
+<th class="tableblock halign-left valign-top">敏感的</th>
+<th class="tableblock halign-left valign-top">相对花费</th>
+<th class="tableblock halign-left valign-top">应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th class="tableblock halign-left valign-top"><p class="tableblock">SRAM</p></th>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">否</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1000x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">高速缓存存储器</p></td>
+</tr>
+<tr>
+<th class="tableblock halign-left valign-top"><p class="tableblock">DRAM</p></th>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">否</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">主存</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_常规dram获取数据流程"><a class="link" href="#_常规dram获取数据流程">2.1.4. 常规DRAM获取数据流程</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>每个DRAM芯片被连接到内存控制器的电路, 这个电路可以一次传送w位到对方.为了读出超单元\$(i,j)\$的内容,</p>
+</li>
+<li>
+<p>内存控制器首先发送行地址\$i\$, DRAM将行\$i\$的内容复制到内部行缓冲区.</p>
+</li>
+<li>
+<p>接下来内存控制器发送列地址\$j\$, DRAM将内部行缓冲区的第\$j\$列内容发送给内存控制器.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内存模块获取数据流程"><a class="link" href="#_内存模块获取数据流程">2.1.5. 内存模块获取数据流程</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>每个内存模块插入8个DRAM芯片.</p>
+</li>
+<li>
+<p>内存控制器将内存地址A转换为超单元地址\$(i,j)\$, 将它发送到内存模块.</p>
+</li>
+<li>
+<p>内存模块将地址\$(i,j)\$广播到每个DRAM芯片, 每个DRAM芯片响应其地址\$(i,j)\$的内容.</p>
+</li>
+<li>
+<p>内存模块收集这些输出并合并成64位的字发送给内存控制器.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cpu访问主存"><a class="link" href="#_cpu访问主存">2.2. CPU访问主存</a></h3>
+<div class="paragraph">
+<p>数据流通过 <em>总线</em> 在处理器和DRAM主存之间来回传递.每个数据传送的步骤被称为 <em>总线事务</em> ,其中读事务从主存传递数据到CPU, 写事务从CPU传递数据到主存.</p>
+</div>
+<div class="sect3">
+<h4 id="_读事务"><a class="link" href="#_读事务">2.2.1. 读事务</a></h4>
+<div class="paragraph">
+<p>👉 <code>movq A, %rax</code> 将内存地址A的内容写入到寄存器rax</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>CPU将地址A放到系统总线上.</p>
+</li>
+<li>
+<p>I/O桥将信号传递到内存总线</p>
+</li>
+<li>
+<p>主存根据内存总线上的地址读出数据写到内存总线上.</p>
+</li>
+<li>
+<p>I/O桥将内存总线信号翻译成系统总线信号, 传递到系统总线上.</p>
+</li>
+<li>
+<p>CPU从系统总线上读出数据, 复制到%rax寄存器内.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_写事务"><a class="link" href="#_写事务">2.2.2. 写事务</a></h4>
+<div class="paragraph">
+<p>👉 <code>movq %rax, A</code> 寄存器%rax的内容写到主存地址A</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>CPU将A的地址写到系统总线, 传递给I/O桥, I/O传递到内存总线上.</p>
+</li>
+<li>
+<p>内存从内存总线读出地址, 并等待数据到达.</p>
+</li>
+<li>
+<p>CPU将%rax寄存器的数据复制到系统总线.</p>
+</li>
+<li>
+<p>主存从内存总线读出数据写到A地址中.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_磁盘存储"><a class="link" href="#_磁盘存储">2.3. 磁盘存储</a></h3>
+<div class="sect3">
+<h4 id="_磁盘构造"><a class="link" href="#_磁盘构造">2.3.1. 磁盘构造</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>磁盘由盘片构成.</p>
+</li>
+<li>
+<p>每个盘片都有两个表面.</p>
+</li>
+<li>
+<p>每个表面都有若干条磁道.</p>
+</li>
+<li>
+<p>每个磁道有若干组扇区.</p>
+</li>
+<li>
+<p>每个扇区能存储若干个字节.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>磁盘容量 = 盘片数 * 每个盘片表面数 * 每个表面磁道数 * 每个磁道扇区数 * 每个扇区字节数.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_磁盘访问时间"><a class="link" href="#_磁盘访问时间">2.3.2. 磁盘访问时间</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>寻道时间(seek): 磁盘震动臂移动到磁道上的时间.</p>
+</li>
+<li>
+<p>旋转时间(rotate): 磁盘旋转使得读写头落在对应扇区上所需的时间. \$T_(AvgRotation)=1/2 * 1/(RPM) * (60s)/min\$</p>
+</li>
+<li>
+<p>传送时间(transfer): 驱动器读写数据的时间. \$T_(AvgTransfer)=1/2*1/(RPM) * 1/((扇区数)/(磁道)) * (60s)/min\$</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_磁盘访问流程"><a class="link" href="#_磁盘访问流程">2.3.3. 磁盘访问流程</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>磁盘控制器将所有扇区排成B个逻辑块序列, 并维护逻辑块序号和扇区之间的关系.</p>
+</li>
+<li>
+<p>当操作系统想要执行一个I/O操作时, 操作系统会发一个命令到磁盘控制器, 让它读某个逻辑块号, 磁盘控制器将逻辑块号翻译成(盘面,磁道,扇区)三元组.</p>
+</li>
+<li>
+<p>磁盘控制器根据这个三元组将读写头移动到相应的柱面, 然后等待扇区移动到读写头下.
+将读写头感应到的位放到磁盘控制器的缓冲区内, 随后将数据复制到主存(DMA).</p>
+</li>
+<li>
+<p>磁盘控制器给CPU发送一个中断信号来通知CPU. CPU会暂停它正在做的工作, 记录下这次I/O已经完成, 然后返回刚刚被中断的地方.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_高速缓存"><a class="link" href="#_高速缓存">2.4. 高速缓存</a></h3>
+<div class="sect3">
+<h4 id="_结构"><a class="link" href="#_结构">2.4.1. 结构</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>每个存储器地址有\$m\$位, 形成\$2^m\$个不同的地址.</p>
+</li>
+<li>
+<p>高速缓存被组织成一个有\$S=2^s\$个高速缓存组, 每个高速缓存组有\$E\$个缓存行.</p>
+</li>
+<li>
+<p>每个缓存行由\$B=2^b\$个数据块, 1个有效状态位, t=m-(b+s)个标记位组成.</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">常见缓存结构</div>
+<ul>
+<li>
+<p>直接映射高速缓存(E=1)</p>
+</li>
+<li>
+<p>组相连高速缓存(1&lt;E&lt;C/B)</p>
+</li>
+<li>
+<p>全相连高速缓存(S=1)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_缓存读取流程"><a class="link" href="#_缓存读取流程">2.4.2. 缓存读取流程</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>内存地址由三部分组成: t位标记+m位组索引+b位块偏移.</p>
+</li>
+<li>
+<p>根据组索引确定缓存落在哪个组中.</p>
+</li>
+<li>
+<p>根据标记位确定缓存落在哪一行.</p>
+</li>
+<li>
+<p>根据块偏移确定缓存数据.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_伪共享"><a class="link" href="#_伪共享">2.4.3. 伪共享</a></h4>
+<div class="paragraph">
+<p>数据一批元素被load到高速缓存时, 后面因为步长原因导致后一批元素会覆盖前面元素的缓存行数据, 循环读时导致每次load时都会刷新缓存.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-09-07 19:06:53 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

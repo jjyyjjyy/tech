@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Kubernetes</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Kubernetes</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_安装">1. 安装</a>
+<ul class="sectlevel2">
+<li><a href="#_系统配置">1.1. 系统配置:</a></li>
+<li><a href="#_使用kubeadm安装">1.2. 使用kubeadm安装</a></li>
+<li><a href="#_使用vagrant安装">1.3. 使用Vagrant安装</a></li>
+</ul>
+</li>
+<li><a href="#_插件安装">2. 插件安装</a>
+<ul class="sectlevel2">
+<li><a href="#_helm">2.1. helm</a>
+<ul class="sectlevel3">
+<li><a href="#_基本概念">2.1.1. 基本概念</a></li>
+<li><a href="#_安装_2">2.1.2. 安装</a></li>
+<li><a href="#_常用命令">2.1.3. 常用命令</a></li>
+</ul>
+</li>
+<li><a href="#_安装dashboard">2.2. 安装Dashboard</a></li>
+<li><a href="#_集群问题记录">2.3. 集群问题记录</a>
+<ul class="sectlevel3">
+<li><a href="#_容器一直部署不上去">2.3.1. 容器一直部署不上去</a></li>
+<li><a href="#_集群证书过期">2.3.2. 集群证书过期</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_kubernetes各个组件功能">3. kubernetes各个组件功能</a>
+<ul class="sectlevel2">
+<li><a href="#_master">3.1. Master</a></li>
+<li><a href="#_node">3.2. Node</a></li>
+<li><a href="#_pod">3.3. Pod</a></li>
+<li><a href="#_label_selector">3.4. Label Selector</a></li>
+<li><a href="#_replicationcontroller">3.5. ReplicationController</a></li>
+<li><a href="#_replica_set">3.6. Replica Set</a></li>
+<li><a href="#_daemonset">3.7. DaemonSet</a></li>
+<li><a href="#_job">3.8. Job</a></li>
+<li><a href="#_cronjob">3.9. CronJob</a></li>
+<li><a href="#_deployment">3.10. Deployment</a></li>
+</ul>
+</li>
+<li><a href="#_kubectl命令">4. kubectl命令</a></li>
+<li><a href="#_pod_2">5. Pod</a>
+<ul class="sectlevel2">
+<li><a href="#_生命周期">5.1. 生命周期:</a></li>
+<li><a href="#_重启策略">5.2. 重启策略</a></li>
+<li><a href="#_健康检查">5.3. 健康检查</a></li>
+<li><a href="#_调度">5.4. 调度</a></li>
+<li><a href="#_升级和回滚">5.5. 升级和回滚</a>
+<ul class="sectlevel3">
+<li><a href="#_升级">5.5.1. 升级</a></li>
+<li><a href="#_回滚">5.5.2. 回滚</a></li>
+</ul>
+</li>
+<li><a href="#_扩容和缩容">5.6. 扩容和缩容</a></li>
+</ul>
+</li>
+<li><a href="#_service">6. Service</a>
+<ul class="sectlevel2">
+<li><a href="#_基本用法">6.1. 基本用法:</a></li>
+<li><a href="#_pod间访问">6.2. Pod间访问</a></li>
+<li><a href="#_暴露外部端口">6.3. 暴露外部端口</a></li>
+</ul>
+</li>
+<li><a href="#_pv">7. PV</a></li>
+<li><a href="#_configmap">8. ConfigMap</a>
+<ul class="sectlevel2">
+<li><a href="#_创建方式">8.1. 创建方式</a></li>
+<li><a href="#_使用">8.2. 使用:</a></li>
+</ul>
+</li>
+<li><a href="#_技能图谱">9. 技能图谱</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">1. 安装</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_系统配置"><a class="link" href="#_系统配置">1.1. 系统配置:</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># 关闭防火墙
+systemctl stop firewalld
+systemctl disable firewalld
+# 关闭selinux
+sudo sed -i 's/enforcing/disabled/' /etc/selinux/config
+# 关闭交换分区
+sudo sed -ri 's/.*swap.*/#&amp;/' /etc/fstab
+sudo mount -a</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用kubeadm安装"><a class="link" href="#_使用kubeadm安装">1.2. 使用kubeadm安装</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">#!/usr/bin/env bash
+
+sudo apt update &amp;&amp; sudo apt install -y apt-transport-https curl
+curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt update &amp;&amp; sudo apt install -y kubelet kubectl kubeadm
+
+# master
+sudo kubeadm init --image-repository="registry.cn-hangzhou.aliyuncs.com/google_containers" --kubernetes-version=$(kubeadm version -o short) --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+# network插件
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+# check
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+# Trouble shooting:
+# kubectl -n kube-system describe TYPE NAME
+
+# 创建join token
+# kubeadm token create --print-join-command
+
+# 清除安装:
+# sudo kubeadm reset -f
+# rm -rf ~/.kube
+
+# sh helper:
+alias kn='kubectl get nodes -o wide'
+alias kp='kubectl get pods --all-namespaces -o wide'
+alias kc='kubectl create -f'
+alias ka='kubectl apply -f'
+alias kr='kubectl replace -f'
+alias kt="kubectl -n kube-system describe secret `kubectl -n kube-system get secret | grep admin-user | awk '{print $1}'`"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用vagrant安装"><a class="link" href="#_使用vagrant安装">1.3. 使用Vagrant安装</a></h3>
+<div class="listingblock">
+<div class="title">Vagrantfile</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="ruby" class="language-ruby hljs">Vagrant.configure("2") do |config|
+
+    config.vm.box = "ubuntu/focal64"
+    config.vm.box_check_update = false
+
+    config.vm.define "k8s-master" do |master|
+        master.vm.hostname = "k8s-master"
+        master.vm.provider "virtualbox" do |vb|
+            vb.name = "k8s-master"
+            vb.memory = "4096"
+            vb.cpus = 2
+            vb.gui = false
+        end
+        master.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.110"
+        master.vm.provision "shell", path: "./init.sh"
+    end
+
+    (1..3).each {|i|
+        config.vm.define "k8s-node#{i}" do |node|
+            node.vm.hostname = "k8s-node#{i}"
+            node.vm.provider "virtualbox" do |vb|
+                vb.name = "k8s-node#{i}"
+                vb.memory = "4096"
+                vb.cpus = 2
+                vb.gui = false
+            end
+            node.vm.network "public_network", bridge: "wlp2s0", ip: "192.168.124.11#{i}"
+            node.vm.provision "shell", path: "./init.sh"
+        end
+    }
+
+end</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">init.sh</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">#!/usr/bin/env bash
+
+sudo sed -ri 's/.*swap.*/#&amp;/' /etc/fstab
+
+sudo sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+sudo apt-get update &amp;&amp; sudo apt-get upgrade -y
+sudo apt-get install -y curl gnupg-agent apt-transport-https ca-certificates software-properties-common
+curl -fsSL https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo usermod -aG docker vagrant
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json &lt;&lt;-'EOF'
+{
+  "registry-mirrors": ["https://3itj1ym2.mirror.aliyuncs.com"]
+}
+EOF
+sudo sed -i 's/ExecStart.*/&amp; -H tcp:\/\/0.0.0.0:2375/g' /lib/systemd/system/docker.service
+sudo chmod 777 /var/run/docker.sock
+sudo chmod 777 /etc/docker -R
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+# install docker-compose
+sudo wget -q https://soft-1252259164.cos.ap-shanghai.myqcloud.com/docker-compose-1.27.4 -O /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# install kubeadm kubectl kubelet
+curl -s https://soft-1252259164.cos.ap-shanghai.myqcloud.com/apt-key.gpg | sudo apt-key add -
+echo "deb https://mirrors.ustc.edu.cn/kubernetes/apt/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update &amp;&amp; sudo apt-get upgrade -y
+sudo apt-get install -y kubelet kubectl kubeadm
+
+sudo reboot now</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># master节点执行
+sudo kubeadm init --image-repository="registry.cn-hangzhou.aliyuncs.com/google_containers" --apiserver-advertise-address="192.168.124.110" --kubernetes-version=$(kubeadm version -o short) --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_插件安装"><a class="link" href="#_插件安装">2. 插件安装</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_helm"><a class="link" href="#_helm">2.1. helm</a></h3>
+<div class="sect3">
+<h4 id="_基本概念"><a class="link" href="#_基本概念">2.1.1. 基本概念</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Chart: chart用于描述一个安装包</p>
+</li>
+<li>
+<p>Repository: 存放chart的database</p>
+</li>
+<li>
+<p>Release: chart在Kubernetes集群中部署后的一个实例</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_安装_2"><a class="link" href="#_安装_2">2.1.2. 安装</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+helm repo add stable http://mirror.azure.cn/kubernetes/charts/</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_常用命令"><a class="link" href="#_常用命令">2.1.3. 常用命令</a></h4>
+<div class="paragraph">
+<p><a href="https://docs.helm.sh/developing_charts/#charts" class="bare">https://docs.helm.sh/developing_charts/#charts</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">helm repo list
+helm repo add dev https://example.com/dev-charts
+helm ls
+helm search &lt;chart&gt;
+helm inspect [values] &lt;chart&gt;
+helm install {CHART|TAR|URL} [--name &lt;name&gt;]
+helm delete &lt;chart&gt;
+helm create &lt;new_chart&gt;
+helm package &lt;chart&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_安装dashboard"><a class="link" href="#_安装dashboard">2.2. 安装Dashboard</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">mkdir certs
+openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"
+openssl x509 -req -sha256 -days 10000 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
+kubectl create -f https://soft-1252259164.cos.ap-shanghai.myqcloud.com/dashboard.yml
+kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard
+
+# 获取登录token
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_集群问题记录"><a class="link" href="#_集群问题记录">2.3. 集群问题记录</a></h3>
+<div class="sect3">
+<h4 id="_容器一直部署不上去"><a class="link" href="#_容器一直部署不上去">2.3.1. 容器一直部署不上去</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>检查cpu/内存/磁盘使用量.</p>
+</li>
+<li>
+<p><code>kubectl describe node &lt;node&gt;</code> 查看node是否被打上了NoSchedule的污点.</p>
+</li>
+<li>
+<p><code>kubectl describe pod &lt;pod&gt; -n &lt;namespace&gt;</code> 查看pod具体失败原因.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_集群证书过期"><a class="link" href="#_集群证书过期">2.3.2. 集群证书过期</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>Unable to connect to the server: x509: certificate has expired or is not yet valid</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">sudo kubeadm alpha certs renew all
+rm -rf $HOME/.kube
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_kubernetes各个组件功能"><a class="link" href="#_kubernetes各个组件功能">3. kubernetes各个组件功能</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_master"><a class="link" href="#_master">3.1. Master</a></h3>
+<div class="paragraph">
+<p>集群控制节点,运行以下进程:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>kube-apiserver: 提供Kubernetes所有资源操作的REST服务</p>
+</li>
+<li>
+<p>kube-controller-manager: 自动化控制所有资源对象</p>
+</li>
+<li>
+<p>kube-scheduler: pod调度</p>
+</li>
+<li>
+<p>kube-proxy: 实现service通信个负载均衡</p>
+</li>
+<li>
+<p>etcd: 保存资源数据</p>
+</li>
+<li>
+<p>coredns</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_node"><a class="link" href="#_node">3.2. Node</a></h3>
+<div class="paragraph">
+<p>集群工作负载节点,运行以下进程:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>kubelet: 负责pod里容器的创建、启动等任务</p>
+</li>
+<li>
+<p>kube-proxy: 实现service通信个负载均衡</p>
+</li>
+<li>
+<p>pause: pod组件</p>
+</li>
+<li>
+<p>docker: 负责本机的容器管理</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pod"><a class="link" href="#_pod">3.3. Pod</a></h3>
+<div class="paragraph">
+<p>每个pod包含pause容器和多个用户容器.
+同一个pod内的容器拥有相同的Network/IPC/UTS[和PID] namespace, 所以它们拥有相同的hostname和network interfaces,但文件系统不同</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>static pod: 设置在node中,并只在该node上运行</p>
+</li>
+<li>
+<p>normal pod: 存储在etcd中,随后会被Master调度到某个node上进行绑定,node上的kubelet进程会实例化一组docker容器运行</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_label_selector"><a class="link" href="#_label_selector">3.4. Label Selector</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>kube-controller进程通过RC上定义的labelSelector来筛选需要监控的Pod数量.</p>
+</li>
+<li>
+<p>kube-proxy进程通过service的labelSelector来选择对应的pod, 自动建立起每个service到对应pod的请求路由, 从而实现service的负载均衡.</p>
+</li>
+<li>
+<p>kube-scheduler通过node定义的label和pod定义nodeSelector实现pod的定向调度.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_replicationcontroller"><a class="link" href="#_replicationcontroller">3.5. ReplicationController</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>定期监控labelSelector匹配的pod副本的数量,确保其等于期望值.</pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+如果修改了一个pod的label, 则RC会自动新起一个pod.如果修改了RC的labelSelector, 则RC会自动创建所有pod副本.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_replica_set"><a class="link" href="#_replica_set">3.6. Replica Set</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>包含ReplicationController所有的功能, 同时增强了labelSelector的功能.</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_daemonset"><a class="link" href="#_daemonset">3.7. DaemonSet</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>通过nodeSelector在每个节点上运行一个实例</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_job"><a class="link" href="#_job">3.8. Job</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>启动批处理Job, 可以设置任务数/并行数/重试次数等</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cronjob"><a class="link" href="#_cronjob">3.9. CronJob</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>定时任务: 分/时/日/月/星期</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deployment"><a class="link" href="#_deployment">3.10. Deployment</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>扩展了Replica Set自动scale的功能.</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_kubectl命令"><a class="link" href="#_kubectl命令">4. kubectl命令</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># 获取k8s版本号
+kubectl version [-o short]
+# 查看所有的api版本号
+kubectl api-versions
+# 查看 Config metadata
+kubectl config view
+# 查看集群资源概况
+kubectl get [node|ns|po|depoy|cm]
+# 查看指定pod中某个容器日志
+kubectl logs POD -c CONTAINER
+# 创建namespace
+kubectl create namespace xxNameSpace
+
+# 设置label
+kubectl label po xxPod xxx=xxx [--override]
+# 显示label
+kubectl get pods --show-labels
+# 筛选label
+kubectl get pods --show-labels -l env=xxx
+# 每个node都会有一些默认label: kubernetes.io/hostname=HOSTNAME
+
+# 编辑
+kubectl edit rc RC
+
+# 删除
+kubectl delete [TYPE | all] [--all] [-n NAMESPACE]
+# 删除rc但保留所有pod
+kubectl delete rc RC --cascade=false
+
+
+# configMap
+kubectl create cm CM_NAME --from-file=xxxFile   # xxxFile=CONTENT
+kubectl create cm CM_NAME --from-file=xxxDir   # xxxFile1=CONTENT1, xxxFile2=CONTENT2
+kubectl create cm CM_NAME --from-literal=a1=v1 --from-literal=a2=v2
+
+# ======部署管理======
+# 实现水平扩展
+kubectl scale rc &lt;rc_name&gt; [-n &lt;namespace&gt;] --replicas=2
+# 部署状态变更状态检查
+kubectl rollout status
+# 部署历史
+kubectl rollout history
+# 回滚部署
+kubectl rollout undo</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pod_2"><a class="link" href="#_pod_2">5. Pod</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_生命周期"><a class="link" href="#_生命周期">5.1. 生命周期:</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Pending <code>Pod创建成功,但存在容器还未创建</code></p>
+</li>
+<li>
+<p>Running <code>Pod中容器都已成功创建</code></p>
+</li>
+<li>
+<p>Succeeded <code>Pod中所有容器均已创建成功</code></p>
+</li>
+<li>
+<p>Failed <code>Pod中所有容器均已退出,并且至少有一个退出为失败状态</code></p>
+</li>
+<li>
+<p>Unknown <code>无法获取Pod的状态</code></p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_重启策略"><a class="link" href="#_重启策略">5.2. 重启策略</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Always <code>容器失效时kubelet自动重启容器</code></p>
+</li>
+<li>
+<p>OnFailure <code>容器停止运行且退出码不为0时kubelet自动重启容器</code></p>
+</li>
+<li>
+<p>Never <code>kubelet不会自动重启容器</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>RC和DS必须设置为Always
+Job必须设置为OnFailure或Never</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_健康检查"><a class="link" href="#_健康检查">5.3. 健康检查</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>livenessProbe (running)</p>
+<div class="literalblock">
+<div class="content">
+<pre>如果探测到容器不健康, 则kubelet将杀掉该容器, 并根据容器的重启策略处理</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">实现方式</div>
+<ul>
+<li>
+<p>HTTPGetAction</p>
+</li>
+<li>
+<p>TCPSocketAction</p>
+</li>
+<li>
+<p>ExecAction</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">  livenessProbe:
+    httpGet:
+      port: 8080
+      path: /actuator/health
+    initialDelaySeconds:10 # 首次进行健康检查的延时时长,单位为秒
+    timeoutSeconds:2 # 端点超时时长
+    periodSeconds:10 # 定时任务</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>readinessProbe (ready)</p>
+<div class="literalblock">
+<div class="content">
+<pre>请求容器, 如果容器不健康, Endpoint Controller 将从Service的Endpoint中删除该Pod的Endpoint</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_调度"><a class="link" href="#_调度">5.4. 调度</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Deployment 自动调度</p>
+</li>
+<li>
+<p>NodeSelector 定向调度</p>
+<div class="ulist">
+<ul>
+<li>
+<p>给node打标签: <code>kubectl label node &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;</code></p>
+</li>
+<li>
+<p>yml配置label: <code>spec.template.spec.nodeSelector</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>NodeAffinity: Node亲和力调度</p>
+<div class="ulist">
+<ul>
+<li>
+<p>RequiredDuringSchedulingIgnoredDuringExecution: 必须满足指定的规则才可以调度Pod到Node上</p>
+</li>
+<li>
+<p>PreferredDuringSchedulingIgnoredDuringExecution: 优先满足指定规则即可</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>PodAffinity: Pod亲和力调度</p>
+</li>
+<li>
+<p>Taint: <code>kubectl taint node &lt;node-name&gt; &lt;label-key&gt;=&lt;label-value&gt;:&lt;NoSchedule|PreferNoSchedule|NoExecute&gt;</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>NoSchedule: 该节点不会参与调度</p>
+</li>
+<li>
+<p>PreferNoSchedule: 该节点尽量不会参与调度.</p>
+</li>
+<li>
+<p>NoExecute: 该节点不会参与调度, 并且会驱逐该节点上已有的pod.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>DaemonSet 每个node调度1个Pod</p>
+</li>
+<li>
+<p>Job 批处理调度</p>
+</li>
+<li>
+<p>Cronjob 定时任务</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_升级和回滚"><a class="link" href="#_升级和回滚">5.5. 升级和回滚</a></h3>
+<div class="sect3">
+<h4 id="_升级"><a class="link" href="#_升级">5.5.1. 升级</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>kubectl set image deployment/&lt;deployment-name&gt; &lt;container-name&gt;=&lt;image-name:tag&gt;</p>
+</li>
+<li>
+<p>kubectl edit deployment/&lt;deployment-name&gt;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>可以通过spec.strategy.type确定升级方式: RollingUpdate/Recreate</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_回滚"><a class="link" href="#_回滚">5.5.2. 回滚</a></h4>
+<div class="paragraph">
+<p>查看升级状态: <code>kubectl rollout status deployment/&lt;deployment-name&gt;</code><br>
+查看升级历史: <code>kubectl rollout history deployment/&lt;deployment-name&gt; 创建deployment时加上&#8212;&#8203;record参数</code><br>
+回滚到指定版本 <code>kubectl rollout undo deployment/&lt;deployment-name&gt; --to-revision=&lt;revision&gt;</code><br>
+暂停/继续更新: <code>kubectl rollout pause/resume deployment/&lt;deployment-name&gt;</code></p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_扩容和缩容"><a class="link" href="#_扩容和缩容">5.6. 扩容和缩容</a></h3>
+<div class="literalblock">
+<div class="content">
+<pre>kubectl scale deployment &lt;deployment-name&gt; --replicas &lt;number&gt;</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_service"><a class="link" href="#_service">6. Service</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_基本用法"><a class="link" href="#_基本用法">6.1. 基本用法:</a></h3>
+<div class="listingblock">
+<div class="title">springboot-svc.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">apiVersion: v1
+kind: Service
+metadata:
+    name: springboot-demo
+spec:
+    selector:
+        app: springboot-demo
+    ports:
+    - port: 8081 #service暴露的端口
+      targetPort: 8080 #pod端口</code></pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>kubectl create -f springboot-svc.yml</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pod间访问"><a class="link" href="#_pod间访问">6.2. Pod间访问</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>每一个pod中都会有集群中所有service的host/port环境变量.
+如 <code>KUBERNETES_SERVICE_HOST/KUBERNETES_SERVICE_PORT</code> 对应名为kubernetes的service</p>
+</li>
+<li>
+<p>直接通过dns访问: SERVICE[.NAMESPACE.svc.cluster.local], 如 <code>kubia.jy-test.svc.cluster.local</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_暴露外部端口"><a class="link" href="#_暴露外部端口">6.3. 暴露外部端口</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>设置容器级别的hostPort, 将容器应用的端口号映射到物理机上</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">ports:
+- containerPort: 8080
+  hostPort: 8081</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Pod设置hostNetwork=true, 容器中的端口号被映射到物理机上</p>
+</li>
+<li>
+<p>Service设置nodePort映射到物理机,同时设置service的类型为NodePort</p>
+<div class="literalblock">
+<div class="content">
+<pre>service的nodePort默认范围为30000-32767,可以修改/etc/kubernetes/manifests/kube-apiserver.yaml 添加command `- --service-node-port-range=80-32767`</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">type: NodePort
+ports:
+- port: 8080
+  targetPort: 8080
+  nodePort: 8081</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>设置service的spec.type为LoadBalancer, 不需要设置NodePort</p>
+</li>
+<li>
+<p>Ingress</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pv"><a class="link" href="#_pv">7. PV</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>当集群用户需要在其 pod 中使用持久化存储(PV)时, 他们首先创建持久卷声明 (Persistent VolumeClaim, 简称 PVC) 清单, 指定所需要的最低容量要求和访问模式, 然后用户将PV提交给Kubernetes apiserver, Kubernetes将找到可匹 配的PV并将其绑定到PVC。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configmap"><a class="link" href="#_configmap">8. ConfigMap</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_创建方式"><a class="link" href="#_创建方式">8.1. 创建方式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>命令行直接创建 <code>kubectl create configmap kubia-config --from-literal=interval=2 --from-literal=foo=bar</code></p>
+</li>
+<li>
+<p>从文件(夹)创建 <code>kubectl create configmap kubia-config --from-file=config.conf</code></p>
+</li>
+<li>
+<p>yaml创建:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">demo-cm.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubia-cm
+  namespace: jy-test
+data:
+  log.level: debug</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用"><a class="link" href="#_使用">8.2. 使用:</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">envFrom:
+  - configMapRef:
+      name: kubia-cm
+    prefix: log</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_技能图谱"><a class="link" href="#_技能图谱">9. 技能图谱</a></h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="https://static001.geekbang.org/resource/image/90/77/90af293d7ff8caa58f5ac458a3b03577.jpg" alt="90af293d7ff8caa58f5ac458a3b03577">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-12-18 15:02:16 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

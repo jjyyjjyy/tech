@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Elasticsearch</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Elasticsearch</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_elasticsearch介绍">1. Elasticsearch介绍</a></li>
+<li><a href="#_安装">2. 安装</a>
+<ul class="sectlevel2">
+<li><a href="#_初始化数据目录">2.1. 初始化数据目录</a></li>
+<li><a href="#_docker方式启动">2.2. docker方式启动</a></li>
+</ul>
+</li>
+<li><a href="#_基本概念">3. 基本概念</a>
+<ul class="sectlevel2">
+<li><a href="#_index">3.1. Index</a></li>
+<li><a href="#_document">3.2. Document</a></li>
+<li><a href="#_term">3.3. Term</a></li>
+<li><a href="#_phrase">3.4. Phrase</a></li>
+<li><a href="#_倒排索引">3.5. 倒排索引</a></li>
+<li><a href="#_倒排索引例子">3.6. 倒排索引例子</a></li>
+<li><a href="#_analysis">3.7. Analysis</a></li>
+<li><a href="#_集群">3.8. 集群</a>
+<ul class="sectlevel3">
+<li><a href="#_节点">3.8.1. 节点</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_索引操作api">4. 索引操作API</a>
+<ul class="sectlevel2">
+<li><a href="#_创建索引">4.1. 创建索引</a></li>
+<li><a href="#_查看索引详情">4.2. 查看索引详情</a></li>
+<li><a href="#_查看所有索引">4.3. 查看所有索引</a></li>
+<li><a href="#_删除索引">4.4. 删除索引</a></li>
+<li><a href="#_创建索引模板">4.5. 创建索引模板</a></li>
+<li><a href="#_查看索引模板">4.6. 查看索引模板</a></li>
+<li><a href="#_查看所有索引模板">4.7. 查看所有索引模板</a></li>
+<li><a href="#_删除索引模板">4.8. 删除索引模板</a></li>
+</ul>
+</li>
+<li><a href="#_文档操作api">5. 文档操作API</a>
+<ul class="sectlevel2">
+<li><a href="#_查询文档">5.1. 查询文档</a></li>
+<li><a href="#_创建文档">5.2. 创建文档</a></li>
+<li><a href="#_索引文档">5.3. 索引文档</a></li>
+<li><a href="#_获取文档">5.4. 获取文档</a></li>
+<li><a href="#_更新文档">5.5. 更新文档</a></li>
+<li><a href="#_删除文档">5.6. 删除文档</a></li>
+<li><a href="#_批量更新删除索引">5.7. 批量更新/删除/索引</a></li>
+<li><a href="#_批量获取">5.8. 批量获取</a></li>
+</ul>
+</li>
+<li><a href="#_url查询">6. URL查询</a>
+<ul class="sectlevel2">
+<li><a href="#_参数">6.1. 参数</a></li>
+<li><a href="#_查询条件操作符">6.2. 查询条件操作符</a>
+<ul class="sectlevel3">
+<li><a href="#_布尔操作符">6.2.1. 布尔操作符</a></li>
+<li><a href="#_范围查询操作符">6.2.2. 范围查询操作符</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_query_dsl">7. Query DSL</a>
+<ul class="sectlevel2">
+<li><a href="#_query_string">7.1. query_string</a></li>
+<li><a href="#_match">7.2. match</a></li>
+<li><a href="#_match_phrase">7.3. match_phrase</a></li>
+<li><a href="#_bool">7.4. bool</a></li>
+</ul>
+</li>
+<li><a href="#_聚合查询">8. 聚合查询</a>
+<ul class="sectlevel2">
+<li><a href="#_metric">8.1. Metric</a>
+<ul class="sectlevel3">
+<li><a href="#_avg">8.1.1. avg</a></li>
+<li><a href="#_weighted_avg">8.1.2. weighted_avg</a></li>
+<li><a href="#_cardinality">8.1.3. cardinality</a></li>
+<li><a href="#_stats">8.1.4. stats</a></li>
+<li><a href="#_extended_stats">8.1.5. extended_stats</a></li>
+<li><a href="#_max">8.1.6. max</a></li>
+<li><a href="#_min">8.1.7. min</a></li>
+<li><a href="#_sum">8.1.8. sum</a></li>
+<li><a href="#_value_count">8.1.9. value_count</a></li>
+<li><a href="#_percentiles">8.1.10. percentiles</a></li>
+<li><a href="#_percentile_ranks">8.1.11. percentile_ranks</a></li>
+<li><a href="#_top_hits">8.1.12. top_hits</a></li>
+</ul>
+</li>
+<li><a href="#_bucket">8.2. Bucket</a>
+<ul class="sectlevel3">
+<li><a href="#_term_2">8.2.1. term</a></li>
+<li><a href="#_range">8.2.2. range</a></li>
+<li><a href="#_histogram">8.2.3. histogram</a></li>
+<li><a href="#_filter">8.2.4. filter</a></li>
+<li><a href="#_filters">8.2.5. filters</a></li>
+<li><a href="#_global">8.2.6. global</a></li>
+<li><a href="#_missing">8.2.7. missing</a></li>
+</ul>
+</li>
+<li><a href="#_pipeline">8.3. Pipeline</a>
+<ul class="sectlevel3">
+<li><a href="#_max_bucket">8.3.1. max_bucket</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_elasticsearch介绍"><a class="link" href="#_elasticsearch介绍">1. Elasticsearch介绍</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html" target="_blank" rel="noopener">Elasticsearch</a>是一个文档型的NoSQL数据库, 主要用于:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>实时全文搜索</p>
+</li>
+<li>
+<p>日志管理</p>
+</li>
+<li>
+<p>数据分析</p>
+</li>
+<li>
+<p>应用监控</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">2. 安装</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_初始化数据目录"><a class="link" href="#_初始化数据目录">2.1. 初始化数据目录</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">sudo mkdir -p ~/volumes/es/data0{1..3}/
+sudo chmod 777 ~/volumes/es/ -R
+
+echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_docker方式启动"><a class="link" href="#_docker方式启动">2.2. docker方式启动</a></h3>
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">version: '3'
+services:
+  es01:
+    image: elasticsearch:7.4.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data01:/usr/share/elasticsearch/data
+    ports:
+      - 19200:9200
+    networks:
+      - esnet
+  es02:
+    image: elasticsearch:7.4.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data02:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+  es03:
+    image: elasticsearch:7.4.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=sonic333
+      - xpack.security.enabled=true
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/es/data03:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+  kibana:
+    container_name: kibana
+    image: kibana:7.4.2
+    environment:
+      - xpack.security.enabled=true
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=sonic333
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED=true
+      - SERVER_HOST=0.0.0.0
+      - LOGGING_TIMEZONE=Asia/Shanghai
+      - TZ=Asia/Shanghai
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+networks:
+  esnet:</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">启动</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">docker-compose up -d</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_基本概念"><a class="link" href="#_基本概念">3. 基本概念</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_index"><a class="link" href="#_index">3.1. Index</a></h3>
+<div class="paragraph">
+<p>表示一类文档的集合.<br>
+比如用户索引, 商品索引等.<br>
+索引由一个全小写的名称标识, 对文档的CRUD操作均需指定索引名称.<br>
+每一个索引都有自己的Mapping, 定义了该索引下文档的字段名和字段类型.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. RDBMS vs Elasticsearch</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">RDBMS</th>
+<th class="tableblock halign-left valign-top">Elasticsearch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Table</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Index</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Row</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Document</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Column</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Field</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Schema</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mapping</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DSL</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_document"><a class="link" href="#_document">3.2. Document</a></h3>
+<div class="paragraph">
+<p>文档以JSON形式存在, 一个文档表示一条数据.<br>
+JSON中每个字段都有对应的字段类型 <code>(boolean/number/string/date/binary/range等)</code>, 字段类型可以自己指定或者Elasticsearch自动推断.<br>
+每个文档都有一个ID, 可以自己指定, 或者Elasticsearch自动生成.</p>
+</div>
+<div class="paragraph">
+<p>每个文档都有一些元数据字段:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>_index</code>: 文档所属的索引名</p>
+</li>
+<li>
+<p><code>_id</code>: 文档id</p>
+</li>
+<li>
+<p><code>_source</code>: 文档原始JSON数据</p>
+</li>
+<li>
+<p><code>_version</code>: 文档版本号</p>
+</li>
+<li>
+<p><code>_score</code>: 文档搜索时的评分</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_term"><a class="link" href="#_term">3.3. Term</a></h3>
+<div class="paragraph">
+<p>多个单词形成 <code>OR</code> 查询, 不要求顺序.<br>
+比如 "Mac OS" 会查询某个字段存在 <code>Mac</code> 或 <code>OS</code> 的文档.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phrase"><a class="link" href="#_phrase">3.4. Phrase</a></h3>
+<div class="paragraph">
+<p>多个单词形成短语, 作为一个整体查询.<br>
+比如 "Mac OS" 会查询某个字段存在 <code>Mac OS</code> 字符串的文档.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_倒排索引"><a class="link" href="#_倒排索引">3.5. 倒排索引</a></h3>
+<div class="paragraph">
+<p>倒排索引由两部分组成:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>单词词典: 记录所有单词, 单词到倒排列表的关系.</p>
+</li>
+<li>
+<p>倒排列表: 记录了单词所处文档的信息:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>文档id</p>
+</li>
+<li>
+<p>词频 <code>(TF)</code>: 记录单词在文档中出现的次数, 用于相关性评分.</p>
+</li>
+<li>
+<p>位置 <code>(Position)</code>: 记录单词在文档中分词的位置, 用于语句搜索.</p>
+</li>
+<li>
+<p>偏移 <code>(Offset)</code>: 记录单词的开始和结束位置, 用于高亮显示.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_倒排索引例子"><a class="link" href="#_倒排索引例子">3.6. 倒排索引例子</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. 源文档</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">文档id</th>
+<th class="tableblock halign-left valign-top">文档内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mastering Elasticsearch</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Elasticsearch Server</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Elasticsearch Essentials</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Elasticsearch 倒排列表</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">文档id</th>
+<th class="tableblock halign-left valign-top">TF</th>
+<th class="tableblock halign-left valign-top">Position</th>
+<th class="tableblock halign-left valign-top">Offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;10,23&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;0,13&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;0,13&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_analysis"><a class="link" href="#_analysis">3.7. Analysis</a></h3>
+<div class="paragraph">
+<p>文本分析: 把全文本转换为一系列单词的过程, 也叫 <em>分词</em> .<br>
+Elasticsearch通过 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/analyzer-anatomy.html#analyzer-anatomy" target="_blank" rel="noopener">Analyser</a> 实现分词.</p>
+</div>
+<div class="paragraph">
+<p>Analyser由三部分组成:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Character filter: 处理原始文本, 比如去除html标签, unicode字符转换等.</p>
+</li>
+<li>
+<p>Tokenizer: 将文本切分为多个单词.</p>
+</li>
+<li>
+<p>Token filter: 处理切分后的单词, 比如转小写.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">自定义Analyser</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">POST /_analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [{
+    "type": "mapping",
+    "mappings":["- =&gt; _"]
+  }],
+  "text": ["123-345"]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_集群"><a class="link" href="#_集群">3.8. 集群</a></h3>
+<div class="sect3">
+<h4 id="_节点"><a class="link" href="#_节点">3.8.1. 节点</a></h4>
+<div class="paragraph">
+<p>每个Elasticsearch实例是一个节点, 节点分为:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>master节点</strong>: 可以被选举为master的节点, 执行维护集群状态, 创建/删除索引等操作</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">node.master= true
+node.data= false
+node.ingest= false
+cluster.remote.connect= false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可以设置 <code>node.voting_only: true</code> 表示该节点只参与master选举, 但不会成为master.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>data节点</strong>: 处理数据相关操作,比如 CRUD, 全文搜索, 聚合查询等</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">node.master= false
+node.data= true
+node.ingest= false
+cluster.remote.connect= false</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ingest节点</strong>: 负责执行ingest pipeline的节点</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">node.master= false
+node.data= false
+node.ingest= true
+cluster.remote.connect= false</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>coordinating节点</strong>: 将请求路由分发到其他节点.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">node.master= false
+node.data= false
+node.ingest= false
+cluster.remote.connect= false</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ml节点</strong>: 负责执行机器学习Job/处理机器学习请求的节点</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">node.ml= true
+xpack.ml.enabled= true</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_索引操作api"><a class="link" href="#_索引操作api">4. 索引操作API</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_创建索引"><a class="link" href="#_创建索引">4.1. 创建索引</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">PUT /page_view_info
+{
+    "settings": {
+        "number_of_shards": 2
+    },
+    "mappings": {
+        "properties": {
+            "id": {
+                "type": "long"
+            },
+            "companyId": {
+                "type": "integer"
+            },
+            "landingPageId": {
+                "type": "integer"
+            },
+            "formId": {
+                "type": "integer"
+            },
+            "ip": {
+                "type": "keyword"
+            },
+            "province": {
+                "type": "keyword"
+            },
+            "city": {
+                "type": "keyword"
+            },
+            "location": {
+                "type": "keyword"
+            },
+            "ua": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "device": {
+                "type": "keyword"
+            },
+            "os": {
+                "type": "keyword"
+            },
+            "browser": {
+                "type": "keyword"
+            },
+            "uid": {
+                "type": "keyword"
+            },
+            "sid": {
+                "type": "keyword"
+            },
+            "pid": {
+                "type": "keyword"
+            },
+            "referrer": {
+                "type": "keyword"
+            },
+            "origin": {
+                "type": "keyword"
+            },
+            "osType": {
+                "type": "keyword"
+            },
+            "browserType": {
+                "type": "keyword"
+            },
+            "networkType": {
+                "type": "keyword"
+            },
+            "medium": {
+                "type": "keyword"
+            },
+            "channel": {
+                "type": "keyword"
+            },
+            "priceRange": {
+                "type": "keyword"
+            },
+            "screenSize": {
+                "type": "keyword"
+            },
+            "screenDpi": {
+                "type": "keyword"
+            },
+            "brand": {
+                "type": "keyword"
+            },
+            "longitude": {
+                "type": "keyword"
+            },
+            "latitude": {
+                "type": "keyword"
+            },
+            "url": {
+                "type": "keyword"
+            },
+            "lengthOfStay": {
+                "type": "double"
+            },
+            "accessDepth": {
+                "type": "double"
+            },
+            "fill": {
+                "type": "byte"
+            },
+            "submitDataType": {
+                "type": "byte"
+            },
+            "submitDataId": {
+                "type": "integer"
+            },
+            "content": {
+                "type": "keyword"
+            },
+            "fillContent": {
+                "type": "keyword"
+            },
+            "fillAt": {
+                "type": "date"
+            },
+            "year": {
+                "type": "short"
+            },
+            "month": {
+                "type": "byte"
+            },
+            "day": {
+                "type": "byte"
+            },
+            "hour": {
+                "type": "byte"
+            },
+            "minute": {
+                "type": "byte"
+            },
+            "createdAt": {
+                "type": "date"
+            },
+            "updatedAt": {
+                "type": "date"
+            },
+            "auditable": {
+                "type": "boolean"
+            },
+            "clickId": {
+                "type": "keyword"
+            },
+            "telgetIsAutoTel": {
+                "type": "boolean"
+            },
+            "telgetType": {
+                "type": "byte"
+            },
+            "submitDataExt": {
+                "type": "object"
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查看索引详情"><a class="link" href="#_查看索引详情">4.2. 查看索引详情</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查看所有索引"><a class="link" href="#_查看所有索引">4.3. 查看所有索引</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /_cat/indices</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_删除索引"><a class="link" href="#_删除索引">4.4. 删除索引</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">DELETE /page_view_info</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_创建索引模板"><a class="link" href="#_创建索引模板">4.5. 创建索引模板</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">PUT /_template/page_view_info_template
+{
+    "index_patterns": "page_view_info_*",
+    "aliases": {
+        "page_view_info": {}
+    },
+    "settings": {
+        "number_of_shards": 2
+    },
+    "mappings": {
+        "properties": {
+            "id": {
+                "type": "long"
+            },
+            "companyId": {
+                "type": "integer"
+            },
+            "landingPageId": {
+                "type": "integer"
+            },
+            "formId": {
+                "type": "integer"
+            },
+            "ip": {
+                "type": "keyword"
+            },
+            "province": {
+                "type": "keyword"
+            },
+            "city": {
+                "type": "keyword"
+            },
+            "location": {
+                "type": "keyword"
+            },
+            "ua": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword"
+                    }
+                }
+            },
+            "device": {
+                "type": "keyword"
+            },
+            "os": {
+                "type": "keyword"
+            },
+            "browser": {
+                "type": "keyword"
+            },
+            "uid": {
+                "type": "keyword"
+            },
+            "sid": {
+                "type": "keyword"
+            },
+            "pid": {
+                "type": "keyword"
+            },
+            "referrer": {
+                "type": "keyword"
+            },
+            "origin": {
+                "type": "keyword"
+            },
+            "osType": {
+                "type": "keyword"
+            },
+            "browserType": {
+                "type": "keyword"
+            },
+            "networkType": {
+                "type": "keyword"
+            },
+            "medium": {
+                "type": "keyword"
+            },
+            "channel": {
+                "type": "keyword"
+            },
+            "priceRange": {
+                "type": "keyword"
+            },
+            "screenSize": {
+                "type": "keyword"
+            },
+            "screenDpi": {
+                "type": "keyword"
+            },
+            "brand": {
+                "type": "keyword"
+            },
+            "longitude": {
+                "type": "keyword"
+            },
+            "latitude": {
+                "type": "keyword"
+            },
+            "url": {
+                "type": "keyword"
+            },
+            "lengthOfStay": {
+                "type": "double"
+            },
+            "accessDepth": {
+                "type": "double"
+            },
+            "fill": {
+                "type": "byte"
+            },
+            "submitDataType": {
+                "type": "byte"
+            },
+            "submitDataId": {
+                "type": "integer"
+            },
+            "content": {
+                "type": "keyword"
+            },
+            "fillContent": {
+                "type": "keyword"
+            },
+            "fillAt": {
+                "type": "date"
+            },
+            "year": {
+                "type": "short"
+            },
+            "month": {
+                "type": "byte"
+            },
+            "day": {
+                "type": "byte"
+            },
+            "hour": {
+                "type": "byte"
+            },
+            "minute": {
+                "type": "byte"
+            },
+            "createdAt": {
+                "type": "date"
+            },
+            "updatedAt": {
+                "type": "date"
+            },
+            "auditable": {
+                "type": "boolean"
+            },
+            "clickId": {
+                "type": "keyword"
+            },
+            "telgetIsAutoTel": {
+                "type": "boolean"
+            },
+            "telgetType": {
+                "type": "byte"
+            },
+            "submitDataExt": {
+                "type": "object"
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查看索引模板"><a class="link" href="#_查看索引模板">4.6. 查看索引模板</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /_template/page_view_info_template</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查看所有索引模板"><a class="link" href="#_查看所有索引模板">4.7. 查看所有索引模板</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /_cat/templates</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_删除索引模板"><a class="link" href="#_删除索引模板">4.8. 删除索引模板</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">DELETE /_template/page_view_info_template</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_文档操作api"><a class="link" href="#_文档操作api">5. 文档操作API</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_查询文档"><a class="link" href="#_查询文档">5.1. 查询文档</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /users/_search</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_创建文档"><a class="link" href="#_创建文档">5.2. 创建文档</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>POST请求, Elasticsearch会自动生成id</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">POST /users/_doc
+{
+  "username": "Joan",
+  "age": 11
+}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>PUT请求, 自己指定id</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">PUT /users/_create/1
+{
+  "age": 33
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>第二次请求会报错.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_索引文档"><a class="link" href="#_索引文档">5.3. 索引文档</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">PUT /users/_doc/1
+{
+  "username": "Alex",
+  "age": 33
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>第二次执行后, 会删除原有文档再根据请求体重新创建文档, <code>_version</code> 字段加一.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_获取文档"><a class="link" href="#_获取文档">5.4. 获取文档</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /users/_doc/1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_更新文档"><a class="link" href="#_更新文档">5.5. 更新文档</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">POST /users/_update/1
+{
+  "doc": {
+  "age":111,
+  "username": "Bob"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_删除文档"><a class="link" href="#_删除文档">5.6. 删除文档</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">DELETE /users/_doc/1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_批量更新删除索引"><a class="link" href="#_批量更新删除索引">5.7. 批量更新/删除/索引</a></h3>
+<div class="paragraph">
+<p><code>bulk</code> API对索引进行不同的操作.<br>
+批量处理过程中单条失败不会影响其他操作, 返回结果也返回了每条操作执行的结果.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">POST /_bulk
+{"create":{"_index":"users","_id":11}}
+{"username":"Fatman"}
+{"update":{"_index":"users","_id":11}}
+{"doc":{"username":"Hollis"}}
+{"index":{"_index":"users","_id":11}}
+{"username":"Fatman"}
+{"delete":{"_index":"users","_id":11}}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_批量获取"><a class="link" href="#_批量获取">5.8. 批量获取</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /_mget
+{
+  "docs": [
+    {
+      "_index": "users",
+      "_id": 1
+    },
+    {
+      "_index": "users",
+      "_id": 2
+    }
+  ]
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_url查询"><a class="link" href="#_url查询">6. URL查询</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>GET /&lt;index&gt;/_search</code></p>
+</div>
+<div class="sect2">
+<h3 id="_参数"><a class="link" href="#_参数">6.1. 参数</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>q: 查询条件</p>
+</li>
+<li>
+<p>df: 查询字段, 如果为空则查询所有字段</p>
+</li>
+<li>
+<p>sort: 排序, 格式为 <code>&lt;field&gt;:[asc|desc]</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询存在一个字段包含"Mac"的文档
+GET /page_view_info/_search?q=Mac
+
+# 查询ua字段包含"Mac"的文档
+GET /page_view_info/_search?q=ua:Mac
+GET /page_view_info/_search?df=ua&amp;q=Mac
+
+# 查询ua包含"Mac"或者其他字段包含"Firefox"的文档
+GET /page_view_info/_search?q=ua:Mac Firefox
+
+# 查询ua包含"Mac"或者"Firefox"的文档
+GET /page_view_info/_search?q=ua:(Mac Firefox)
+
+# 查询ua包含"Mac Firefox"的文档
+GET /page_view_info/_search?q=ua:"Mac Firefox"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查询条件操作符"><a class="link" href="#_查询条件操作符">6.2. 查询条件操作符</a></h3>
+<div class="sect3">
+<h4 id="_布尔操作符"><a class="link" href="#_布尔操作符">6.2.1. 布尔操作符</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>AND OR NOT</code> <strong>必须大写</strong></p>
+</li>
+<li>
+<p><code>+ -</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询ua包含"Mac"并且包含"Firefox"的文档
+GET /page_view_info/_search?q=ua:(Mac AND Firefox)
+GET /page_view_info/_search?q=ua:(+Mac AND +Firefox)
+
+# 查询ua包含"Mac"并且但不包含"OS"的文档
+GET /page_view_info/_search?q=ua:(Mac NOT OS)
+GET /page_view_info/_search?q=ua:(+Mac -OS)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_范围查询操作符"><a class="link" href="#_范围查询操作符">6.2.2. 范围查询操作符</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询year大于2018的文档
+GET /page_view_info/_search?q=year:&gt;2018
+
+# 查询ua字段存在以"OP"开头的term的文档
+GET /page_view_info/_search?q=ua:OP*</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_query_dsl"><a class="link" href="#_query_dsl">7. Query DSL</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html" class="bare" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html</a></p>
+</div>
+<div class="listingblock">
+<div class="title">DSL查询示例</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search
+{
+  "sort": {"id": "desc"},
+  "_source": ["id", "pid", "createdAt"],
+  "from": 0,
+  "size": 20,
+  "query": {}
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_query_string"><a class="link" href="#_query_string">7.1. query_string</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询ua或os字段包含"Mac"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "query_string": {
+      "query": "Mac",
+      "fields": ["ua", "os"]
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_match"><a class="link" href="#_match">7.2. match</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询ua包含"Mac"并且包含"Firefox"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "match": {
+      "ua": {
+        "query": "Mac Firefox",
+        "operator": "and"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_match_phrase"><a class="link" href="#_match_phrase">7.3. match_phrase</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 查询ua包含"Mac Firefox"的文档
+GET /page_view_info/_search
+{
+  "query": {
+    "match_phrase": {
+      "ua": {
+        "query": "Mac Firefox"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bool"><a class="link" href="#_bool">7.4. bool</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 条件查询
+GET /page_view_info/_search
+{
+  "size": 1,
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "companyId": {
+              "value": 759
+            }
+          }
+        },
+        {
+          "term": {
+            "auditable": {
+              "value": true
+            }
+          }
+        },
+        {
+          "range": {
+            "createdAt": {
+              "from": "2020-01-06T00:00:00.000Z",
+              "to": "2020-01-06T23:59:59.000Z",
+              "include_lower": true,
+              "include_upper": true
+            }
+          }
+        },
+        {
+          "script": {
+            "script": {
+              "source": "String city = doc['city'].value; return city !=null &amp;&amp; city !='' &amp;&amp; city !='Unknown'",
+              "lang": "painless"
+            }
+          }
+        }
+      ]
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_聚合查询"><a class="link" href="#_聚合查询">8. 聚合查询</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html" class="bare" target="_blank" rel="noopener">https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html</a></p>
+</div>
+<div class="paragraph">
+<p>Elasticsearch聚合查询分为4种:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Metric: 对文档字段进行数学运算或统计分析.</p>
+</li>
+<li>
+<p>Bucket: 将文档按照条件分组.</p>
+</li>
+<li>
+<p>Pipeline: 对聚合结果进行二次聚合.</p>
+</li>
+<li>
+<p>Matrix: 对多个字段操作, 结果作为矩阵形式.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_metric"><a class="link" href="#_metric">8.1. Metric</a></h3>
+<div class="sect3">
+<h4 id="_avg"><a class="link" href="#_avg">8.1.1. avg</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>平均值</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">计算填单率</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "fillRate": {
+        "avg": {
+          "field": "fill"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_weighted_avg"><a class="link" href="#_weighted_avg">8.1.2. weighted_avg</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>加权平均值: \$(sum(weight * value)) / (sum(weight))\$</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+  "size": 0,
+  "aggs": {
+    "weightAvgST": {
+      "weighted_avg": {
+        "value": {
+          "field": "lengthOfStay"
+        },
+        "weight": {
+          "field": "fill"
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_cardinality"><a class="link" href="#_cardinality">8.1.3. cardinality</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>distinct count</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">获取uv</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "uv": {
+        "cardinality": {
+          "field": "uid"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_stats"><a class="link" href="#_stats">8.1.4. stats</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>统计信息, 包括平均值, 最大值, 最小值, 总和, 次数计数.</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">统计停留时长</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "statsST": {
+        "stats": {
+        "field": "lengthOfStay"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extended_stats"><a class="link" href="#_extended_stats">8.1.5. extended_stats</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>详细统计, 包括平均值, 最大值, 最小值, 标准差, 方差, 平方和等维度.</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">统计停留时长</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "extendedStatsST": {
+        "extended_stats": {
+        "field": "lengthOfStay"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_max"><a class="link" href="#_max">8.1.6. max</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>最大值</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">获取最大停留时长</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "maxST": {
+        "max": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_min"><a class="link" href="#_min">8.1.7. min</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>最小值</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">获取最小停留时长</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "minST": {
+        "min": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_sum"><a class="link" href="#_sum">8.1.8. sum</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>求和</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">统计填单数</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "fillAmount": {
+        "sum": {
+          "field": "fill"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_value_count"><a class="link" href="#_value_count">8.1.9. value_count</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>计数</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">统计pv</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "pv": {
+        "value_count": {
+          "field": "id"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_percentiles"><a class="link" href="#_percentiles">8.1.10. percentiles</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>百分位</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="title">查看 lengthOfStay</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "stPercentiles": {
+        "percentiles": {
+          "field": "lengthOfStay"
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_percentile_ranks"><a class="link" href="#_percentile_ranks">8.1.11. percentile_ranks</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>数值所处的百分位</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">.查看 lengthOfStay 小于2秒和120秒的百分比
+GET /page_view_info/_search?size=0
+{
+    "aggs": {
+      "stPercentileRanks": {
+        "percentile_ranks": {
+          "field": "lengthOfStay",
+          "values": [2, 120]
+        }
+      }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_top_hits"><a class="link" href="#_top_hits">8.1.12. top_hits</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>分组后排序/取前几条记录</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">.查看每个落地页最近10条PV
+GET /page_view_info/_search?size=0
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "landingPageId"
+      },
+      "aggs": {
+        "topPV": {
+          "top_hits": {
+            "_source": ["pid"],
+            "sort": [{
+              "createdAt": {
+                "order": "desc"
+              }
+            }],
+            "size": 10
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bucket"><a class="link" href="#_bucket">8.2. Bucket</a></h3>
+<div class="sect3">
+<h4 id="_term_2"><a class="link" href="#_term_2">8.2.1. term</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>将文档按照指定field分组</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /page_view_info/_search?size=0
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "landingPageId"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_range"><a class="link" href="#_range">8.2.2. range</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>将文档按照范围分组</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># lengthOfStay按[2,2-60,60-120,120]分组
+GET /page_view_info/_search?size=0
+{
+  "size":0,
+  "aggs": {
+    "st": {
+      "range": {
+        "field": "lengthOfStay",
+        "ranges": [
+          {
+            "to": 2
+          },
+          {
+            "from": 2,
+            "to": 60
+          },
+          {
+            "from": 60,
+            "to": 120
+          },
+          {
+            "from": 120
+          }
+        ]
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_histogram"><a class="link" href="#_histogram">8.2.3. histogram</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>将文档按照一定的间隔大小分组</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># accessDepth直方图
+GET /page_view_info/_search?size=0
+{
+  "size":0,
+  "aggs": {
+    "st": {
+      "histogram": {
+        "field": "accessDepth",
+        "interval": 10
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_filter"><a class="link" href="#_filter">8.2.4. filter</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>为某一聚合查询添加过滤条件</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">GET /sales/_search?size=0
+{
+    "aggs" : {
+        "t_shirts" : {
+            "filter" : { "term": { "type": "t-shirt" } },
+            "aggs" : {
+                "avg_price" : { "avg" : { "field" : "price" } }
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_filters"><a class="link" href="#_filters">8.2.5. filters</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>根据条件分组</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">#分别查看公司759和790的PV数量
+GET /page_view_info/_search?size=0
+{
+  "aggs": {
+    "landingPages": {
+      "filters": {
+        "filters": {
+          "c759": {
+            "bool": {
+              "filter": {
+                "term": {
+                  "companyId": {
+                    "value": 759
+                  }
+                }
+              }
+            }
+          },
+          "c790": {
+            "bool": {
+              "filter": {
+                "term": {
+                  "companyId": {
+                    "value": 790
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_global"><a class="link" href="#_global">8.2.6. global</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>使该聚合查询忽略query查询条件</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs">#统计759和所有公司的pv
+GET /page_view_info/_search?size=0
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "companyId": {
+              "value": 759
+            }
+          }
+        },
+        {
+          "range": {
+            "createdAt": {
+              "gte": "now/d-60d"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "pv": {
+      "value_count": {
+        "field": "pid"
+      }
+    },
+    "all_pv": {
+      "global": {},
+      "aggs": {
+        "all_pv": {
+          "value_count": {
+            "field": "pid"
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_missing"><a class="link" href="#_missing">8.2.7. missing</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>统计没有指定字段的文档数量</p>
+</div>
+</blockquote>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 统计没有clickId的文档数量
+GET /page_view_info/_search?size=0
+{
+  "aggs": {
+    "missPV": {
+      "missing": {
+        "field": "clickId"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline"><a class="link" href="#_pipeline">8.3. Pipeline</a></h3>
+<div class="sect3">
+<h4 id="_max_bucket"><a class="link" href="#_max_bucket">8.3.1. max_bucket</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="http" class="language-http hljs"># 找到pv最多的companyId
+GET /page_view_info/_search?size=0
+{
+  "size": 0,
+  "aggs": {
+    "company": {
+      "terms": {
+        "field": "companyId"
+      },
+      "aggs": {
+        "pv": {
+          "cardinality": {
+            "field": "id"
+          }
+        }
+      }
+    },
+    "maxPvCompany": {
+      "max_bucket": {
+        "buckets_path": "company&gt;pv"
+      }
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-06-28 11:56:46 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

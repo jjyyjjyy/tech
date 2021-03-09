@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>ClickHouse</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>ClickHouse</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_安装">1. 安装</a></li>
+<li><a href="#_数据类型">2. 数据类型</a>
+<ul class="sectlevel2">
+<li><a href="#_数值">2.1. 数值</a></li>
+<li><a href="#_字符串">2.2. 字符串</a></li>
+<li><a href="#_时间">2.3. 时间</a></li>
+<li><a href="#_特殊类型">2.4. 特殊类型</a></li>
+</ul>
+</li>
+<li><a href="#_ddl">3. DDL</a>
+<ul class="sectlevel2">
+<li><a href="#_创建数据库">3.1. 创建数据库</a></li>
+<li><a href="#_创建表">3.2. 创建表</a>
+<ul class="sectlevel3">
+<li><a href="#_定义表">3.2.1. 定义表</a></li>
+<li><a href="#_复制表结构">3.2.2. 复制表结构</a></li>
+<li><a href="#_select创建">3.2.3. select创建</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">1. 安装</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">version: '3'
+services:
+  clickhouse:
+    container_name: clickhouse
+    image: yandex/clickhouse-server
+    ports:
+      - 39000:9000
+      - 38123:8123
+    networks:
+      - clickhouse
+    volumes:
+      - ~/volumes/clickhouse/:/var/lib/clickhouse
+      - ./users.xml:/etc/clickhouse-server/users.xml
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+networks:
+  clickhouse:</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">users.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">&lt;?xml version="1.0"?&gt;
+&lt;yandex&gt;
+    &lt;profiles&gt;
+        &lt;default&gt;
+            &lt;max_memory_usage&gt;10000000000&lt;/max_memory_usage&gt;
+            &lt;use_uncompressed_cache&gt;0&lt;/use_uncompressed_cache&gt;
+            &lt;load_balancing&gt;random&lt;/load_balancing&gt;
+        &lt;/default&gt;
+        &lt;readonly&gt;
+            &lt;readonly&gt;1&lt;/readonly&gt;
+        &lt;/readonly&gt;
+    &lt;/profiles&gt;
+    &lt;users&gt;
+        &lt;default&gt;
+            &lt;password&gt;123123&lt;/password&gt;
+            &lt;networks incl="networks" replace="replace"&gt;
+                &lt;ip&gt;::/0&lt;/ip&gt;
+            &lt;/networks&gt;
+            &lt;profile&gt;default&lt;/profile&gt;
+            &lt;quota&gt;default&lt;/quota&gt;
+        &lt;/default&gt;
+    &lt;/users&gt;
+    &lt;quotas&gt;
+        &lt;default&gt;
+            &lt;interval&gt;
+                &lt;duration&gt;3600&lt;/duration&gt;
+                &lt;queries&gt;0&lt;/queries&gt;
+                &lt;errors&gt;0&lt;/errors&gt;
+                &lt;result_rows&gt;0&lt;/result_rows&gt;
+                &lt;read_rows&gt;0&lt;/read_rows&gt;
+                &lt;execution_time&gt;0&lt;/execution_time&gt;
+            &lt;/interval&gt;
+        &lt;/default&gt;
+    &lt;/quotas&gt;
+&lt;/yandex&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据类型"><a class="link" href="#_数据类型">2. 数据类型</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_数值"><a class="link" href="#_数值">2.1. 数值</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>整数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Int8</p>
+</li>
+<li>
+<p>Int16</p>
+</li>
+<li>
+<p>Int32</p>
+</li>
+<li>
+<p>Int64</p>
+</li>
+<li>
+<p>UInt8</p>
+</li>
+<li>
+<p>UInt16</p>
+</li>
+<li>
+<p>UInt32</p>
+</li>
+<li>
+<p>UInt64</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>浮点数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Float32</p>
+</li>
+<li>
+<p>Float64</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>定点数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Decimal32</p>
+</li>
+<li>
+<p>Decimal64</p>
+</li>
+<li>
+<p>Decimal128</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_字符串"><a class="link" href="#_字符串">2.2. 字符串</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>String</p>
+</li>
+<li>
+<p>FixedString</p>
+</li>
+<li>
+<p>UUID</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_时间"><a class="link" href="#_时间">2.3. 时间</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>DateTime</p>
+</li>
+<li>
+<p>DateTime64</p>
+</li>
+<li>
+<p>Date</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_特殊类型"><a class="link" href="#_特殊类型">2.4. 特殊类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Array</p>
+</li>
+<li>
+<p>Tuple</p>
+</li>
+<li>
+<p>Enum</p>
+</li>
+<li>
+<p>Nested</p>
+</li>
+<li>
+<p>Nullable</p>
+</li>
+<li>
+<p>IPv4</p>
+</li>
+<li>
+<p>IPv6</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ddl"><a class="link" href="#_ddl">3. DDL</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_创建数据库"><a class="link" href="#_创建数据库">3.1. 创建数据库</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="clickhouse" class="language-clickhouse hljs">create database if not exists &lt;db_name&gt; [ENGINE = &lt;engine&gt;]</code></pre>
+</div>
+</div>
+<div class="ulist">
+<div class="title">数据库Engine</div>
+<ul>
+<li>
+<p>Ordinary: 默认引擎</p>
+</li>
+<li>
+<p>Dictionary: 字典引擎</p>
+</li>
+<li>
+<p>Memory: 内存引擎, 用于存放临时数据. 数据库重启后数据会被清除.</p>
+</li>
+<li>
+<p>Lazy: 日志引擎.</p>
+</li>
+<li>
+<p>MySQL: MySQL引擎, 自动拉取远端MySQL中的数据, 为它们创建MySQL表引擎的数据表.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_创建表"><a class="link" href="#_创建表">3.2. 创建表</a></h3>
+<div class="sect3">
+<h4 id="_定义表"><a class="link" href="#_定义表">3.2.1. 定义表</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="clickhouse" class="language-clickhouse hljs">create table if not exists [&lt;database.]&lt;table_name&gt; (
+    &lt;name&gt; [&lt;type&gt;] [DEFAULT|MATERIALIZED|ALIAS &lt;expr&gt;]
+) ENGINE = &lt;engine&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_复制表结构"><a class="link" href="#_复制表结构">3.2.2. 复制表结构</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="clickhouse" class="language-clickhouse hljs">create table if not exists [&lt;database&gt;.]&lt;table_name&gt; AS [&lt;source_database&gt;.]&lt;source_table&gt; [ENGINE = &lt;engine&gt;]</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_select创建"><a class="link" href="#_select创建">3.2.3. select创建</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="clickhouse" class="language-clickhouse hljs">create table if not exists [&lt;database&gt;.]&lt;table_name&gt; ENGINE = &lt;engine&gt; AS select * from &lt;source_table&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-07-13 15:54:20 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Spring Boot</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Spring Boot</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_文档">1. 文档</a></li>
+<li><a href="#_启动流程">2. 启动流程</a>
+<ul class="sectlevel2">
+<li><a href="#_初始化springapplication对象">2.1. 初始化SpringApplication对象</a></li>
+<li><a href="#_读取配置初始化environment">2.2. 读取配置初始化Environment</a></li>
+<li><a href="#_初始化applicationcontext">2.3. 初始化ApplicationContext</a></li>
+<li><a href="#_abstractapplicationcontextrefresh">2.4. AbstractApplicationContext::refresh</a></li>
+<li><a href="#_后置处理">2.5. 后置处理</a></li>
+</ul>
+</li>
+<li><a href="#_configurationclass解析过程">3. ConfigurationClass解析过程</a></li>
+<li><a href="#_getbean过程">4. getBean过程</a></li>
+<li><a href="#_spring_aop">5. Spring AOP</a>
+<ul class="sectlevel2">
+<li><a href="#_术语">5.1. 术语</a></li>
+<li><a href="#_pointcut">5.2. Pointcut</a></li>
+<li><a href="#_aop注册流程">5.3. Aop注册流程</a></li>
+</ul>
+</li>
+<li><a href="#_spring_tx">6. Spring TX</a>
+<ul class="sectlevel2">
+<li><a href="#_spring_transaction切面注册流程">6.1. Spring Transaction切面注册流程</a></li>
+<li><a href="#_transactiondefinition">6.2. TransactionDefinition</a>
+<ul class="sectlevel3">
+<li><a href="#_propagation">6.2.1. Propagation</a></li>
+<li><a href="#_timeout">6.2.2. timeout</a></li>
+<li><a href="#_readonly">6.2.3. readOnly</a></li>
+<li><a href="#_rollback">6.2.4. rollback</a></li>
+</ul>
+</li>
+<li><a href="#_transactionstatus">6.3. TransactionStatus</a></li>
+<li><a href="#_事务方法执行流程">6.4. 事务方法执行流程</a></li>
+</ul>
+</li>
+<li><a href="#_springboot属性配置优先级">7. SpringBoot属性配置优先级</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_文档"><a class="link" href="#_文档">1. 文档</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://docs.spring.io/spring-boot/docs/current/reference/html" class="bare" target="_blank" rel="noopener">https://docs.spring.io/spring-boot/docs/current/reference/html</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_启动流程"><a class="link" href="#_启动流程">2. 启动流程</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_初始化springapplication对象"><a class="link" href="#_初始化springapplication对象">2.1. 初始化SpringApplication对象</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>初始化 <code>primarySources</code> , 并将命令行参数加入到 <code>primarySources</code> 中.</p>
+</li>
+<li>
+<p>确定ApplicationType: None Web/Servlet/Reactive</p>
+</li>
+<li>
+<p>获取 <code>META-INF/spring.factories</code> 中的 <code>ApplicationContextInitializer</code> 并设置到 <code>SpringApplication</code> 成员变量中.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>DelegatingApplicationContextInitializer</p>
+</li>
+<li>
+<p>SharedMetadataReaderFactoryContextInitializer</p>
+</li>
+<li>
+<p>ContextIdApplicationContextInitializer</p>
+</li>
+<li>
+<p>ConfigurationWarningsApplicationContextInitializer</p>
+</li>
+<li>
+<p>RSocketPortInfoApplicationContextInitializer</p>
+</li>
+<li>
+<p>ServerPortInfoApplicationContextInitializer</p>
+</li>
+<li>
+<p>ConditionEvaluationReportLoggingListener</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>获取 <code>META-INF/spring.factories</code> 中的 <code>ApplicationListener</code> 并设置到 <code>SpringApplication</code> 成员变量中.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>CloudFoundryVcapEnvironmentPostProcessor</p>
+</li>
+<li>
+<p>ConfigFileApplicationListener</p>
+</li>
+<li>
+<p>AnsiOutputApplicationListener</p>
+</li>
+<li>
+<p>LoggingApplicationListener</p>
+</li>
+<li>
+<p>ClasspathLoggingApplicationListener</p>
+</li>
+<li>
+<p>BackgroundPreinitializer</p>
+</li>
+<li>
+<p>DelegatingApplicationListener</p>
+</li>
+<li>
+<p>ParentContextCloserApplicationListener</p>
+</li>
+<li>
+<p>ClearCachesApplicationListener</p>
+</li>
+<li>
+<p>FileEncodingApplicationListener</p>
+</li>
+<li>
+<p>LiquibaseServiceLocatorApplicationListener</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>设置启动类class对象.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_读取配置初始化environment"><a class="link" href="#_读取配置初始化environment">2.2. 读取配置初始化Environment</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>从 <code>META-INF/spring.factories</code> 中获取 <code>SpringApplicationRunListener</code> (EventPublishRunListener).</p>
+</li>
+<li>
+<p>发布 <strong>ApplicationStartingEvent</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>LoggingApplicationListener: 设置log system,默认logback.</p>
+</li>
+<li>
+<p>BackgroundPreInitializer: 执行内置bean的构造函数.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>根据 <code>webApplicationType</code> 初始化 <code>Environment</code> 对象.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>SERVLET: <code>StandardServletEnvironment</code></p>
+</li>
+<li>
+<p>REACTIVE: <code>StandardReactiveWebEnvironment</code></p>
+</li>
+<li>
+<p>NONE: <code>StandardEnvironment</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>添加系统属性:</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>springApplicationCommandLineArgs(启动命令行参数)</p>
+</li>
+<li>
+<p>servletConfigInitParams</p>
+</li>
+<li>
+<p>servletContextInitParams</p>
+</li>
+<li>
+<p>systemProperties</p>
+</li>
+<li>
+<p>systemEnvironment</p>
+</li>
+<li>
+<p>defaultProperties(SpringApplication::defaultProperties)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>根据命令行参数设置active profiles.</p>
+</li>
+<li>
+<p>发布 <strong>ApplicationEnvironmentPreparedEvent</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>ConfigFileApplicationListener: 调用 <code>EnvironmentPostProcessor::postProcessEnvironment</code> .</p>
+<div class="ulist">
+<ul>
+<li>
+<p>SystemEnvironmentPropertySourceEnvironmentPostProcessor: 把systemEnvironment包装成OriginAwareSystemEnvironmentPropertySource.</p>
+</li>
+<li>
+<p>SpringApplicationJsonEnvironmentPostProcessor: 解析 <code>spring.application.json</code> 中的配置, 比systemProperties优先级高.</p>
+</li>
+<li>
+<p>CloudFoundryVcapEnvironmentPostProcessor: 设置vcap属性配置.</p>
+</li>
+<li>
+<p>ConfigFileApplicationListener:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>加入一个优先级最低的 <code>RandomValuePropertySource</code> .</p>
+</li>
+<li>
+<p>从 <code>META-INF/spring.factories</code> 中获取 <code>PropertySourceLoader</code> 并读取配置文件(properties/xml/yaml/yml).</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>DebugAgentEnvironmentPostProcessor: 调用 <code>reactor.tools.agent.ReactorDebugAgent.init</code> 方法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>AnsiOutputApplicationListener: 设置 <code>spring.output.ansi.enabled</code> 和 <code>spring.output.ansi.console-available</code> .</p>
+</li>
+<li>
+<p>LoggingApplicationListener: 初始化 <code>Log properties/system</code> .</p>
+</li>
+<li>
+<p>ClassPathLoggingApplicationListener: 打印 <code>classpath</code> 路径.</p>
+</li>
+<li>
+<p>BackgroundPreinitializer</p>
+</li>
+<li>
+<p>DelegatingApplicationListener: 向 <code>context.listener.classes</code> 中的listeners发送 <code>ApplicationEnvironmentPreparedEvent</code> 事件.</p>
+</li>
+<li>
+<p>FileEncodingApplicationListener: 比较 <code>file.encoding</code> 和 <code>spring.mandatory-file-encoding</code> 是否相同, 如果不同则抛出异常.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>bindToSpringApplication: 设置 <code>spring.main</code> 为 <code>SpringApplication</code> 对象.</p>
+</li>
+<li>
+<p>包装 <code>Environment::propertySources</code> 为 <code>ConfigurationPropertySourcesPropertySource(key为configurationProperties)</code> .</p>
+</li>
+<li>
+<p>设置 <code>spring.beaninfo.ignore=true</code> .</p>
+</li>
+<li>
+<p>打印banner日志.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_初始化applicationcontext"><a class="link" href="#_初始化applicationcontext">2.3. 初始化ApplicationContext</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>根据ApplicationType创建对应的context:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None-Web: <code>AnnotationConfigApplicationContext</code></p>
+</li>
+<li>
+<p>Servlet: <code>AnnotationConfigServletWebServerApplicationContext</code></p>
+</li>
+<li>
+<p>Reactive: <code>AnnotationConfigReactiveWebServerApplicationContext</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>初始化AnnotatedBeanDefinitionReader.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>设置BeanFactory属性.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>AnnotationAwareOrderComparator</p>
+</li>
+<li>
+<p>ContextAnnotationAutowireCandidateResolver</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>注册spring内置BeanFactoryPostProcessor</p>
+<div class="ulist">
+<ul>
+<li>
+<p>ConfigurationClassPostProcessor</p>
+</li>
+<li>
+<p>AutowiredAnnotationBeanPostProcessor</p>
+</li>
+<li>
+<p>RequiredAnnotationBeanPostProcessor</p>
+</li>
+<li>
+<p>CommonAnnotationBeanPostProcessor</p>
+</li>
+<li>
+<p>PersistenceAnnotationBeanPostProcessor</p>
+</li>
+<li>
+<p>EventListenerMethodProcessor</p>
+</li>
+<li>
+<p>DefaultEventListenerFactory</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>初始化ClassPathBeanDefinitionScanner.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>初始化 <code>includeFilters</code> .</p>
+</li>
+<li>
+<p>读取 <code>META-INF/spring.components</code> 文件获取bean解析缓存.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>调用 <code>ApplicationContextInitializer::initialize</code> .</p>
+<div class="ulist">
+<ul>
+<li>
+<p>DelegatingApplicationContextInitializer: 调用 <code>context.initializer.classes的initialize方法</code> .</p>
+</li>
+<li>
+<p>SharedMetadataReaderFactoryContextInitializer: 注册BeanDefinitionRegistryPostProcessor <code>CachingMetadataReaderFactoryPostProcessor</code> .</p>
+</li>
+<li>
+<p>ContextIdApplicationContextInitializer: 设置ApplicationContext的Id为 <code>spring.application.name || "application"</code> .</p>
+</li>
+<li>
+<p>ConfigurationWarningsApplicationContextInitializer: 注册BeanDefinitionRegistryPostProcessor <code>ConfigurationWarningsPostProcessor</code> .</p>
+</li>
+<li>
+<p>RSocketPortInfoApplicationContextInitializer: 注册ApplicationListener <code>org.springframework.boot.rsocket.context.RSocketPortInfoApplicationContextInitializer.Listener</code> .</p>
+</li>
+<li>
+<p>ServerPortInfoApplicationContextInitializer: 将自己注册到ApplicationListener中.</p>
+</li>
+<li>
+<p>ConditionEvaluationReportLoggingListener: 注册ApplicationListener <code>ConditionEvaluationReportListener</code> .</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>发布 <strong>ApplicationContextInitializedEvent</strong> .</p>
+</li>
+<li>
+<p>打印启动日志.</p>
+</li>
+<li>
+<p>如果设置了 <code>lazyInitialization</code> 为true, 则注册BeanFactoryPostProcessor <code>LazyInitializationBeanFactoryPostProcessor</code> .</p>
+</li>
+<li>
+<p>封装主启动类为 <code>AnnotatedGenericBeanDefinition</code> , 注册到BeanFactory中.</p>
+</li>
+<li>
+<p>将SpringApplication中的listener添加到ApplicationContext中.</p>
+</li>
+<li>
+<p>发布 <strong>ApplicationPreparedEvent</strong> .</p>
+<div class="ulist">
+<ul>
+<li>
+<p>ConfigFileApplicationListener: 注册BeanFactoryPostProcessor <code>PropertySourceOrderingPostProcessor</code> .</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_abstractapplicationcontextrefresh"><a class="link" href="#_abstractapplicationcontextrefresh">2.4. AbstractApplicationContext::refresh</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>prepareRefresh: 初始化 <code>earlyApplicationListeners</code> .</p>
+</li>
+<li>
+<p>prepareBeanFactory:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>设置 <code>classLoader/beanExpressionResolver/SPEL/ResourceEditorRegistrar</code> 属性.</p>
+</li>
+<li>
+<p>注册BeanPostProcessor <code>ApplicationContextAwareProcessor/ApplicationListenerDetector</code> .</p>
+</li>
+<li>
+<p>注册 <code>environment/systemProperties/systemEnvironment</code> Bean.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>postProcessBeanFactory: 注册 <code>WebApplicationContextServletContextAwareProcessor</code> .</p>
+</li>
+<li>
+<p>invokeBeanFactoryPostProcessors: 按PriorityOrdered/Ordered/Regular顺序调用 <code>BeanDefinitionRegistry#postProcessBeanDefinitionRegistry&amp;&amp;postProcessBeanFactory</code> , 再按顺序调用 <code>BeanFactoryPostProcessor#postProcessBeanFactory</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>CachingMetadataReadFactoryPostProcessor: 注册 <code>SharedMetadataReaderFactoryBean</code> 并设置 <code>ConfigurationClassPostProcessor</code> 的 <code>metadataReaderFactory</code> 属性为 <code>SharedMetadataReaderFactoryBean</code> .</p>
+</li>
+<li>
+<p>ConfigurationWarningsPostProcessor: 检查扫描的包路径是否存在并不以 <code>org/org.springframework</code> 开头.</p>
+</li>
+<li>
+<p>ConfigurationClassPostProcessor:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>根据Configuration类扫描并注册BeanDefinition.</p>
+</li>
+<li>
+<p>为Configuration类创建CGLIB代理.</p>
+</li>
+<li>
+<p>注册 <code>ImportAwareBeanPostProcessor</code> .</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>PropertySourceOrderingPostProcessor: 将defaultProperties优先级调至最低。</p>
+</li>
+<li>
+<p>ConfigurationPropertiesBeanDefinitionValidator: 校验 <code>@ConstructorBinding</code> 必须和 <code>@EnableConfigurationProperties或@ConfigurationPropertiesScan</code> 一起使用.</p>
+</li>
+<li>
+<p>EventListenerMethodProcessor: 初始化 <code>eventListenerFactories</code> 属性.</p>
+</li>
+<li>
+<p>PropertySourcesPlaceHolderConfigurer: 替换 <code>${&#8230;&#8203;}</code> .</p>
+</li>
+<li>
+<p>ConfigurationBeanMetaData: 获取所有的bean method.</p>
+</li>
+<li>
+<p>PreserverErrorControllerTargetClassPostProcessor: 设置BasicErrorController为CGLIB代理.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>registerBeanPostProcessors: 设置beanPostProcessors属性</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>org.springframework.context.annotation.internalAutowiredAnnotationProcessor</code></p>
+</li>
+<li>
+<p><code>org.springframework.context.annotation.internalCommonAnnotationProcessor</code></p>
+</li>
+<li>
+<p><code>org.springframework.aop.config.internalAutoProxyCreator</code></p>
+</li>
+<li>
+<p><code>org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor</code></p>
+</li>
+<li>
+<p><code>org.springframework.context.support.ApplicationListenerDetector</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>initMessageSource: 注册MessageSource bean. <code>DelegatingMessageSource</code></p>
+</li>
+<li>
+<p>initApplicationEventMulticaster: 注册applicationEventMulticaster. <code>SimpleApplicationEventMulticaster</code></p>
+</li>
+<li>
+<p>onRefresh: 创建WebServer,将 <code>servletContext</code> 设置到 <code>servletContextInitParams</code> 中.</p>
+</li>
+<li>
+<p>registerListeners: 设置 <code>applicationEventMulticaster</code> 的applicationListener(Bean)属性.</p>
+</li>
+<li>
+<p>finishBeanFactoryInitialization: 初始化Singleton的BeanDefinition.</p>
+</li>
+<li>
+<p>finishRefresh:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>注册lifeCycleProcessor bean 为 <code>DefaultLifeCycleProcessor</code> .</p>
+</li>
+<li>
+<p>调用实现了 <code>SmartLifeCycle</code> 接口的bean的start方法.</p>
+</li>
+<li>
+<p>发布 <strong>ContextRefreshedEvent</strong> .</p>
+</li>
+<li>
+<p>启动WebServer .</p>
+</li>
+<li>
+<p>发布 <strong>ServletWebServerInitializedEvent</strong> .</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>清空cache.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_后置处理"><a class="link" href="#_后置处理">2.5. 后置处理</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>注册ShutdownHook.</p>
+</li>
+<li>
+<p>打印启动日志.</p>
+</li>
+<li>
+<p>发布 <strong>ApplicationStartedEvent</strong> .</p>
+</li>
+<li>
+<p>调用 <code>ApplicationRunner和CommandLineRunner</code> .</p>
+</li>
+<li>
+<p>发布 <strong>ApplicationReadyEvent</strong> .</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configurationclass解析过程"><a class="link" href="#_configurationclass解析过程">3. ConfigurationClass解析过程</a></h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getbean过程"><a class="link" href="#_getbean过程">4. getBean过程</a></h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_aop"><a class="link" href="#_spring_aop">5. Spring AOP</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_术语"><a class="link" href="#_术语">5.1. 术语</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Aspect:
+声明需要关注的类/方法的一个地方.</p>
+</li>
+<li>
+<p>JoinPoint:
+代表正在执行的方法.</p>
+</li>
+<li>
+<p>Advice:
+表示JoinPoint何时被执行, 如 <code>Before</code>, <code>AfterReturning</code>, <code>AfterThrowing</code>, <code>After</code>, <code>Around</code>.</p>
+</li>
+<li>
+<p>Pointcut:
+连接点匹配判断.</p>
+</li>
+<li>
+<p>Introduction:
+为特定类型声明额外的方法/属性.</p>
+</li>
+<li>
+<p>Target object:
+被AOP的原始对象.</p>
+</li>
+<li>
+<p>AOP proxy:
+被AOP框架生成代理的对象.</p>
+</li>
+<li>
+<p>Weaving:
+基于普通对象和切面生成代理对象的过程, 可以在编译时/加载时/运行时进行.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pointcut"><a class="link" href="#_pointcut">5.2. Pointcut</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>匹配方法</p>
+</li>
+<li>
+<p>execution: <code>execution(modifiers-pattern? ret-type-pattern declaring-type-pattern?name-pattern(param-pattern) throws-pattern?)</code></p>
+</li>
+<li>
+<p>匹配包/类型</p>
+<div class="ulist">
+<ul>
+<li>
+<p>within</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>匹配对象</p>
+<div class="ulist">
+<ul>
+<li>
+<p>this</p>
+</li>
+<li>
+<p>bean</p>
+</li>
+<li>
+<p>target</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>匹配注解</p>
+<div class="ulist">
+<ul>
+<li>
+<p>@target:
+RetentionPolicy为class</p>
+</li>
+<li>
+<p>@args</p>
+</li>
+<li>
+<p>@within:
+RetentionPolicy为runtime</p>
+</li>
+<li>
+<p>@annotation</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>匹配参数</p>
+<div class="ulist">
+<ul>
+<li>
+<p>args</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">示例:</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">execution(public * *(..)) // 匹配所有公共方法
+execution(* set*(..)) // 匹配所有以set开头的方法
+execution(* com.xyz.service.AccountService.*(..)) // 匹配AccountService里所有的方法
+execution(* com.xyz.service.*.*(..)) // 匹配com.xyz.service包下所有的方法
+execution(* com.xyz.service..*.*(..)) // 匹配com.xyz.service包及其子包下所有的方法
+
+within(com.xyz.service.*) // 匹配com.xyz.service包下所有的方法
+within(com.xyz.service..*) // 匹配com.xyz.service包及其子包下所有的方法
+
+this(com.xyz.service.AccountService) // 匹配AccountService所有子类里的方法
+target(com.xyz.service.AccountService)
+
+bean(tradeService) // 匹配beanName为"tradeService"的类下的方法.
+bean(*Service) // 匹配beanName以"Service"结尾的类下的方法.
+
+args(java.io.Serializable) // 匹配参数只有一个并且类型为Serializable的方法
+
+@target(org.springframework.transaction.annotation.Transactional) // 匹配有@Transactional注解的类下的方法
+@within(org.springframework.transaction.annotation.Transactional)
+@annotation(org.springframework.transaction.annotation.Transactional) // 匹配有@Transactional注解的方法
+@args(com.xyz.security.Classified) // 匹配参数只有一个并且参数上有@Classified的方法</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_aop注册流程"><a class="link" href="#_aop注册流程">5.3. Aop注册流程</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>解析Configuration类的 <code>@EnableAspectJAutoProxy</code> 注解, 注册 <code>AnnotationAwareAspectJAutoProxyCreator</code> .</p>
+</li>
+<li>
+<p><code>postProcessBeforeInstantiation</code> 时扫描所有的Aspect, 标记出所有需要被aop的bean.</p>
+</li>
+<li>
+<p><code>postProcessAfterInitialization</code> 时创建代理对象.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>根据 <code>AopUtils.findAdvisorsThatCanApply</code> 找到每个bean的advisor.</p>
+</li>
+<li>
+<p>使用 <code>CGLIB</code> 生成代理类, 使用 <code>sun.reflect.ReflectionFactory</code> 创建代理对象.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_tx"><a class="link" href="#_spring_tx">6. Spring TX</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_spring_transaction切面注册流程"><a class="link" href="#_spring_transaction切面注册流程">6.1. Spring Transaction切面注册流程</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>解析Configuration类的 <code>@EnableTransactionManagement</code> 注解, 注册 <code>AutoProxyRegistrar, ProxyTransactionManagementConfiguration</code> .</p>
+</li>
+<li>
+<p>导入Configuration类 <code>ProxyTransactionManagementConfiguration</code> , 注册以下bean:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>transactionalEventListenerFactory: 处理事件</p>
+</li>
+<li>
+<p>transactionAttributeSource: 定义advisor的pointcut</p>
+</li>
+<li>
+<p>transactionInterceptor: 事务advice</p>
+</li>
+<li>
+<p>transactionAdvisor: 事务advisor</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>AnnotationAwareAspectJAutoProxyCreator#postProcessAfterInitialization</code> 会根据 <code>transactionAttributeSource</code> 解析并缓存 <code>@Transactional</code> 方法/类上的注解.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_transactiondefinition"><a class="link" href="#_transactiondefinition">6.2. TransactionDefinition</a></h3>
+<div class="sect3">
+<h4 id="_propagation"><a class="link" href="#_propagation">6.2.1. Propagation</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Propagation类型</th>
+<th class="tableblock halign-left valign-top">行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_REQUIRED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则加入到该事务. 如果第二个事务回滚, 则第一个事务也跟着回滚.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_SUPPORTS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则加入到该事务, 否则以非事务的方式运行.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_MANDATORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则加入到该事务, 如果当前没有事务运行, 则抛出异常.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_NESTED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则加入到该事务, 并标记当前为savepoint. 如果第二个事务回滚, 则只会回滚到savepoint.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_REQUIRES_NEW</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则当前事务挂起, 然后新开一个事务.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_NOT_SUPPORTED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果当前存在一个事务, 则将该事务挂起, 然后以非事务的方式运行.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PROPAGATION_NEVER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">以非事务的方式运行, 如果当前存在一个事务, 则抛出异常.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<code>PROPAGATION_REQUIRED/PROPAGATION_REQUIRES_NEW/PROPAGATION_NESTED</code> 下如果当前不存在事务, 则新开一个事务.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_timeout"><a class="link" href="#_timeout">6.2.2. timeout</a></h4>
+<div class="paragraph">
+<p>如果事务没有在指定时间内完成, 则自动回滚事务.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_readonly"><a class="link" href="#_readonly">6.2.3. readOnly</a></h4>
+<div class="paragraph">
+<p>如果事务的操作只是读取资源, 则可以设置readOnly为true, 提高事务性能.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_rollback"><a class="link" href="#_rollback">6.2.4. rollback</a></h4>
+<div class="paragraph">
+<p>默认方法抛出 <code>RuntimeException</code> 时才回滚事务, 可以主动设置rollback条件.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_transactionstatus"><a class="link" href="#_transactionstatus">6.3. TransactionStatus</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>boolean isNewTransaction(); //是否是新的事物</p>
+</li>
+<li>
+<p>boolean hasSavepoint(); // 是否有恢复点</p>
+</li>
+<li>
+<p>void setRollbackOnly(); // 设置为只回滚</p>
+</li>
+<li>
+<p>boolean isRollbackOnly(); // 是否为只回滚</p>
+</li>
+<li>
+<p>boolean isCompleted; // 是否已完成</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_事务方法执行流程"><a class="link" href="#_事务方法执行流程">6.4. 事务方法执行流程</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://assets.processon.com/chart_image/5d89b05ce4b0feb0086f5c6c.png?_=1569308531062" alt="5d89b05ce4b0feb0086f5c6c">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_springboot属性配置优先级"><a class="link" href="#_springboot属性配置优先级">7. SpringBoot属性配置优先级</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Devtools global settings properties on your home directory (~/.spring-boot-devtools.properties when devtools is active).</p>
+</li>
+<li>
+<p>@TestPropertySource annotations on your tests.</p>
+</li>
+<li>
+<p>@SpringBootTest#properties annotation attribute on your tests.</p>
+</li>
+<li>
+<p>Command line arguments.</p>
+</li>
+<li>
+<p>Properties from SPRING_APPLICATION_JSON (inline JSON embedded in an environment variable or system property).</p>
+</li>
+<li>
+<p>ServletConfig init parameters.</p>
+</li>
+<li>
+<p>ServletContext init parameters.</p>
+</li>
+<li>
+<p>JNDI attributes from java:comp/env.</p>
+</li>
+<li>
+<p>Java System properties (System.getProperties()).</p>
+</li>
+<li>
+<p>OS environment variables.</p>
+</li>
+<li>
+<p>A RandomValuePropertySource that has properties only in random.*.</p>
+</li>
+<li>
+<p>Profile-specific application properties outside of your packaged jar (application-{profile}.properties and YAML variants).</p>
+</li>
+<li>
+<p>Profile-specific application properties packaged inside your jar (application-{profile}.properties and YAML variants).</p>
+</li>
+<li>
+<p>Application properties outside of your packaged jar (application.properties and YAML variants).</p>
+</li>
+<li>
+<p>Application properties packaged inside your jar (application.properties and YAML variants).</p>
+</li>
+<li>
+<p>@PropertySource annotations on your @Configuration classes.</p>
+</li>
+<li>
+<p>Default properties (specified by setting SpringApplication.setDefaultProperties).</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-05-14 09:48:47 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

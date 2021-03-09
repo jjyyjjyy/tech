@@ -1,0 +1,42 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+autonumber
+
+== init ==
+
+Bootstrap -> Bootstrap : initClassLoaders
+note right: 根据catalina.home/catalina.base路径创建URLClassLoader.
+Bootstrap -> Bootstrap : 创建Catalina对象.
+Bootstrap -> Catalina : load: 初始化组件.
+Catalina -> Digester : parse: 解析server.xml.
+note right: 创建Server/Service/Connector/Engine/Host/Context等对象.
+Digester -> Catalina
+Catalina -> Server : init
+Server -> Service : init
+Service -> Engine : init
+Engine -> Service
+Service -> Connector : init
+Connector -> Connector : 初始化CoyoteAdapter.
+Connector -> AbstractProtocol : init
+AbstractProtocol -> Endpoint : init
+Endpoint -> Endpoint : bind
+note right: 初始化ServerSocketChannel, 监听端口.
+Endpoint -> AbstractProtocol
+AbstractProtocol -> Connector
+Connector -> Service
+Service -> Server
+Server -> Catalina
+Catalina -> Bootstrap
+
+== start ==
+
+Bootstrap -> Catalina : start
+Catalina -> Server : start
+Server -> Service : start
+Service -> Engine : start
+Engine -> Host : start: addErrorReportValve
+Host -> Context : start
+
+@enduml

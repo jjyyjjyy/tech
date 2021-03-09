@@ -1,0 +1,14 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+interface SqlSource {
+    BoundSql getBoundSql(Object parameterObject);
+}
+
+SqlSource <.. DynamicSqlSource
+SqlSource <.. ProviderSqlSource
+SqlSource <.. StaticSqlSource
+SqlSource <.. RawSqlSource
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+
+!include ../../charts/global/stylesheet.iuml
+
+interface Lock {
+  + void lock();
+  + void lockInterruptibly() throws InterruptedException;
+  + boolean tryLock();
+  + boolean tryLock(long time, TimeUnit unit) throws InterruptedException;
+  + void unlock();
+  + Condition newCondition();
+}
+class ReentrantLock
+Lock <.. ReentrantLock
+
+class AbstractOwnableSynchronizer
+class AbstractQueuedSynchronizer
+class ReentrantLock.Sync
+class ReentrantLock.NonfairSync
+class ReentrantLock.FairSync
+AbstractOwnableSynchronizer <|-- AbstractQueuedSynchronizer
+AbstractQueuedSynchronizer <|-- ReentrantLock.Sync
+ReentrantLock.Sync <|-- ReentrantLock.NonfairSync
+ReentrantLock.Sync <|-- ReentrantLock.FairSync
+
+ReentrantLock -> ReentrantLock.Sync
+
+@enduml

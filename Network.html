@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Computer Network</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Computer Network</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_路由">1. 路由</a></li>
+<li><a href="#_tcpip协议">2. TCP/IP协议</a></li>
+<li><a href="#_数据链路层">3. 数据链路层</a>
+<ul class="sectlevel2">
+<li><a href="#_csmacd">3.1. CSMA/CD</a></li>
+<li><a href="#_ethernet帧格式">3.2. Ethernet帧格式</a></li>
+<li><a href="#_arp帧格式">3.3. ARP帧格式</a></li>
+<li><a href="#_物理设备">3.4. 物理设备</a></li>
+<li><a href="#_交换机">3.5. 交换机</a></li>
+</ul>
+</li>
+<li><a href="#_ip">4. IP</a>
+<ul class="sectlevel2">
+<li><a href="#_ipv6格式">4.1. IPv6格式</a></li>
+<li><a href="#_ipv4分类">4.2. IPv4分类</a></li>
+</ul>
+</li>
+<li><a href="#_tcp">5. TCP</a>
+<ul class="sectlevel2">
+<li><a href="#_tcp首部">5.1. TCP首部</a></li>
+<li><a href="#_mss">5.2. MSS</a></li>
+<li><a href="#_端口号">5.3. 端口号</a></li>
+<li><a href="#_三次握手">5.4. 三次握手</a></li>
+<li><a href="#_四次挥手">5.5. 四次挥手</a></li>
+<li><a href="#_tcp时间戳选项">5.6. TCP时间戳选项</a></li>
+<li><a href="#_tcp_fast_open">5.7. TCP Fast Open</a></li>
+<li><a href="#_so_reuseaddr">5.8. SO_REUSEADDR</a></li>
+<li><a href="#_so_linger">5.9. SO_LINGER</a></li>
+<li><a href="#_oob_inline">5.10. OOB_INLINE</a></li>
+<li><a href="#_tcp_no_delay">5.11. TCP_NO_DELAY</a></li>
+</ul>
+</li>
+<li><a href="#_http">6. HTTP</a>
+<ul class="sectlevel2">
+<li><a href="#_cookie">6.1. Cookie</a></li>
+<li><a href="#_重定向">6.2. 重定向</a>
+<ul class="sectlevel3">
+<li><a href="#_永久重定向">6.2.1. 永久重定向</a></li>
+<li><a href="#_临时重定向">6.2.2. 临时重定向</a></li>
+</ul>
+</li>
+<li><a href="#_http_basic">6.3. Http Basic</a></li>
+</ul>
+</li>
+<li><a href="#_http2">7. HTTP2</a>
+<ul class="sectlevel2">
+<li><a href="#_http2连接结构">7.1. HTTP2连接结构</a></li>
+<li><a href="#_stream结构">7.2. Stream结构</a></li>
+</ul>
+</li>
+<li><a href="#_网络查看命令行工具">8. 网络查看命令行工具</a>
+<ul class="sectlevel2">
+<li><a href="#_netstat">8.1. netstat</a>
+<ul class="sectlevel3">
+<li><a href="#_安装">8.1.1. 安装</a></li>
+<li><a href="#_命令选项">8.1.2. 命令选项</a></li>
+<li><a href="#_命令示例">8.1.3. 命令示例</a></li>
+</ul>
+</li>
+<li><a href="#_ss">8.2. ss</a>
+<ul class="sectlevel3">
+<li><a href="#_安装_2">8.2.1. 安装</a></li>
+<li><a href="#_命令选项_2">8.2.2. 命令选项</a></li>
+<li><a href="#_命令示例_2">8.2.3. 命令示例</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_appendix">9. Appendix</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_路由"><a class="link" href="#_路由">1. 路由</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>以太网交换机:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>以太网交换机工作在数据链路层, 用于在同一网络中的设备转发以太网帧.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>路由器:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>负责不同网络之间的数据包传送.
+路由器通过路由表来确定用于转发数据包的最佳路径.
+当网络向不同IP网络中的设备发送数据包时, 数据包会先被转发到默认网关.</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tcpip协议"><a class="link" href="#_tcpip协议">2. TCP/IP协议</a></h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">协议</th>
+<th class="tableblock halign-left valign-top">PDU</th>
+<th class="tableblock halign-left valign-top">英文名</th>
+<th class="tableblock halign-left valign-top">标识</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">物理层</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">比特</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">链路层</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">帧</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">frame</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAC地址</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">网络层</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据包</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">packet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IP地址</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">传输层</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据段</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">segment</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">端口号</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">应用层</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">报文</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">message</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">应用协议</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据链路层"><a class="link" href="#_数据链路层">3. 数据链路层</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_csmacd"><a class="link" href="#_csmacd">3.1. CSMA/CD</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>一个站点首先检测网络上正在发送的信号, 并在网络空闲时发送自己的帧.</p>
+</li>
+<li>
+<p>如果其他站点碰巧同时发送, 则为一次碰撞.</p>
+</li>
+<li>
+<p>每个站点等待一个随即时间, 然后再次尝试发送.</p>
+</li>
+<li>
+<p>随后如果再次碰撞, 等待的时间翻倍.</p>
+</li>
+<li>
+<p>最终, 每个站点会得到机会发送, 或者在尝试一定次数(16)后超时.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ethernet帧格式"><a class="link" href="#_ethernet帧格式">3.2. Ethernet帧格式</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>前导字段 <code>8</code></p>
+</li>
+<li>
+<p>目标MAC地址 <code>6</code></p>
+</li>
+<li>
+<p>源MAC地址 <code>6</code></p>
+</li>
+<li>
+<p>长度或协议类型 <code>2</code></p>
+</li>
+<li>
+<p>P/Q标签 <code>0/2</code></p>
+</li>
+<li>
+<p>上层协议数据 <code>46-1500字节</code></p>
+</li>
+<li>
+<p>FCS <code>4</code> 发送和接收由硬件处理</p>
+</li>
+</ol>
+</div>
+<div class="ulist">
+<div class="title">协议类型:</div>
+<ul>
+<li>
+<p>IPv4: 0x0800</p>
+</li>
+<li>
+<p>IPv6: 0x86dd</p>
+</li>
+<li>
+<p>ARP: 0x0806</p>
+</li>
+<li>
+<p>RARP: 0x80</p>
+</li>
+<li>
+<p>Q标签帧: 0x8100</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>MTU</strong>: 以太网帧大小范围为64~1518字节, 首部占14字节, CRC校验和占4字节, 所以数据部分大小范围为46~1500字节, 最大传输限制称为 <em>MTU</em> .</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_arp帧格式"><a class="link" href="#_arp帧格式">3.3. ARP帧格式</a></h3>
+<div class="paragraph">
+<p>ARP提供网络层地址到硬件地址的映射</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>目标地址(1.1.1.1)</p>
+</li>
+<li>
+<p>源地址</p>
+</li>
+<li>
+<p>类型(0x0806)</p>
+</li>
+<li>
+<p>硬件类型(Ethernet(1))</p>
+</li>
+<li>
+<p>协议类型(IPv4)</p>
+</li>
+<li>
+<p>硬件地址大小</p>
+</li>
+<li>
+<p>协议地址大小</p>
+</li>
+<li>
+<p>Opcode: ARP请求(1)/应答(2)</p>
+</li>
+<li>
+<p>发送方MAC地址</p>
+</li>
+<li>
+<p>发送方IP地址</p>
+</li>
+<li>
+<p>接收方MAC地址</p>
+</li>
+<li>
+<p>接收方IP地址</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_物理设备"><a class="link" href="#_物理设备">3.4. 物理设备</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Repeater(中继器): 物理层设备, 用来放大信号.</p>
+</li>
+<li>
+<p>Hub(集线器): 每次发送的信号都会被发送给连接Hub的其他所有机器.</p>
+</li>
+<li>
+<p>Bridge(桥): 保存连接端口的所有设备的MAC地址.</p>
+</li>
+<li>
+<p>Switch(交换机): 保存连接端口的所有设备的MAC地址, 全双工.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_交换机"><a class="link" href="#_交换机">3.5. 交换机</a></h3>
+<div class="paragraph">
+<p>交换机内部保存&lt;Mac地址, 连接端口&gt;表.</p>
+</div>
+<div class="olist arabic">
+<div class="title">mac地址记录与转发流程</div>
+<ol class="arabic">
+<li>
+<p>设备1向设备2发送数据包, 交换机收到请求, 根据以太网帧记录下发送方的Mac地址以及端口.</p>
+</li>
+<li>
+<p>如果MAC表里有接收方的Mac地址, 则直接转发数据包到该条记录的端口.</p>
+</li>
+<li>
+<p>如果没有找到记录, 则广播给其他所有端口, 此时连接Hub的所有设备都会收到该数据包, 但只有目标Mac地址与设备自身的Mac地址相同的设备才会受理该数据包.</p>
+</li>
+<li>
+<p>此时总会有一个端口收到响应的数据, 交换机收到数据包后记录下发送方的Mac地址和端口.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ip"><a class="link" href="#_ip">4. IP</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>IP提供了一种尽力而为,无连接的数据包交付服务.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>版本(0x0100/0x0110)</p>
+</li>
+<li>
+<p>首部长度(一般为0101)</p>
+</li>
+<li>
+<p>Differentiated Service</p>
+</li>
+<li>
+<p>Explicit Congestion Notification</p>
+</li>
+<li>
+<p>总长度</p>
+</li>
+<li>
+<p>数据报标识</p>
+</li>
+<li>
+<p>分片标记</p>
+</li>
+<li>
+<p>分片偏移</p>
+</li>
+<li>
+<p>生存时间</p>
+</li>
+<li>
+<p>传输层协议类型</p>
+</li>
+<li>
+<p>头部校验和</p>
+</li>
+<li>
+<p>源IP地址</p>
+</li>
+<li>
+<p>目的IP地址</p>
+</li>
+<li>
+<p>选项</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>IP数据包最大为65535字节, 当一个IP数据包大于以太网的MTU时, IP协议会把数据包报文切分为多个小的片段.</p>
+</div>
+<div class="sect2">
+<h3 id="_ipv6格式"><a class="link" href="#_ipv6格式">4.1. IPv6格式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>长度为128位, 表现为16进制, 每16位为一块. 如 <code>5f05:2000:80ad:5800:58:800:2023:1d71</code> .</p>
+</li>
+<li>
+<p>a到f的16进制数必须小写.</p>
+</li>
+<li>
+<p>每一块中前导0必须省略不写, 如 <code>2001:0db8::0022</code> 必须要写成 <code>2001:0db8::22</code> .</p>
+</li>
+<li>
+<p>最长的全0块必须简写成 <code>::</code> , 如果有两个最长的全0块, 则第一个简写. 如 <code>5f05:0000:0000:5800:58:0000:0000:1d71</code> 简写成 <code>5f05::5800:58:0000:0000:1d71</code> .</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ipv4分类"><a class="link" href="#_ipv4分类">4.2. IPv4分类</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">类别</th>
+<th class="tableblock halign-left valign-top">前导位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">B</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">C</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">110</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1110</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">E</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1111</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tcp"><a class="link" href="#_tcp">5. TCP</a></h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>TCP是一种可靠地, 面向连接的, 基于字节流的, 全双工的传输层协议.</p>
+</div>
+</blockquote>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>面向连接的: 通信双方建立连接时要经过三次握手, 断开连接时要经过四次挥手, 四元组 <code>&lt;源地址, 源端口, 目标地址, 目标端口&gt;</code> 标识了一条TCP连接.</p>
+</li>
+<li>
+<p>可靠地:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>每个TCP首部都有两字节表示校验和, 如果收到一个校验和有差错的报文, TCP会直接丢弃该报文等待重传.</p>
+</li>
+<li>
+<p>TCP的序列号保证了接收数据的顺序.</p>
+</li>
+<li>
+<p>TCP在发送数据后会启动一个定时器, 等待对方确认收到这个数据包, 如果在指定时间内没有收到ACK确认包, 就会重传数据包.</p>
+</li>
+<li>
+<p>TCP提供了拥塞控制机制.</p>
+</li>
+<li>
+<p>面向字节的: 字节写入内核后, 最终TCP以多少条报文发送出去是不确定的.</p>
+</li>
+<li>
+<p>全双工的: 通信的双方可以同时发送/接收数据.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_tcp首部"><a class="link" href="#_tcp首部">5.1. TCP首部</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>源端口. <code>16</code></p>
+</li>
+<li>
+<p>目的端口. <code>16</code></p>
+</li>
+<li>
+<p>序列号: 标识了TCP发送端到TCP接收端的数据流的序号, 序列号用于保证包的顺序, 或者交换彼此的报文(SYN报文). <code>32</code></p>
+</li>
+<li>
+<p>确认号: TCP使用确认号来告知对方下一个期望接受的序列号. <code>32</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>确认号表示小于此确认号的字节都已经收到.</p>
+</li>
+<li>
+<p>不是所有包都需要确认.</p>
+</li>
+<li>
+<p>收到了数据包可以延迟一会儿再确认.</p>
+</li>
+<li>
+<p>ACK包不需要确认.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>首部长度. <code>4</code></p>
+</li>
+<li>
+<p>保留位. <code>4</code></p>
+</li>
+<li>
+<p>标志位. <code>8</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Nonce</p>
+</li>
+<li>
+<p>CWR(Congest Window reduced): 发送方降低它的发送速率.</p>
+</li>
+<li>
+<p>ECN-Echo: 发送方接收到了一个更早的拥塞通告.</p>
+</li>
+<li>
+<p>URG: 标识紧急指针字段有效</p>
+</li>
+<li>
+<p>ACK: 标识确认数据包.</p>
+</li>
+<li>
+<p>PSH: 告知对方这些数据包收到后应立即交给上层应用, 不能缓存起来.</p>
+</li>
+<li>
+<p>RST: 标识强制断开连接.</p>
+</li>
+<li>
+<p>SYN: 标识这个数据包用于发起连接时同步双方的初始序列号.</p>
+</li>
+<li>
+<p>FIN: 告知对方自己发送完了所有数据, 后续不会再有数据发送了.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>窗口大小: 窗口大小值*缩放因子. <code>16</code></p>
+</li>
+<li>
+<p>校验和. <code>16</code></p>
+</li>
+<li>
+<p>紧急指针. <code>16</code></p>
+</li>
+<li>
+<p>可选项. <code>320max</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>MSS: 发送方允许的最大数据段大小, 默认为536个字节.</p>
+</li>
+<li>
+<p>SACK: 选择确认选项, 发送方带上SACK选项来标识自己支持选择确认的功能.</p>
+</li>
+<li>
+<p>WSCALE: 窗口缩放选项, 标识TCP连接的实际窗口大小为 \$"window"xx2^x\$ .</p>
+</li>
+<li>
+<p>TSOPT: 时间戳选项, 双方通信时记录时间戳, 用来计算往返时间.</p>
+</li>
+<li>
+<p>UTO: 用户超时选项, 标识TCP发送方愿意等待ACK确认的最大超时时间.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mss"><a class="link" href="#_mss">5.2. MSS</a></h3>
+<div class="paragraph">
+<p>TCP数据段最大值 = MTU - IP头大小 - TCP头大小 (\$1500-20-20=1460\$)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_端口号"><a class="link" href="#_端口号">5.3. 端口号</a></h3>
+<div class="paragraph">
+<p>端口号被划分成以下 3 种类型：</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>熟知端口号（0~1023)</p>
+</li>
+<li>
+<p>已登记的端口（1024~49151）</p>
+</li>
+<li>
+<p>临时端口号（49152~65535), 运行 <code>cat /proc/sys/net/ipv4/ip_local_port_range</code> 命令可以查看机器上可用的端口范围.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>查看使用端口号的进程id:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>sudo netstat -ltpn | grep :&lt;PORT&gt;</p>
+</li>
+<li>
+<p>sudo lsof -n -P -i:&lt;PORT&gt;</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>查看进程使用的端口号:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>sudo netstat -atpn | grep &lt;PID&gt;</p>
+</li>
+<li>
+<p>sudo lsof -n -P -p &lt;PID&gt; | grep TCP</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_三次握手"><a class="link" href="#_三次握手">5.4. 三次握手</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>[C]客户端发送SYN包. <code>SYN-SENT</code></p>
+</li>
+<li>
+<p>[S]服务端接收到后加一作为ACK包, 然后自己生成一个SYN包一起发送. <code>SYN-RECV</code></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>服务端此时会将这个连接信息放入 <em>半连接队列</em> <code>(SYN 队列)</code> .</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>[C]客户端接收到服务端的SYN包加一, 作为ACK包发送给服务端. <code>ESTABLISHED</code></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>服务端收到客户端的ACK包后会将这个连接信息移动到 <em>全连接队列</em> <code>(Accept队列)</code> . 此时socket处于 <code>ESTABLISHED</code> 状态,每次调用 <code>accept</code> 函数会移除队列头的连接. 如果队列为空, 则会阻塞 <code>accept</code> 函数.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>如果发送SYN包没有收到ACK, 则会经过 \$x\$ 秒后重传, 如果依然没有收到则会经过 \$2x\$ 秒后重传, 以此类推, 可以通过系统变量 <code>net.ipv4.tcp_syn_retries</code> 设置最大SYN包重传次数, <code>net.ipv4.tcp_synack_retries</code> 设置最大SYN+ACK包重传次数.</p>
+</li>
+<li>
+<p>当服务端收到SYN包后, 会检查系统参数 <code>net.ipv4.tcp_max_syn_backlog</code> , 如果处于 <code>SYN_RCVD</code> 状态的连接数超过了这一阈值, 会拒绝该连接.</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_四次挥手"><a class="link" href="#_四次挥手">5.5. 四次挥手</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>[C]客户端发送FIN包, 以后客户端不能再发送数据给服务端了. <code>FIN-WAIT-1</code></p>
+</li>
+<li>
+<p>[S]服务端接收到后回复ACK包. <code>CLOSE-WAIT</code></p>
+</li>
+<li>
+<p>[C]客户端接收到ACK包. <code>FIN-WAIT-2</code></p>
+</li>
+<li>
+<p>[S]服务端发送FIN包. <code>LAST-ACK</code></p>
+</li>
+<li>
+<p>[C]客户端收到FIN包, 发送ACK包. <code>TIME-WAIT</code></p>
+</li>
+<li>
+<p>[S]服务端收到ACK包断开连接. <code>CLOSED</code></p>
+</li>
+<li>
+<p>[C]客户端经过两个MSL后断开连接. <code>CLOSED</code></p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>net.ipv4.tcp_fin_timeout</code> 设置了 <code>TIME-WAIT</code> 状态需要等待的超时时间.
+</td>
+</tr>
+</table>
+</div>
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>TIME-WAIT 状态存在的意义?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>保证上一个连接的包不会因为网络慢发送到一个连接里.</p>
+</li>
+<li>
+<p>可以收到对方的第二个 <code>FIN</code> 包.</p>
+</li>
+<li>
+<p>如果主动断开方重用端口, 进行三次握手发送SYN包, 对方( <code>LAST_ACK</code> )立即会返回 <code>RST</code> 包导致三次握手失败.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>为什么是两个MSL?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>1个MSL保证 <code>ACK</code> 包能发送到对方.</p>
+</li>
+<li>
+<p>1个MSL保证对方如果没有收到 <code>ACK</code> 包, 那么可以收到对方重传的 <code>FIN</code> 包.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>发送方对一个ACK应该等待多长时间?</em></p>
+<p>TODO</p>
+</li>
+<li>
+<p><em>如果ACK丢失该怎么办?</em></p>
+<p>TODO</p>
+</li>
+<li>
+<p><em>如果分组被接收到了, 但是里面有错该怎么办?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>使用差错纠正码修复数据.</p>
+</li>
+<li>
+<p>重传.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tcp时间戳选项"><a class="link" href="#_tcp时间戳选项">5.6. TCP时间戳选项</a></h3>
+<div class="paragraph">
+<p>TCP时间戳选项首部由四部分组成:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Kind: 时间戳类别固定为8</p>
+</li>
+<li>
+<p>Length: 固定为10</p>
+</li>
+<li>
+<p>TS value</p>
+</li>
+<li>
+<p>TS echo reply</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>三次握手SYN包将时间戳写在 <code>TS value</code> 字段上.</p>
+</li>
+<li>
+<p>服务端收到SYN包后, 将收到的 <code>TS value</code> 写到 <code>TS echo reply</code> 字段上, 然后生成自己的时间戳写到 <code>TS value</code> 字段上.</p>
+</li>
+<li>
+<p>以此往复.</p>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tcp_fast_open"><a class="link" href="#_tcp_fast_open">5.7. TCP Fast Open</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="_so_reuseaddr"><a class="link" href="#_so_reuseaddr">5.8. SO_REUSEADDR</a></h3>
+<div class="paragraph">
+<p>TCP四次挥手后, 主动断开连接的一方会进入 <code>TIME_WAIT</code> 状态, 等待两个MSL后才最终释放这个连接, 此时进程虽然结束, 但是不能在 <code>TIME_WAIT</code> 状态下继续使用该端口.<br>
+<code>SO_REUSEADDR</code> 设置为1后即使在 <code>TIME_WAIT</code> 状态下也可以复用该端口.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_so_linger"><a class="link" href="#_so_linger">5.9. SO_LINGER</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="c" class="language-c hljs">struct linger {
+    int l_onoff;    /* linger active */
+    int l_linger;   /* how many seconds to linger for */
+};</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>l_onoff</code> 为0时表示禁用该特性, close函数会立即返回，操作系统负责把缓冲队列中的数据全部发送至对方.</p>
+</li>
+<li>
+<p><code>l_onoff</code> 为非0时表示启用该特性.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>l_linger</code> 为0, close函数会立即返回，不执行正常的四次挥手, 操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.</p>
+</li>
+<li>
+<p><code>l_linger</code> 为非0, 那么此时close函数在l_linger时间内发送数据, 之后操作系统把缓冲区数据全部丢弃并立即发送RST包重置连接.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_oob_inline"><a class="link" href="#_oob_inline">5.10. OOB_INLINE</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="_tcp_no_delay"><a class="link" href="#_tcp_no_delay">5.11. TCP_NO_DELAY</a></h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_http"><a class="link" href="#_http">6. HTTP</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cookie"><a class="link" href="#_cookie">6.1. Cookie</a></h3>
+<div class="paragraph">
+<p>Cookie记录了当前会话的一些数据, 保存在客户端的磁盘或内存中.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="Cookie.svg" alt="Diagram" width="654" height="231">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Set-Cookie头部只能传递一个key/value对, 但可以有多个Set-Cookie头.</p>
+</li>
+<li>
+<p>Cookie属性:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Expires: 设置到指定日期后Cookie失效.</p>
+</li>
+<li>
+<p>Max-Age: 设置经过多少秒后Cookie失效, 优先级大于Expires.</p>
+</li>
+<li>
+<p>Domain: 设置该Cookie可以在哪些域名下访问.</p>
+</li>
+<li>
+<p>Path: 设置该Cookie可以在哪些路径下访问.</p>
+</li>
+<li>
+<p>Secure: 设置只有https协议下才能访问该Cookie.</p>
+</li>
+<li>
+<p>HttpOnly: 设置不能用js访问到该Cookie.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>跨站请求脚本攻击(CSRF): 第三方网站B带上用户本地存储的服务器A的Cookie, 来请求服务器A的接口.</p>
+</div>
+<div class="ulist">
+<div class="title">CSRF防范策略:</div>
+<ul>
+<li>
+<p>校验Referer头是否为本站域名.</p>
+</li>
+<li>
+<p>服务端返回表单中加上隐藏的CSRF Token字段, 表单提交的时候需要校验CSRF Token是否有效.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_重定向"><a class="link" href="#_重定向">6.2. 重定向</a></h3>
+<div class="sect3">
+<h4 id="_永久重定向"><a class="link" href="#_永久重定向">6.2.1. 永久重定向</a></h4>
+<div class="paragraph">
+<p>浏览器会缓存永久重定向的地址.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>301: 使用GET请求新的地址.</p>
+</li>
+<li>
+<p>308: 使用原请求的方法和请求体请求新的地址.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_临时重定向"><a class="link" href="#_临时重定向">6.2.2. 临时重定向</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>302: 使用GET请求新的地址.</p>
+</li>
+<li>
+<p>303: 使用GET请求新的地址(语义与300不同).</p>
+</li>
+<li>
+<p>307: 使用原请求的方法和请求体请求新的地址.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_http_basic"><a class="link" href="#_http_basic">6.3. Http Basic</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="HttpBasic.svg" alt="Diagram" width="1015" height="231">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_http2"><a class="link" href="#_http2">7. HTTP2</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_http2连接结构"><a class="link" href="#_http2连接结构">7.1. HTTP2连接结构</a></h3>
+
+</div>
+<div class="sect2">
+<h3 id="_stream结构"><a class="link" href="#_stream结构">7.2. Stream结构</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>帧长度, 0~16MB. <code>24</code></p>
+</li>
+<li>
+<p>消息内容类型 <code>8</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>DATA</p>
+</li>
+<li>
+<p>HEADERS</p>
+</li>
+<li>
+<p>PRIORITY</p>
+</li>
+<li>
+<p>RST_STREAM</p>
+</li>
+<li>
+<p>SETTING</p>
+</li>
+<li>
+<p>PUSH_PROMISE</p>
+</li>
+<li>
+<p>PING</p>
+</li>
+<li>
+<p>GOAWAY</p>
+</li>
+<li>
+<p>WINDOW_UPDATE</p>
+</li>
+<li>
+<p>CONTINUATION</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>标志 <code>8</code></p>
+</li>
+<li>
+<p>保留位 <code>1</code></p>
+</li>
+<li>
+<p>StreamId: 标识同一条Stream消息, 由客户端建立的流是奇数, 由服务端建立的流是偶数. <code>31</code></p>
+</li>
+<li>
+<p>消息内容</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_网络查看命令行工具"><a class="link" href="#_网络查看命令行工具">8. 网络查看命令行工具</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_netstat"><a class="link" href="#_netstat">8.1. netstat</a></h3>
+<div class="paragraph">
+<p><em>netstat</em> 能够查看所有已连接的TCP/UDP网络连接, 网络协议分析, 端口分析, 查看路由表等.</p>
+</div>
+<div class="sect3">
+<h4 id="_安装"><a class="link" href="#_安装">8.1.1. 安装</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">sudo apt install net-tools</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_命令选项"><a class="link" href="#_命令选项">8.1.2. 命令选项</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>-l</code> 显示所有正在 <code>listen</code> 的socket</p>
+</li>
+<li>
+<p><code>-a</code> 显示所有的socket</p>
+</li>
+<li>
+<p><code>-r</code> 显示路由表</p>
+</li>
+<li>
+<p><code>-i</code> 显示所有接口</p>
+</li>
+<li>
+<p><code>-g</code> 显示所有广播组</p>
+</li>
+<li>
+<p><code>-s</code> 显示网络使用情况</p>
+</li>
+<li>
+<p><code>-M</code> 显示所有伪装的链接</p>
+</li>
+<li>
+<p><code>-v</code> 显示详细信息</p>
+</li>
+<li>
+<p><code>-W</code> 显示时不截断ip地址</p>
+</li>
+<li>
+<p><code>-n</code> 不解析主机名</p>
+</li>
+<li>
+<p><code>-e</code> 显示更多信息</p>
+</li>
+<li>
+<p><code>-p</code> 显示socket的进程id</p>
+</li>
+<li>
+<p><code>-o</code> 显示所有的定时器</p>
+</li>
+<li>
+<p><code>-F</code> 显示转发信息</p>
+</li>
+<li>
+<p><code>-C</code> 显示路由缓存</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_命令示例"><a class="link" href="#_命令示例">8.1.3. 命令示例</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># 查看端口占用的进程
+sudo netstat -lnp | grep 22| awk '{print $NF}'
+
+# 查看IPv4监听的端口列表
+sudo netstat -vutlnp --listening -4
+
+# 查看tcp使用情况分析
+sudo netstat -st
+
+# 查看所有监听的unix socket
+sudo netstat -lx</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ss"><a class="link" href="#_ss">8.2. ss</a></h3>
+<div class="paragraph">
+<p>ss相比于netstat还能够查看更多socket信息.</p>
+</div>
+<div class="sect3">
+<h4 id="_安装_2"><a class="link" href="#_安装_2">8.2.1. 安装</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">sudo apt install iproute2 iproute2-doc</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_命令选项_2"><a class="link" href="#_命令选项_2">8.2.2. 命令选项</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>-n</code> 不解析服务名称</p>
+</li>
+<li>
+<p><code>-r</code> 解析主机</p>
+</li>
+<li>
+<p><code>-l</code> 显示所有监听中的socket</p>
+</li>
+<li>
+<p><code>-o</code> 显示所有的定时器</p>
+</li>
+<li>
+<p><code>-e</code> 显示socket详细信息</p>
+</li>
+<li>
+<p><code>-m</code> 显示socket内存使用</p>
+</li>
+<li>
+<p><code>-p</code> 显示socket所属的进程</p>
+</li>
+<li>
+<p><code>-s</code> 显示socket使用概况</p>
+</li>
+<li>
+<p><code>-4</code> 仅显示 IPv4 socket</p>
+</li>
+<li>
+<p><code>-6</code> 仅显示 IPv6 socket</p>
+</li>
+<li>
+<p><code>–0</code> 显示 PACKET sockets</p>
+</li>
+<li>
+<p><code>-t</code> 显示 TCP sockets</p>
+</li>
+<li>
+<p><code>-S</code> 显示 SCTP sockets</p>
+</li>
+<li>
+<p><code>-u</code> 显示 UDP sockets</p>
+</li>
+<li>
+<p><code>-w</code> 显示 RAW sockets</p>
+</li>
+<li>
+<p><code>-x</code> 显示 Unix domain sockets</p>
+</li>
+<li>
+<p><code>-f</code> 显示指定FAMILY_TYPE的sockets, 支持 unix, inet, inet6, link, netlink</p>
+</li>
+<li>
+<p><code>-tun</code> 不解析主机名</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_命令示例_2"><a class="link" href="#_命令示例_2">8.2.3. 命令示例</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs"># 查看指定目标地址/端口的连接
+ss dst 192.168.0.2
+
+# 查看指定状态的socket
+ss state ESTABLISHED
+
+# 查看port小于1024的socket
+ss -n sport \&lt; 1024</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix"><a class="link" href="#_appendix">9. Appendix</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>路由器的主要功能和特性是什么？</p>
+</li>
+<li>
+<p>在小型路由网络中，如何将设备连接起来？</p>
+</li>
+<li>
+<p>如何使用CLI配置路由器上的基本设置，以实现两个直连网络之间的路由？</p>
+</li>
+<li>
+<p>如何检验直连到路由器的两个网络之间的连接？</p>
+</li>
+<li>
+<p>在接口之间交换数据包时，路由器使用的封装和解封装的过程是什么？</p>
+</li>
+<li>
+<p>什么是路由器的路径决定功能？</p>
+</li>
+<li>
+<p>直连网络的路由表条目是什么？</p>
+</li>
+<li>
+<p>路由器如何创建直连网络的路由表？</p>
+</li>
+<li>
+<p>路由器如何使用静态路由创建路由表？</p>
+</li>
+<li>
+<p>路由器如何使用动态路由协议创建路由表？</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-10-12 20:12:19 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Java</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Java</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_数据类型">1. 数据类型</a></li>
+<li><a href="#_位运算符">2. 位运算符</a></li>
+<li><a href="#_字符编码">3. 字符编码</a>
+<ul class="sectlevel2">
+<li><a href="#_ascii">3.1. ASCII</a></li>
+<li><a href="#_unicode">3.2. Unicode</a>
+<ul class="sectlevel3">
+<li><a href="#_utf_8">3.2.1. UTF-8</a></li>
+<li><a href="#_utf_16">3.2.2. UTF-16</a></li>
+<li><a href="#_utf_32">3.2.3. UTF-32</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_浮点数">4. 浮点数</a>
+<ul class="sectlevel2">
+<li><a href="#_浮点数的表示方法">4.1. 浮点数的表示方法</a></li>
+<li><a href="#_浮点数的存储方法">4.2. 浮点数的存储方法</a></li>
+<li><a href="#_浮点数的分类">4.3. 浮点数的分类</a>
+<ul class="sectlevel3">
+<li><a href="#_规范化浮点数">4.3.1. 规范化浮点数</a></li>
+<li><a href="#_非规范化浮点数">4.3.2. 非规范化浮点数</a></li>
+<li><a href="#_无穷大">4.3.3. 无穷大</a></li>
+<li><a href="#_nan">4.3.4. NaN</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_面向对象">5. 面向对象</a>
+<ul class="sectlevel2">
+<li><a href="#_可见性">5.1. 可见性</a></li>
+<li><a href="#_重载">5.2. 重载</a></li>
+<li><a href="#_重写">5.3. 重写</a></li>
+<li><a href="#_接口default方法判定">5.4. 接口default方法判定</a></li>
+<li><a href="#_内部类">5.5. 内部类</a>
+<ul class="sectlevel3">
+<li><a href="#_静态内部类">5.5.1. 静态内部类</a></li>
+<li><a href="#_成员内部类">5.5.2. 成员内部类</a></li>
+<li><a href="#_匿名内部类">5.5.3. 匿名内部类</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_异常">6. 异常</a>
+<ul class="sectlevel2">
+<li><a href="#_checked_exception">6.1. Checked Exception</a></li>
+<li><a href="#_unchecked_exception">6.2. Unchecked Exception</a></li>
+</ul>
+</li>
+<li><a href="#_注解">7. 注解</a>
+<ul class="sectlevel2">
+<li><a href="#_重复注解">7.1. 重复注解</a></li>
+<li><a href="#_retention">7.2. Retention</a></li>
+<li><a href="#_target">7.3. Target</a></li>
+</ul>
+</li>
+<li><a href="#_枚举">8. 枚举</a>
+<ul class="sectlevel2">
+<li><a href="#_枚举类方法">8.1. 枚举类方法</a></li>
+<li><a href="#_enumset">8.2. EnumSet</a></li>
+<li><a href="#_enummap">8.3. EnumMap</a></li>
+</ul>
+</li>
+<li><a href="#_序列化">9. 序列化</a></li>
+<li><a href="#_泛型">10. 泛型</a></li>
+<li><a href="#_classloader">11. ClassLoader</a></li>
+<li><a href="#_stream">12. Stream</a>
+<ul class="sectlevel2">
+<li><a href="#_中间操作">12.1. 中间操作</a></li>
+<li><a href="#_结束操作">12.2. 结束操作</a></li>
+</ul>
+</li>
+<li><a href="#_jdbc">13. JDBC</a>
+<ul class="sectlevel2">
+<li><a href="#_statement">13.1. Statement</a></li>
+<li><a href="#_resultset">13.2. ResultSet</a></li>
+</ul>
+</li>
+<li><a href="#_nio">14. NIO</a>
+<ul class="sectlevel2">
+<li><a href="#_channel">14.1. Channel</a>
+<ul class="sectlevel3">
+<li><a href="#_channel和stream的区别">14.1.1. Channel和Stream的区别</a></li>
+</ul>
+</li>
+<li><a href="#_buffer">14.2. Buffer</a></li>
+<li><a href="#_selector">14.3. Selector</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">Resources</div>
+<ul>
+<li>
+<p><a href="https://book.douban.com/subject/30133440" class="bare" target="blank">https://book.douban.com/subject/30133440</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/34907497" class="bare" target="blank">https://book.douban.com/subject/34907497</a></p>
+</li>
+<li>
+<p><a href="https://book.douban.com/subject/26740520" class="bare" target="blank">https://book.douban.com/subject/26740520</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据类型"><a class="link" href="#_数据类型">1. 数据类型</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>基本数据类型</p>
+<div class="ulist">
+<ul>
+<li>
+<p>byte \$-2^7 ~ 2*7-1\$</p>
+</li>
+<li>
+<p>short \$-2^15~2^15-1\$</p>
+</li>
+<li>
+<p>int \$-2^31~2^31-1\$</p>
+</li>
+<li>
+<p>long \$-2^63~2^63-1\$</p>
+</li>
+<li>
+<p>boolean</p>
+</li>
+<li>
+<p>char <code>Unicode</code> \$0~2^16-1\$</p>
+</li>
+<li>
+<p>float <code>IEEE754</code></p>
+</li>
+<li>
+<p>double <code>IEEE754</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>引用数据类型</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Class</p>
+</li>
+<li>
+<p>Interface</p>
+</li>
+<li>
+<p>Array</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_位运算符"><a class="link" href="#_位运算符">2. 位运算符</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>&lt;&lt;</code> 左移运算符, 向左移n位, 右边补0.</p>
+</li>
+<li>
+<p><code>&gt;&gt;</code> 带符号右移, 向右移n位, 左边补第1位的值.</p>
+</li>
+<li>
+<p><code>&gt;&gt;&gt;</code> 无符号右移, 向右移n位, 左边补0.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_字符编码"><a class="link" href="#_字符编码">3. 字符编码</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_ascii"><a class="link" href="#_ascii">3.1. ASCII</a></h3>
+<div class="paragraph">
+<p>用0~127分别表示128个字符.<br>
+1个字节大小</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unicode"><a class="link" href="#_unicode">3.2. Unicode</a></h3>
+<div class="paragraph">
+<p>给每个字符分配一个16进制的数字编号, 数字编号范围从0x000000到0x10FFFF.<br>
+但是Unicode本身没有定数字编号到二进制之间的转换关系.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="unicode.svg" alt="unicode" width="212" height="221">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_utf_8"><a class="link" href="#_utf_8">3.2.1. UTF-8</a></h4>
+<div class="ulist">
+<div class="title">UTF-8 使用一至四个字节为每个字符编码</div>
+<ul>
+<li>
+<p>对于单字节字符, 首位为0, 后面7位表示字符</p>
+</li>
+<li>
+<p>对于多字节字符, 第一个字节以n个1和一个0开头, 其他字节以10开头, 再从后往前补齐二进制位.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_utf_16"><a class="link" href="#_utf_16">3.2.2. UTF-16</a></h4>
+<div class="ulist">
+<div class="title">UTF-16 使用二或四个字节为每个字符编码</div>
+<ul>
+<li>
+<p>存在一个起始字节序列, <code>FFFE/FEFF</code> 标识小端/大端.</p>
+</li>
+<li>
+<p>Unicode码小于U+10000的，直接转换为UTF-16双字节序列.</p>
+</li>
+<li>
+<p>大于等于U+10000的, 先减去0x10000, 再分别分成10个比特位.<br>
+高位前面用 <code>110110</code> 填充, 低位前面用 <code>110111</code> 填充.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_utf_32"><a class="link" href="#_utf_32">3.2.3. UTF-32</a></h4>
+<div class="olist arabic">
+<div class="title">UTF-32 使用四个字节为每个字符编码</div>
+<ol class="arabic">
+<li>
+<p>存在一个起始字节序列, <code>0000FEFF/FFFE0000</code> 分别标识大端/小端.</p>
+</li>
+<li>
+<p>将Unicode码分成四个字节, 高位不足的补0.</p>
+</li>
+</ol>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">字符</th>
+<th class="tableblock halign-left valign-top">Unicode</th>
+<th class="tableblock halign-left valign-top">UTF-8</th>
+<th class="tableblock halign-left valign-top">UTF-16</th>
+<th class="tableblock halign-left valign-top">UTF-32</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,01000001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">01000001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,01000001</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,00000000,00000000,01000001</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">؆</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000110,00000110</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11011000,10000110</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000110,00000110</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,00000000,00000110,00000110</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">严</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">01001110,00100101</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11100100,10111000,10100101</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">01001110,00100101</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,00000000,01001110,00100101</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">𠀲</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11011000,01000000,11011100,00110010</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11110000,10100000,10000000,10110010</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11011000,01000000,11011100,00110010</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">00000000,00000010,00000000,00110010</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_浮点数"><a class="link" href="#_浮点数">4. 浮点数</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_浮点数的表示方法"><a class="link" href="#_浮点数的表示方法">4.1. 浮点数的表示方法</a></h3>
+<div class="paragraph">
+<p>\$V=(-1)^s*M*2^E\$</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>S: 符号位, 决定是正数还是负数, 1代表负数.</p>
+</li>
+<li>
+<p>E: 阶码, 值是2的幂, 它的作用是对浮点数加权.</p>
+</li>
+<li>
+<p>M: 尾数.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_浮点数的存储方法"><a class="link" href="#_浮点数的存储方法">4.2. 浮点数的存储方法</a></h3>
+<div class="paragraph">
+<p>一个浮点数被分为三部分存储:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>s</code> : 符号位标识正数还是负数.</p>
+</li>
+<li>
+<p><code>exp</code> : k位阶码字段, 与E相关.Bias=\$2^(k-1)-1\$</p>
+<div class="ulist">
+<ul>
+<li>
+<p>单精度为8位.<br>
+Bias=127.</p>
+</li>
+<li>
+<p>双精度为11位.<br>
+Bias=1023.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>frac</code> : n位小数字段, 与M相关.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_浮点数的分类"><a class="link" href="#_浮点数的分类">4.3. 浮点数的分类</a></h3>
+<div class="sect3">
+<h4 id="_规范化浮点数"><a class="link" href="#_规范化浮点数">4.3.1. 规范化浮点数</a></h4>
+<div class="paragraph lead">
+<p><code>exp</code> 部分不全为0或1.</p>
+</div>
+<div class="paragraph">
+<p>E=exp-Bias.<br>
+M=frac+1. (规范化浮点数首位为1, 所以M=frac+1)</p>
+</div>
+<div class="paragraph">
+<p>如 0.10111, 可以表示为 \$1.0111* 2^(-1)\$ , frac=0.0111, M=frac+1=1.0111</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_非规范化浮点数"><a class="link" href="#_非规范化浮点数">4.3.2. 非规范化浮点数</a></h4>
+<div class="paragraph lead">
+<p><code>exp</code> 部分全为0.</p>
+</div>
+<div class="paragraph">
+<p>E=1-Bias, M=frac.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_无穷大"><a class="link" href="#_无穷大">4.3.3. 无穷大</a></h4>
+<div class="paragraph lead">
+<p><code>exp</code> 部分全为1, <code>frac</code> 部分全为0.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_nan"><a class="link" href="#_nan">4.3.4. NaN</a></h4>
+<div class="paragraph lead">
+<p><code>exp</code> 部分全为1, <code>frac</code> 部分不等于0.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_面向对象"><a class="link" href="#_面向对象">5. 面向对象</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_可见性"><a class="link" href="#_可见性">5.1. 可见性</a></h3>
+<div class="paragraph">
+<p>private &lt; default &lt; protected &lt; public</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>private</code> : 只能在类的内部访问.</p>
+</li>
+<li>
+<p><code>default</code> : 只能被同一个包中其他类访问.<br>
+(子包也不能访问)</p>
+</li>
+<li>
+<p><code>protected</code> : 可以被子类或同一个包中其他类访问.</p>
+</li>
+<li>
+<p><code>public</code> : 可以被任意类访问.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_重载"><a class="link" href="#_重载">5.2. 重载</a></h3>
+<div class="paragraph">
+<p>重载指同一个类内方法名称相同, 但参数类型/声明的异常/返回值类型不同.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_重写"><a class="link" href="#_重写">5.3. 重写</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>参数列表必须相同.</p>
+</li>
+<li>
+<p>子类可以提升方法的可见性.</p>
+</li>
+<li>
+<p>子类抛出的checked异常必须与父类相同, 或是父类抛出checked异常的子类, 或者不抛.</p>
+</li>
+<li>
+<p>子类方法的返回值可以是父类返回值类型的子类.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_接口default方法判定"><a class="link" href="#_接口default方法判定">5.4. 接口default方法判定</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Class优先.</p>
+</li>
+<li>
+<p>子接口优先.</p>
+</li>
+<li>
+<p>无法确定需用 <code>类名.super</code> 显式调用.</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Class#getDeclaredMethods不包含从父类继承过来的方法.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_内部类"><a class="link" href="#_内部类">5.5. 内部类</a></h3>
+<div class="sect3">
+<h4 id="_静态内部类"><a class="link" href="#_静态内部类">5.5.1. 静态内部类</a></h4>
+<div class="paragraph">
+<p>静态内部类可以访问外部类的private静态变量和方法, 但不可以访问外部类的实例变量或方法.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_成员内部类"><a class="link" href="#_成员内部类">5.5.2. 成员内部类</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>成员内部类可以访问外部类的实例变量和方法.</p>
+</li>
+<li>
+<p>成员内部类不可以自己定义静态变量和方法.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_匿名内部类"><a class="link" href="#_匿名内部类">5.5.3. 匿名内部类</a></h4>
+<div class="paragraph">
+<p>匿名内部类方法参数属于final, 不能修改值/引用.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_异常"><a class="link" href="#_异常">6. 异常</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_checked_exception"><a class="link" href="#_checked_exception">6.1. Checked Exception</a></h3>
+<div class="paragraph">
+<p>继承Exception但不是RuntimeException的异常类.<br>
+需要程序手动处理.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unchecked_exception"><a class="link" href="#_unchecked_exception">6.2. Unchecked Exception</a></h3>
+<div class="paragraph">
+<p>继承RuntimeException/Error的异常类.<br>
+程序可以选择捕获处理, 也可以不处理.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_注解"><a class="link" href="#_注解">7. 注解</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_重复注解"><a class="link" href="#_重复注解">7.1. 重复注解</a></h3>
+<div class="paragraph">
+<p><code>@Repeatable(xxx.class) &amp; getAnnotationsByType(xxx.class);</code></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_retention"><a class="link" href="#_retention">7.2. Retention</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top">源码</th>
+<th class="tableblock halign-left valign-top">字节码文件</th>
+<th class="tableblock halign-left valign-top">运行时获取</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Source</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Class</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Runtime</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">√</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_target"><a class="link" href="#_target">7.3. Target</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Type: 类、接口、注解、枚举</p>
+</li>
+<li>
+<p>Field: 字段</p>
+</li>
+<li>
+<p>Method: 方法</p>
+</li>
+<li>
+<p>Parameter: 方法参数</p>
+</li>
+<li>
+<p>Constructor: 构造函数</p>
+</li>
+<li>
+<p>Local_Variable: 局部变量</p>
+</li>
+<li>
+<p>Annotation_Type: 只能用在注解上</p>
+</li>
+<li>
+<p>Package: 包声明上</p>
+</li>
+<li>
+<p>Type_Parameter: 类参数, 尚未参透</p>
+</li>
+<li>
+<p>Type_Use: 用在任何声明&amp;定义的类型处</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_枚举"><a class="link" href="#_枚举">8. 枚举</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_枚举类方法"><a class="link" href="#_枚举类方法">8.1. 枚举类方法</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>values() 返回所有枚举常量</p>
+</li>
+<li>
+<p>valueOf(String) 返回名字对应的枚举常量</p>
+</li>
+<li>
+<p>name() 返回枚举常量名字</p>
+</li>
+<li>
+<p>oridinal() 返回枚举常量的序号</p>
+</li>
+<li>
+<p>compareTo() 比较枚举常量的序号</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_enumset"><a class="link" href="#_enumset">8.2. EnumSet</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>EnumSet.allOf(Enum.class) 返回包含所有枚举常量的集合</p>
+</li>
+<li>
+<p>EnumSet.rangOf(EnumA,EnumB) 返回A与B之间所有的枚举常量, 包括边界</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_enummap"><a class="link" href="#_enummap">8.3. EnumMap</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>EnumMap#entrySet 为空,forearch用不了, 只能手动put ==to fix==</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_序列化"><a class="link" href="#_序列化">9. 序列化</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>serialVersionUID标识类的序列化的版本号,如果反序列化时当前类的版本号与序列化的二进制流对象的版本号不一致则会抛出异常.</p>
+</li>
+<li>
+<p>序列化时会调用readObject方法,反序列化时会调用writeObject方法.</p>
+</li>
+<li>
+<p>序列化再反序列化后静态成员变量值为最新的.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_泛型"><a class="link" href="#_泛型">10. 泛型</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>上界通配符 <code>&lt;? extends T&gt;</code> 只能get到泛型边界类型</p>
+</li>
+<li>
+<p>下界通配符 <code>&lt;? super T&gt;</code> 只能get到Object类型, add时只能传泛型边界的类型.</p>
+</li>
+<li>
+<p>取不到一个类定义的泛型类型(T), 只能取其子类或父类具体的泛型类型(Long,String&#8230;&#8203;).</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">package me.jy.lang.generic;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * @author jy
+ */
+public class GenericDemo {
+
+    public static void main(String[] args) {
+        // A -&gt; B -&gt; C
+        Example&lt;? extends B&gt; eba = new Example&lt;A&gt;();
+        Example&lt;? extends B&gt; ebb = new Example&lt;B&gt;();
+//        Example&lt;? extends B&gt; ebc = new Example&lt;C&gt;(); // error, C不是B的子类
+
+//        Example&lt;? super B&gt; sba = new Example&lt;A&gt;(); // error, A不是B的父类
+        Example&lt;? super B&gt; sbb = new Example&lt;B&gt;();
+        Example&lt;? super B&gt; sbc = new Example&lt;C&gt;();
+
+        List&lt;? super B&gt; superList = Arrays.asList(1, new C(), new B(), new A());
+        Object s0 = superList.get(0); // get返回Object类型
+        System.out.println(s0);
+//        A s1 = (A) superList.get(0); // 编译通过, 但运行时抛出ClassCastException
+
+        List&lt;? extends C&gt; extendsList = Arrays.asList(new A(), new B(), new C());
+        C c = extendsList.get(0);
+//        extendsList.add(new C()); // error, 无法add任何类型
+
+        System.out.println(new SubExample().getGenericType());
+    }
+
+    private static class SubExample extends Example&lt;Integer&gt;{
+
+    }
+
+    private static class Example&lt;T&gt; {
+
+        // 获取泛型类型
+        public Type getGenericType(){
+            ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+            return parameterizedType.getActualTypeArguments()[0];
+        }
+    }
+
+    private static class C {
+    }
+
+    private static class B extends C {
+    }
+
+    private static class A extends B {
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_classloader"><a class="link" href="#_classloader">11. ClassLoader</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>loadClass 实现双亲委托模型</p>
+</li>
+<li>
+<p>findClass 实现类文件读取</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_stream"><a class="link" href="#_stream">12. Stream</a></h2>
+<div class="sectionbody">
+<div class="paragraph lead">
+<p>一个完整的操作是&lt;数据来源,操作,回调函数&gt;构成的三元组.<br>
+Stream中使用Stage的概念来描述一个完整的操作, 并用某种实例化后的PipelineHelper来代表Stage, 将具有先后顺序的各个Stage连到一起, 就构成了整个流水线.</p>
+</div>
+<div class="sect2">
+<h3 id="_中间操作"><a class="link" href="#_中间操作">12.1. 中间操作</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>无状态:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>unordered</p>
+</li>
+<li>
+<p>filter</p>
+</li>
+<li>
+<p>map</p>
+</li>
+<li>
+<p>mapToInt</p>
+</li>
+<li>
+<p>mapToLong</p>
+</li>
+<li>
+<p>mapToDouble</p>
+</li>
+<li>
+<p>flatMap</p>
+</li>
+<li>
+<p>flatMapToInt</p>
+</li>
+<li>
+<p>flatMapToLong</p>
+</li>
+<li>
+<p>flatMapToDouble</p>
+</li>
+<li>
+<p>peek</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>有状态</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>distinct</p>
+</li>
+<li>
+<p>sorted</p>
+</li>
+<li>
+<p>limit</p>
+</li>
+<li>
+<p>skip</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_结束操作"><a class="link" href="#_结束操作">12.2. 结束操作</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>非短路操作</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>forEach</p>
+</li>
+<li>
+<p>forEachOrdered</p>
+</li>
+<li>
+<p>toArray</p>
+</li>
+<li>
+<p>reduce</p>
+</li>
+<li>
+<p>collect</p>
+</li>
+<li>
+<p>max</p>
+</li>
+<li>
+<p>min</p>
+</li>
+<li>
+<p>count</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>短路操作</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>anyMatch</p>
+</li>
+<li>
+<p>allMatch</p>
+</li>
+<li>
+<p>noneMatch</p>
+</li>
+<li>
+<p>findFirst</p>
+</li>
+<li>
+<p>findAny</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_jdbc"><a class="link" href="#_jdbc">13. JDBC</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_statement"><a class="link" href="#_statement">13.1. Statement</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>同一个connection可以创建多个 <code>Statement</code>.</p>
+</li>
+<li>
+<p>在处理 <code>ResultSet</code> 的结果时也可以创建另外一个 <code>Statement</code>.</p>
+</li>
+<li>
+<p><code>Statement</code> 不是线程安全的.</p>
+</li>
+<li>
+<p>用完后需要close.</p>
+</li>
+<li>
+<p>SQL语句中如果需要使用包含 <code>?</code> 符号的函数可以使用 <code>??</code> 转义.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resultset"><a class="link" href="#_resultset">13.2. ResultSet</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>在获取结果集前需要调用 <code>next()</code> 方法.</p>
+</li>
+<li>
+<p>使用 <code>Statement</code> 获取 <code>ResultSet</code> 后, 当前使用中的 <code>ResultSet</code> 会直接关闭.</p>
+</li>
+<li>
+<p>用完后需要close.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_nio"><a class="link" href="#_nio">14. NIO</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_channel"><a class="link" href="#_channel">14.1. Channel</a></h3>
+<div class="paragraph">
+<p>Channel代表程序和某一个文件描述符的连接, 可以是文件(FileChannel), 或者是套接字(DatagramChannel/SocketChannel/ServerSocketChannel).</p>
+</div>
+<div class="sect3">
+<h4 id="_channel和stream的区别"><a class="link" href="#_channel和stream的区别">14.1.1. Channel和Stream的区别</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Stream只能是单向的, 分为InputStream和OutputStream, 而Channel可以使双向的.</p>
+</li>
+<li>
+<p>Stream的read和write是阻塞的, 而Channel支持非阻塞模式.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_buffer"><a class="link" href="#_buffer">14.2. Buffer</a></h3>
+<div class="paragraph">
+<p>Buffer是一个存放基本类型(除了boolean)数据的容器, 拥有以下属性/方法:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>capacity: Buffer总的容量.</p>
+</li>
+<li>
+<p>position: 当前可以写入的位置.</p>
+</li>
+<li>
+<p>limit: 能够写入的最后一个位置.</p>
+</li>
+<li>
+<p>mark: 记录上一次读写开始的位置(position).</p>
+</li>
+<li>
+<p>flip(): 将position赋值给limit, 再将position设置为0, 重置mark, 用于读取Buffer内容.</p>
+</li>
+<li>
+<p>rewind(): 将position设置为0, 重置mark, 用于重新读取Buffer内容, 如读取同一个Buffer然后写入多个Channel时.</p>
+</li>
+<li>
+<p>mark(): 将position赋值给mark, 记录一下当前position.</p>
+</li>
+<li>
+<p>reset(): 重置position为上一次的position.</p>
+</li>
+<li>
+<p>clear(): 重置所有变量: position=0, mark=-1, limit=capacity.</p>
+</li>
+<li>
+<p>compact(): 将position和limit中间的数据拷贝到Buffer开头, 然后将position指向这段数据的下一个位置.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_selector"><a class="link" href="#_selector">14.3. Selector</a></h3>
+<div class="paragraph">
+<p>Selector负责收集通道的事件.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2021-03-03 14:23:36 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Prometheus</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Prometheus</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_术语">1. 术语</a></li>
+<li><a href="#_安装">2. 安装</a></li>
+<li><a href="#_promql">3. PromQL</a>
+<ul class="sectlevel2">
+<li><a href="#_查询类型">3.1. 查询类型</a></li>
+<li><a href="#_操作符">3.2. 操作符</a>
+<ul class="sectlevel3">
+<li><a href="#_算术类运算符">3.2.1. 算术类运算符</a></li>
+<li><a href="#_比较类运算符">3.2.2. 比较类运算符</a></li>
+<li><a href="#_逻辑类运算符">3.2.3. 逻辑类运算符</a></li>
+<li><a href="#_聚合操作符">3.2.4. 聚合操作符</a></li>
+</ul>
+</li>
+<li><a href="#_向量匹配">3.3. 向量匹配</a>
+<ul class="sectlevel3">
+<li><a href="#_one_to_one">3.3.1. one-to-one</a></li>
+</ul>
+</li>
+<li><a href="#_one_to_many">3.4. one-to-many</a></li>
+</ul>
+</li>
+<li><a href="#_告警">4. 告警</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Prometheus 是一个时序型数据库, 广泛用于监控及报警.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_术语"><a class="link" href="#_术语">1. 术语</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>metric: 度量指标, 由一个名字加若干个label组成. 比如 <code>http_request_total{method="POST", path="/api/login"}</code> , 该metric名字为 <code>http_request_total</code>, 有两个label: <code>method</code> 和 <code>path</code> .</p>
+</li>
+<li>
+<p>metric类型:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Counter: 一种累加的计数器.<br>
+比如 <em>请求数</em> .</p>
+</li>
+<li>
+<p>Gauge: 一个瞬时的数值, 比如 <em>内存使用率</em> .</p>
+</li>
+<li>
+<p>Histogram(直方图):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>将数据按照一定的区间分组查看.</p>
+</li>
+<li>
+<p>数据累计求和.</p>
+</li>
+<li>
+<p>数据量计数.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Summary(数据摘要):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>数值百分位查看.</p>
+</li>
+<li>
+<p>数据累计求和.</p>
+</li>
+<li>
+<p>数据量计数.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>instance: 一个暴露metrics端点的进程.</p>
+</li>
+<li>
+<p>job: 同一类别的instance. 比如启动4个api服务, 每个服务都是一个instance, 这4个服务同属于一个 <code>api</code> job.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">2. 安装</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yaml" class="language-yaml hljs">version: '3'
+services:
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        volumes:
+            - /data/softs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            - /data/softs/prometheus/:/prometheus/
+        ports:
+            - 19000:9090
+        networks:
+            - promethus
+networks:
+    promethus:</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_promql"><a class="link" href="#_promql">3. PromQL</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>用于 <code>Prometheus</code> 数据查询的DSL语言.</p>
+</div>
+<div class="sect2">
+<h3 id="_查询类型"><a class="link" href="#_查询类型">3.1. 查询类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>瞬时Selector <code>Instant vector</code> : 查询一组时序数据, 比如 <code>http_requests_total</code> .</p>
+</li>
+<li>
+<p>区间Selector <code>Range vector</code> :</p>
+<div class="ulist">
+<ul>
+<li>
+<p>查询过去一段时间内的时序数据, 比如 <code>http_requests_total[5m]</code> 查询过去5分钟内的数据.</p>
+</li>
+<li>
+<p>查询一段时间前的数据, 比如 <code>http_requests_total offset 1w</code> 查询过去1星期前的数据.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>表量Selector <code>Scalar</code> : 一个瞬时数值.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_操作符"><a class="link" href="#_操作符">3.2. 操作符</a></h3>
+<div class="sect3">
+<h4 id="_算术类运算符"><a class="link" href="#_算术类运算符">3.2.1. 算术类运算符</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>+</code></p>
+</li>
+<li>
+<p><code>-</code></p>
+</li>
+<li>
+<p><code>*</code></p>
+</li>
+<li>
+<p><code>/</code></p>
+</li>
+<li>
+<p><code>%</code></p>
+</li>
+<li>
+<p><code>^</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_比较类运算符"><a class="link" href="#_比较类运算符">3.2.2. 比较类运算符</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>==</code></p>
+</li>
+<li>
+<p><code>!=</code></p>
+</li>
+<li>
+<p><code>&gt;</code></p>
+</li>
+<li>
+<p><code>&lt;</code></p>
+</li>
+<li>
+<p><code>&gt;=</code></p>
+</li>
+<li>
+<p><code>&lt;=</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_逻辑类运算符"><a class="link" href="#_逻辑类运算符">3.2.3. 逻辑类运算符</a></h4>
+<div class="paragraph">
+<p>逻辑类运算符仅作用于向量和向量.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>and <code>交集</code></p>
+</li>
+<li>
+<p>or <code>并集</code></p>
+</li>
+<li>
+<p>unless <code>补集</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_聚合操作符"><a class="link" href="#_聚合操作符">3.2.4. 聚合操作符</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sum</code></p>
+</li>
+<li>
+<p><code>min</code></p>
+</li>
+<li>
+<p><code>max</code></p>
+</li>
+<li>
+<p><code>avg</code></p>
+</li>
+<li>
+<p><code>stddev</code></p>
+</li>
+<li>
+<p><code>stdvar</code></p>
+</li>
+<li>
+<p><code>count</code></p>
+</li>
+<li>
+<p><code>count_values</code></p>
+</li>
+<li>
+<p><code>bottomk</code></p>
+</li>
+<li>
+<p><code>topk</code></p>
+</li>
+<li>
+<p><code>quantile</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_向量匹配"><a class="link" href="#_向量匹配">3.3. 向量匹配</a></h3>
+<div class="listingblock">
+<div class="title">样例数据</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">method_code:http_errors:rate5m{method="get", code="500"}  24
+method_code:http_errors:rate5m{method="get", code="404"}  30
+method_code:http_errors:rate5m{method="put", code="501"}  3
+method_code:http_errors:rate5m{method="post", code="500"} 6
+method_code:http_errors:rate5m{method="post", code="404"} 21
+
+method:http_requests:rate5m{method="get"}  600
+method:http_requests:rate5m{method="del"}  34
+method:http_requests:rate5m{method="post"} 120</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_one_to_one"><a class="link" href="#_one_to_one">3.3.1. one-to-one</a></h4>
+<div class="paragraph">
+<p>匹配 <code>label</code> 相同的向量, 可以使用 <code>ignoring</code> 忽略不参与匹配的 <code>label</code> , 或使用 <code>on</code> 指定参与匹配的 <code>label</code> .</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>method_code:http_errors:rate5m{code="500"} / ignoring(code) method:http_requests:rate5m</code> : 忽略 <code>code</code> , 只匹配 <code>method</code> .</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>{method="get"}  0.04            //  24 / 600</code></p>
+</li>
+<li>
+<p><code>{method="post"} 0.05            //   6 / 120</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>method_code:http_errors:rate5m{code="500"} / on(method) method:http_requests:rate5m</code> : 只匹配 <code>method</code> .</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_one_to_many"><a class="link" href="#_one_to_many">3.4. one-to-many</a></h3>
+<div class="paragraph">
+<p>使用 <code>group_left/group_right</code> 指明哪方元素多.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>method_code:http_errors:rate5m / on(method) group_left method:http_requests:rate5m</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>{method="get", code="500"}  0.04            //  24 / 600</code></p>
+</li>
+<li>
+<p><code>{method="get", code="404"}  0.05            //  30 / 600</code></p>
+</li>
+<li>
+<p><code>{method="post", code="500"} 0.05            //   6 / 120</code></p>
+</li>
+<li>
+<p><code>{method="post", code="404"} 0.175           //  21 / 120</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_告警"><a class="link" href="#_告警">4. 告警</a></h2>
+<div class="sectionbody">
+
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2019-11-13 10:53:59 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

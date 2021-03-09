@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>SpringSession</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>SpringSession</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_功能描述">1. 功能描述</a></li>
+<li><a href="#_使用">2. 使用</a>
+<ul class="sectlevel2">
+<li><a href="#_引入依赖">2.1. 引入依赖</a></li>
+<li><a href="#_添加session配置">2.2. 添加session配置</a></li>
+<li><a href="#_设置token位置为headeroptional">2.3. 设置token位置为header(Optional)</a></li>
+<li><a href="#_写个接口">2.4. 写个接口</a></li>
+<li><a href="#_测试一下">2.5. 测试一下</a></li>
+</ul>
+</li>
+<li><a href="#_核心类">3. 核心类</a>
+<ul class="sectlevel2">
+<li><a href="#_session">3.1. Session</a></li>
+<li><a href="#_sessionrepository">3.2. SessionRepository</a></li>
+<li><a href="#_sessionrepositoryrequestwrapper">3.3. SessionRepositoryRequestWrapper</a></li>
+<li><a href="#_sessionrepositoryresponsewrapper">3.4. SessionRepositoryResponseWrapper</a></li>
+<li><a href="#_sessionrepositoryfilter">3.5. SessionRepositoryFilter</a></li>
+</ul>
+</li>
+<li><a href="#_启动流程">4. 启动流程</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_功能描述"><a class="link" href="#_功能描述">1. 功能描述</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>提供开箱即用的集中式用户session管理, 从而不需要依赖web应用容器.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_使用"><a class="link" href="#_使用">2. 使用</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_引入依赖"><a class="link" href="#_引入依赖">2.1. 引入依赖</a></h3>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.session&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-session-data-redis&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-configuration-processor&lt;/artifactId&gt;
+            &lt;optional&gt;true&lt;/optional&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+            &lt;artifactId&gt;junit-jupiter-engine&lt;/artifactId&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.junit.platform&lt;/groupId&gt;
+            &lt;artifactId&gt;junit-platform-launcher&lt;/artifactId&gt;
+        &lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_添加session配置"><a class="link" href="#_添加session配置">2.2. 添加session配置</a></h3>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">spring:
+    application:
+        name: session-demo
+    session:
+        store-type: redis
+logging:
+    level:
+        org.springframework.session: debug</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_设置token位置为headeroptional"><a class="link" href="#_设置token位置为headeroptional">2.3. 设置token位置为header(Optional)</a></h3>
+<div class="listingblock">
+<div class="title">SessionConfiguration.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Configuration
+public class SessionConfiguration {
+
+    @Bean
+    public HttpSessionIdResolver sessionIdResolver() {
+        return HeaderHttpSessionIdResolver.xAuthToken();
+    }
+
+    @Bean
+    public RedisSerializer&lt;Object&gt; springSessionDefaultRedisSerializer() {
+        return new GenericJackson2JsonRedisSerializer();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_写个接口"><a class="link" href="#_写个接口">2.4. 写个接口</a></h3>
+<div class="listingblock">
+<div class="title">DemoController.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@RestController
+public class DemoController {
+
+    @GetMapping("/")
+    public String index(@Value("${spring.application.name}") String name, HttpSession session) {
+        return name;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_测试一下"><a class="link" href="#_测试一下">2.5. 测试一下</a></h3>
+<div class="listingblock">
+<div class="title">DemoControllerTests.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@SpringBootTest(classes = SessionDemoApplication.class)
+@AutoConfigureMockMvc
+class DemoControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
+
+    @Test
+    void testSessionHeader() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/"))
+            .andDo(MockMvcResultHandlers.log())
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.content().string(applicationName))
+            .andExpect(MockMvcResultMatchers.header().exists("X-Auth-Token"))
+            .andReturn();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_核心类"><a class="link" href="#_核心类">3. 核心类</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_session"><a class="link" href="#_session">3.1. Session</a></h3>
+<div class="paragraph">
+<p>标识同一个session(user).</p>
+</div>
+<div class="ulist">
+<div class="title">主要实现类</div>
+<ul>
+<li>
+<p>MapSession: 一些基本的属性: <code>id/originalId/attrs/creationTime/lastAccessedTime</code> .</p>
+</li>
+<li>
+<p>RedisSession: session attribute修改时内部会同步修改redis中的值.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sessionrepository"><a class="link" href="#_sessionrepository">3.2. SessionRepository</a></h3>
+<div class="paragraph">
+<p>具体操作session.</p>
+</div>
+<div class="ulist">
+<div class="title">主要实现类</div>
+<ul>
+<li>
+<p>MapSessionRepository: 在内存中维护一个 <code>Map</code> 管理session.</p>
+</li>
+<li>
+<p>FindByIndexNameSessionRepository: 新增根据用户名或者指定key查询session的接口.</p>
+</li>
+<li>
+<p>RedisOperationsSessionRepository: 用 <code>RedisTemplate</code> 管理session.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sessionrepositoryrequestwrapper"><a class="link" href="#_sessionrepositoryrequestwrapper">3.3. SessionRepositoryRequestWrapper</a></h3>
+<div class="paragraph">
+<p>包装 <code>HttpServletRequest</code> , 覆盖 <code>getSession</code> 等方法.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sessionrepositoryresponsewrapper"><a class="link" href="#_sessionrepositoryresponsewrapper">3.4. SessionRepositoryResponseWrapper</a></h3>
+<div class="paragraph">
+<p>包装 <code>HttpServletResponse</code> , 调用部分方法时同步session到Redis中.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sessionrepositoryfilter"><a class="link" href="#_sessionrepositoryfilter">3.5. SessionRepositoryFilter</a></h3>
+<div class="paragraph">
+<p>每次请求将 <code>HttpServletRequest</code> 和 <code>HttpServletResponse</code> 分别包装成 <code>SessionRepositoryRequestWrapper</code> 和 <code>SessionRepositoryResponseWrapper</code> .</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_启动流程"><a class="link" href="#_启动流程">4. 启动流程</a></h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>spring.factories</code> 中存在 <code>org.springframework.boot.autoconfigure.session.SessionAutoConfiguration</code> ,自动引入 <code>SessionAutoConfiguration</code> .</p>
+</li>
+<li>
+<p><code>SessionAutoConfiguration.ServletSessionConfiguration.ServletSessionRepositoryConfiguration</code> 根据 <code>spring.session.store-type</code> 和 <code>WebApplicationType</code> 引入不同的SessionConfiguration类, 通常为 <code>RedisSessionConfiguration</code> .</p>
+</li>
+<li>
+<p><code>SpringBootRedisHttpSessionConfiguration</code> 配置类装载bean:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><code>RedisOperationsSessionRepository</code></p>
+</li>
+<li>
+<p><code>SessionRepositoryFilter</code></p>
+</li>
+<li>
+<p><code>SessionEventHttpSessionListenerAdapter</code></p>
+</li>
+<li>
+<p><code>RedisMessageListenerContainer</code></p>
+</li>
+<li>
+<p><code>EnableRedisKeyspaceNotificationsInitializer</code></p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2019-06-03 18:24:14 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

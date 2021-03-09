@@ -1,0 +1,14 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+hide empty description
+
+[*] -> RUNNING
+RUNNING -> SHUTDOWN : shutdown
+RUNNING --> STOP: shutdownNow
+SHUTDOWN --> TIDYING : 队列和线程池为空
+STOP -> TIDYING : 队列和线程池为空
+TIDYING --> TERMINATED : terminate
+TERMINATED --> [*]
+
+@enduml

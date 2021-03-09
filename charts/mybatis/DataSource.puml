@@ -1,0 +1,19 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+interface DataSource {
+}
+
+DataSource <.. PooledDataSource
+DataSource <.. UnpooledDataSource
+
+note bottom of UnpooledDataSource
+* 每次使用DriverManager建立数据库连接.
+end note
+
+note bottom of PooledDataSource
+* 简易数据库连接池
+end note
+
+@enduml

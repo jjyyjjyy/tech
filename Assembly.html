@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>X86 Assembly</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>X86 Assembly</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_总线">1. 总线</a></li>
+<li><a href="#_cpu">2. CPU</a>
+<ul class="sectlevel2">
+<li><a href="#_内存地址">2.1. 内存地址</a></li>
+<li><a href="#_寄存器">2.2. 寄存器</a>
+<ul class="sectlevel3">
+<li><a href="#_数据寄存器">2.2.1. 数据寄存器</a></li>
+<li><a href="#_段寄存器">2.2.2. 段寄存器</a></li>
+<li><a href="#_指令指针寄存器">2.2.3. 指令指针寄存器</a></li>
+</ul>
+</li>
+<li><a href="#_指令执行流程">2.3. 指令执行流程</a></li>
+<li><a href="#_栈寄存器">2.4. 栈寄存器</a></li>
+</ul>
+</li>
+<li><a href="#_指令">3. 指令</a>
+<ul class="sectlevel2">
+<li><a href="#_伪指令">3.1. 伪指令</a></li>
+<li><a href="#bx">3.2. bx</a></li>
+<li><a href="#_loop">3.3. loop</a></li>
+<li><a href="#_逻辑指令">3.4. 逻辑指令</a></li>
+<li><a href="#_转移指令">3.5. 转移指令</a></li>
+<li><a href="#_定义数据类型">3.6. 定义数据类型</a></li>
+<li><a href="#_定义重复数据">3.7. 定义重复数据</a></li>
+</ul>
+</li>
+<li><a href="#_寻址方式">4. 寻址方式</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">Resources</div>
+<ul>
+<li>
+<p><a href="https://book.douban.com/subject/25726019" class="bare" target="_blank" rel="noopener">https://book.douban.com/subject/25726019</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_总线"><a class="link" href="#_总线">1. 总线</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>总线分为地址总线, 数据总线和控制总线.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>n根地址总线可以寻址 \$2^n\$个内存单元.</p>
+</li>
+<li>
+<p>n根数据总线可以一次性传输 \$n/8\$个字节的数据.</p>
+</li>
+<li>
+<p>控制总线的宽度决定了CPU对外部器件的控制能力.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cpu"><a class="link" href="#_cpu">2. CPU</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_内存地址"><a class="link" href="#_内存地址">2.1. 内存地址</a></h3>
+<div class="paragraph">
+<p>对于16位CPU, 物理地址 = 段地址 * 16 + 偏移地址.<br>
+一个段的长度最大为64KB(偏移地址数量).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_寄存器"><a class="link" href="#_寄存器">2.2. 寄存器</a></h3>
+<div class="sect3">
+<h4 id="_数据寄存器"><a class="link" href="#_数据寄存器">2.2.1. 数据寄存器</a></h4>
+<div class="paragraph">
+<p>AX BX CX DX</p>
+</div>
+<div class="paragraph">
+<p>每个寄存器都可以分为*H和*L, 各代表高低8位.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_段寄存器"><a class="link" href="#_段寄存器">2.2.2. 段寄存器</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>提供内存单元的段地址</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>CS DS SS ES</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+8086CPU不支持将数据直接送入到段寄存器, 只能送入一个数据寄存器/内存空间的值.<br>
+段寄存器的值可以送入到数据寄存器/内存空间中.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_指令指针寄存器"><a class="link" href="#_指令指针寄存器">2.2.3. 指令指针寄存器</a></h4>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>保存下一条将要指定的指令地址.</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>IP</p>
+</div>
+<div class="ulist">
+<div class="title">使用jmp修改IP寄存器的值:</div>
+<ul>
+<li>
+<p>jmp &lt;cs&gt;:&lt;ip&gt;. <code>段间偏移</code> <code>jmp FFFFH,3</code></p>
+</li>
+<li>
+<p>jmp &lt;ip&gt;. <code>段内偏移</code> <code>jmp ax</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_指令执行流程"><a class="link" href="#_指令执行流程">2.3. 指令执行流程</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>CPU从 \$CS*16+IP\$ 中读取指令, 读取到的指令放入指令缓冲器.</p>
+</li>
+<li>
+<p>IP+=读取到的指令长度.</p>
+</li>
+<li>
+<p>执行指令.</p>
+</li>
+<li>
+<p>重复步骤1.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>CS初始值0xFFFFH, IP初始值0x0000H,内存单元0xFFFF0H保存第一条要被执行的指令地址.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_栈寄存器"><a class="link" href="#_栈寄存器">2.4. 栈寄存器</a></h3>
+<div class="paragraph">
+<p>SS:SP指向栈顶元素, push和pop指令执行时, CPU从SS和SP中得到栈顶地址.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_指令"><a class="link" href="#_指令">3. 指令</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_伪指令"><a class="link" href="#_伪指令">3.1. 伪指令</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="x86asm" class="language-x86asm hljs">assume cs:demo ;伪指令, 将demo的段地址送入cs
+demo segment
+ mov ax,0
+demo ends
+end</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="bx"><a class="link" href="#bx">3.2. bx</a></h3>
+<div class="paragraph">
+<p>表示将bx寄存器中的值作为一个偏移地址<br>
+<code>mov ax,[bx]</code> : <strong>ds:bx</strong> 中的值送入到ax中</p>
+</div>
+<div class="paragraph">
+<p>si,di功能与bx相同, 但不能分为两个8位的寄存器来使用.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_loop"><a class="link" href="#_loop">3.3. loop</a></h3>
+<div class="paragraph">
+<p>CPU执行loop指令的时候,要进行两步操作:<br>
+. <code>(cx) = (cx) - 1</code><br>
+. 判断cx中的值,如果不为0则转至标号处执行程序, 如果为0则向下执行.</p>
+</div>
+<div class="listingblock">
+<div class="title">计算 \$2^12\$</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="x86asm" class="language-x86asm hljs">assume cs:code
+code segment
+
+    mov ax,2
+    mov cx,11
+s:  add ax,ax
+    loop s
+
+    mov ax,4c00H
+    int 21H
+code ends
+end</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_逻辑指令"><a class="link" href="#_逻辑指令">3.4. 逻辑指令</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="x86asm" class="language-x86asm hljs">and ax,10000000B ;后面7位置为0
+or ax,10000000B ;最高位置为1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_转移指令"><a class="link" href="#_转移指令">3.5. 转移指令</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>无条件转移指令</p>
+</li>
+<li>
+<p>条件转移指令</p>
+</li>
+<li>
+<p>循环指令</p>
+</li>
+<li>
+<p>过程</p>
+</li>
+<li>
+<p>中断</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_定义数据类型"><a class="link" href="#_定义数据类型">3.6. 定义数据类型</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>db: 字节型数据</p>
+</li>
+<li>
+<p>dw: 字型数据</p>
+</li>
+<li>
+<p>dd:<br>
+双字型数据</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+指定指令处理的数据长度: <code>mov word/byte ptr xx,xx | mov al,xx</code>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_定义重复数据"><a class="link" href="#_定义重复数据">3.7. 定义重复数据</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>dd 重复次数 dup (重复数据)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>dd 3 dup (0) === dd 0,0,0</code><br>
+<code>dd 3 dup (0,1,2) === dd 0,1,2,0,1,2,0,1,2</code><br>
+<code>dd 3 dup ('abc','ABC') === dd 'abcABCabcABCabcABC'</code></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_寻址方式"><a class="link" href="#_寻址方式">4. 寻址方式</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>直接寻址</p>
+<div class="ulist">
+<ul>
+<li>
+<p>[idata]</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>寄存器间接寻址</p>
+<div class="ulist">
+<ul>
+<li>
+<p>[bx]</p>
+</li>
+<li>
+<p>[si]</p>
+</li>
+<li>
+<p>[di]</p>
+</li>
+<li>
+<p>[bp]</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>寄存器相对寻址</p>
+<div class="ulist">
+<ul>
+<li>
+<p>[bx+idata]</p>
+</li>
+<li>
+<p>[si+idata]</p>
+</li>
+<li>
+<p>[di+idata]</p>
+</li>
+<li>
+<p>[bp+idata]</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>基址变址寻址</p>
+<div class="ulist">
+<ul>
+<li>
+<p>[bx+si]</p>
+</li>
+<li>
+<p>[bx+di]</p>
+</li>
+<li>
+<p>[bp+si]</p>
+</li>
+<li>
+<p>[bp+di]</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>相对基址变址寻址</p>
+<div class="ulist">
+<ul>
+<li>
+<p>[bx+si+idata]</p>
+</li>
+<li>
+<p>[bx+di+idata]</p>
+</li>
+<li>
+<p>[bp+si+idata]</p>
+</li>
+<li>
+<p>[bp+di+idata]</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-09-22 10:56:13 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

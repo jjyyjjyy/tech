@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>MyBatis</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>MyBatis</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_mybatis架构图">1. MyBatis架构图</a></li>
+<li><a href="#_基础模块">2. 基础模块</a>
+<ul class="sectlevel2">
+<li><a href="#_xml解析">2.1. XML解析</a></li>
+<li><a href="#_反射">2.2. 反射</a></li>
+<li><a href="#_类型转换">2.3. 类型转换</a></li>
+<li><a href="#_日志">2.4. 日志</a></li>
+<li><a href="#_资源加载">2.5. 资源加载</a></li>
+<li><a href="#_数据源">2.6. 数据源</a></li>
+<li><a href="#_事务">2.7. 事务</a></li>
+<li><a href="#_会话">2.8. 会话</a></li>
+<li><a href="#_executor">2.9. Executor</a></li>
+<li><a href="#_sql解析">2.10. SQL解析</a>
+<ul class="sectlevel3">
+<li><a href="#_sqlnode">2.10.1. SqlNode</a></li>
+<li><a href="#_sqlsource">2.10.2. SqlSource</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_初始化">3. 初始化</a>
+<ul class="sectlevel2">
+<li><a href="#_初始化configuration">3.1. 初始化Configuration</a></li>
+<li><a href="#_注册mapper接口">3.2. 注册Mapper接口</a></li>
+<li><a href="#_解析mapper文件">3.3. 解析mapper文件</a></li>
+</ul>
+</li>
+<li><a href="#_执行">4. 执行</a>
+<ul class="sectlevel2">
+<li><a href="#_获取sqlsession">4.1. 获取SqlSession</a></li>
+<li><a href="#_生成mapper代理">4.2. 生成Mapper代理</a></li>
+<li><a href="#_执行mapper方法">4.3. 执行Mapper方法</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_mybatis架构图"><a class="link" href="#_mybatis架构图">1. MyBatis架构图</a></h2>
+<div class="sectionbody">
+<div id="img-sunset" class="imageblock">
+<div class="content">
+<img src="https://resources-1252259164.cos.ap-shanghai.myqcloud.com/images/MyBatis.png" alt="MyBatis">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_基础模块"><a class="link" href="#_基础模块">2. 基础模块</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_xml解析"><a class="link" href="#_xml解析">2.1. XML解析</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>使用 <code>XPathParser</code> 封装的对XML配置文件的XPATH方式解析操作.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_反射"><a class="link" href="#_反射">2.2. 反射</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>使用 <code>Reflector</code> 类封装并缓存了Bean的get/set方法, 然后使用 <code>ReflectorFactory</code> 缓存了某个类 <code>Reflector</code> .</p>
+</li>
+<li>
+<p><code>MetaObject</code> 提供了get/set对象属性的方法.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_类型转换"><a class="link" href="#_类型转换">2.3. 类型转换</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>TypeHandler</code> 提供了数据库类型到Java类型的转换处理, 通过 <code>TypeHandlerRegistry</code> 向全局注册 <code>TypeHandler</code> .</p>
+</li>
+<li>
+<p><code>TypeAliasRegistry</code> 提供了名称和类的映射关系.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_日志"><a class="link" href="#_日志">2.4. 日志</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>org.apache.ibatis.logging.Log</code> 接口有各个日志框架的适配实现类, <code>LogFactory</code> 会去尝试适配当前正在使用的日志框架.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_资源加载"><a class="link" href="#_资源加载">2.5. 资源加载</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VFS</code> 表示虚拟文件系统, 抽象了查找指定路径下的资源的api.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_数据源"><a class="link" href="#_数据源">2.6. 数据源</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="DataSource.svg" alt="Diagram" width="945" height="531">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>UnpooledDataSource</code> 提供了获取数据库连接的简易实现, 每次都创建一个新的数据连接.</p>
+</li>
+<li>
+<p><code>PooledDataSource</code> 提供了池化数据库连接的简易实现.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_事务"><a class="link" href="#_事务">2.7. 事务</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="TransactionFactory.svg" alt="Diagram" width="2408" height="558">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_会话"><a class="link" href="#_会话">2.8. 会话</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="SqlSessionFactory.svg" alt="Diagram" width="1229" height="558">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_executor"><a class="link" href="#_executor">2.9. Executor</a></h3>
+<div class="imageblock">
+<div class="content">
+<img src="Executor.svg" alt="Diagram" width="1241" height="354">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sql解析"><a class="link" href="#_sql解析">2.10. SQL解析</a></h3>
+<div class="sect3">
+<h4 id="_sqlnode"><a class="link" href="#_sqlnode">2.10.1. SqlNode</a></h4>
+<div class="paragraph">
+<p>每一个 <code>SqlNode</code> 对象标识一个XML标签.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="SqlNode.svg" alt="Diagram" width="2622" height="606">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_sqlsource"><a class="link" href="#_sqlsource">2.10.2. SqlSource</a></h4>
+<div class="paragraph">
+<p><code>LanguageDriver</code> 从XML或者注解解析sql, 创建出一个 <code>SqlSource</code> 模板, 用来在运行时接收外部的参数生成 <code>BoundSql</code> 对象.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="SqlSource.svg" alt="Diagram" width="1287" height="381">
+</div>
+</div>
+<div class="listingblock">
+<div class="title">DynamicSqlSource.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class DynamicSqlSource implements SqlSource {
+
+    private final Configuration configuration;
+    private final SqlNode rootSqlNode;
+
+    public DynamicSqlSource(Configuration configuration, SqlNode rootSqlNode) {
+        this.configuration = configuration;
+        this.rootSqlNode = rootSqlNode;
+    }
+
+    @Override
+    public BoundSql getBoundSql(Object parameterObject) {
+        DynamicContext context = new DynamicContext(configuration, parameterObject);
+        // 解析sql使用的标签, 如if/where等
+        rootSqlNode.apply(context);
+        SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
+        Class&lt;?&gt; parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
+        // 解析'#{}'占位符, 并将占位符替换成?号, 生成StaticSqlSource对象
+        SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
+        // 根据参数解析出真正待执行的sql
+        BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+        context.getBindings().forEach(boundSql::setAdditionalParameter);
+        return boundSql;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_初始化"><a class="link" href="#_初始化">3. 初始化</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">MyBatis初始化代码</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MybatisApplication {
+    public static void main(String[] args){
+        TransactionFactory transactionFactory = new JdbcTransactionFactory();
+        Environment environment = new Environment("development", transactionFactory, dataSource); <i class="conum" data-value="1"></i><b>(1)</b>
+        Configuration configuration = new Configuration(environment); <i class="conum" data-value="2"></i><b>(2)</b>
+        configuration.addMapper(UserMapper.class); <i class="conum" data-value="3"></i><b>(3)</b>
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration); <i class="conum" data-value="4"></i><b>(4)</b>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>Environment</code> 对象包含了事务和数据源的具体实现类.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td><code>Configuration</code> 为全局的配置类.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>全局注册Mapper并解析.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>创建一个 <code>SqlSessionFactory</code> 来获取 <code>SqlSession</code> , 以实现对数据库的操作.</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="MapperAnnotationBuilder.svg" alt="Diagram" width="20" height="20">
+</div>
+</div>
+<div class="sect2">
+<h3 id="_初始化configuration"><a class="link" href="#_初始化configuration">3.1. 初始化Configuration</a></h3>
+<div class="listingblock">
+<div class="title">Configuration.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Configuration {
+
+    public Configuration() {
+
+        // 注册MyBatis接口自带的实现类的别名
+        typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
+        typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
+
+        typeAliasRegistry.registerAlias("JNDI", JndiDataSourceFactory.class);
+        typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
+        typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
+
+        typeAliasRegistry.registerAlias("PERPETUAL", PerpetualCache.class);
+        typeAliasRegistry.registerAlias("FIFO", FifoCache.class);
+        typeAliasRegistry.registerAlias("LRU", LruCache.class);
+        typeAliasRegistry.registerAlias("SOFT", SoftCache.class);
+        typeAliasRegistry.registerAlias("WEAK", WeakCache.class);
+
+        typeAliasRegistry.registerAlias("DB_VENDOR", VendorDatabaseIdProvider.class);
+
+        typeAliasRegistry.registerAlias("XML", XMLLanguageDriver.class);
+        typeAliasRegistry.registerAlias("RAW", RawLanguageDriver.class);
+
+        typeAliasRegistry.registerAlias("SLF4J", Slf4jImpl.class);
+        typeAliasRegistry.registerAlias("COMMONS_LOGGING", JakartaCommonsLoggingImpl.class);
+        typeAliasRegistry.registerAlias("LOG4J", Log4jImpl.class);
+        typeAliasRegistry.registerAlias("LOG4J2", Log4j2Impl.class);
+        typeAliasRegistry.registerAlias("JDK_LOGGING", Jdk14LoggingImpl.class);
+        typeAliasRegistry.registerAlias("STDOUT_LOGGING", StdOutImpl.class);
+        typeAliasRegistry.registerAlias("NO_LOGGING", NoLoggingImpl.class);
+
+        typeAliasRegistry.registerAlias("CGLIB", CglibProxyFactory.class);
+        typeAliasRegistry.registerAlias("JAVASSIST", JavassistProxyFactory.class);
+
+        // 注册LanguageDriver
+        languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
+        languageRegistry.register(RawLanguageDriver.class);
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_注册mapper接口"><a class="link" href="#_注册mapper接口">3.2. 注册Mapper接口</a></h3>
+<div class="listingblock">
+<div class="title">Configuration.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Configuration {
+    public &lt;T&gt; void addMapper(Class&lt;T&gt; type) {
+        mapperRegistry.addMapper(type);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">MapperRegistry.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MapperRegistry {
+    public &lt;T&gt; void addMapper(Class&lt;T&gt; type) {
+        // 这里限制了Mapper只能是接口形式
+        if (type.isInterface()) {
+            // 如果已经注册过该Mapper则会抛出异常
+            if (hasMapper(type)) {
+                throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
+            }
+            boolean loadCompleted = false;
+            try {
+                // 将Mapper接口封装成MapperProxy, MapperProxyFactory是创建MapperProxy的工厂类
+                knownMappers.put(type, new MapperProxyFactory&lt;&gt;(type));
+                MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
+                // 使用MapperAnnotationBuilder解析Mapper
+                parser.parse();
+                loadCompleted = true;
+            } finally {
+                if (!loadCompleted) {
+                    knownMappers.remove(type);
+                }
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">MapperAnnotationBuilder.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MapperAnnotationBuilder {
+
+    public void parse() {
+        String resource = type.toString();
+        // 有可能外部先解析了mapper文件, 同时注册了Mapper接口. 此处做一个是否解析过的判断防止重复解析
+        if (!configuration.isResourceLoaded(resource)) {
+            // 加载mapper文件
+            loadXmlResource();
+            configuration.addLoadedResource(resource);
+            assistant.setCurrentNamespace(type.getName());
+            // 解析@CacheNamespace注解
+            parseCache();
+            // 解析@CacheNamespaceRef注解
+            parseCacheRef();
+            for (Method method : type.getMethods()) {
+                if (!canHaveStatement(method)) {
+                    continue;
+                }
+                // 解析Mapper方法上的注解, 生成ResultMap对象
+                if (getAnnotationWrapper(method, false, Select.class, SelectProvider.class).isPresent()
+                    &amp;&amp; method.getAnnotation(ResultMap.class) == null) {
+                    parseResultMap(method);
+                }
+                try {
+                    // 解析Mapper方法上的注解, 生成MappedStatement对象
+                    parseStatement(method);
+                } catch (IncompleteElementException e) {
+                    configuration.addIncompleteMethod(new MethodResolver(this, method));
+                }
+            }
+        }
+        // 解析上面未解析完的Mapper方法
+        parsePendingMethods();
+    }
+
+    private void loadXmlResource() {
+        if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
+            // 默认mapper文件与Mapper接口同一个包下
+            String xmlResource = type.getName().replace('.', '/') + ".xml";
+            InputStream inputStream = type.getResourceAsStream("/" + xmlResource);
+            if (inputStream == null) {
+                try {
+                    // 获取mapper文件
+                    inputStream = Resources.getResourceAsStream(type.getClassLoader(), xmlResource);
+                } catch (IOException e2) {
+                    // ignore, resource is not required
+                }
+            }
+            if (inputStream != null) {
+                // 使用XMLMapperBuilder解析mapper文件
+                XMLMapperBuilder xmlParser = new XMLMapperBuilder(inputStream, assistant.getConfiguration(), xmlResource, configuration.getSqlFragments(), type.getName());
+                xmlParser.parse();
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_解析mapper文件"><a class="link" href="#_解析mapper文件">3.3. 解析mapper文件</a></h3>
+<div class="paragraph">
+<p><code>XMLMapperBuilder</code> 封装了解析mapper文件的操作, mapper文件包括以下几个标签:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>cache-ref: 引用别的mapper文件里的缓存对象.</p>
+</li>
+<li>
+<p>cache: 当前mapper文件使用的二级缓存对象.</p>
+</li>
+<li>
+<p>parameterMap(已废弃使用)</p>
+</li>
+<li>
+<p>resultMap: 结果集中的列与Bean属性的对应关系配置.</p>
+</li>
+<li>
+<p>sql: sql代码片段, 用来重用.</p>
+</li>
+<li>
+<p>select</p>
+</li>
+<li>
+<p>insert</p>
+</li>
+<li>
+<p>update</p>
+</li>
+<li>
+<p>delete</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="title">XMLMapperBuilder.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class XMLMapperBuilder {
+    public void parse() {
+        if (!configuration.isResourceLoaded(resource)) {
+            // 解析mapper节点
+            configurationElement(parser.evalNode("/mapper"));
+            // 记录已经加载过的mapper文件, 防止重复解析
+            configuration.addLoadedResource(resource);
+            // 将当前mapper文件所属的Mapper接口注册到全局的Configuration, 如果已经注册过则不再重复注册
+            bindMapperForNamespace();
+        }
+
+        // 解析上一步未解析完的resultMap节点
+        parsePendingResultMaps();
+        // 解析上一步未解析完的cache-ref节点
+        parsePendingCacheRefs();
+        // 解析上一步未解析完的crud sql节点
+        parsePendingStatements();
+    }
+
+    private void configurationElement(XNode context) {
+        try {
+            String namespace = context.getStringAttribute("namespace");
+            if (namespace == null || namespace.isEmpty()) {
+                throw new BuilderException("Mapper's namespace cannot be empty");
+            }
+            builderAssistant.setCurrentNamespace(namespace);
+            // 解析cache-ref节点
+            cacheRefElement(context.evalNode("cache-ref"));
+            // 解析cache节点
+            cacheElement(context.evalNode("cache"));
+            // 解析parameterMap节点(已废弃使用)
+            parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+            // 解析resultMap节点
+            resultMapElements(context.evalNodes("/mapper/resultMap"));
+            // 解析sql片段节点
+            sqlElement(context.evalNodes("/mapper/sql"));
+            // 解析crud sql节点
+            buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+        } catch (Exception e) {
+            throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
+        }
+    }
+
+    private void cacheRefElement(XNode context) {
+        if (context != null) {
+            configuration.addCacheRef(builderAssistant.getCurrentNamespace(), context.getStringAttribute("namespace"));
+            CacheRefResolver cacheRefResolver = new CacheRefResolver(builderAssistant, context.getStringAttribute("namespace"));
+            try {
+                // 调用builderAssistant#useCacheRef获取Cache对象, 如果namespace未解析出来则抛出IncompleteElementException异常等待下次解析
+                cacheRefResolver.resolveCacheRef();
+            } catch (IncompleteElementException e) {
+                configuration.addIncompleteCacheRef(cacheRefResolver);
+            }
+        }
+    }
+
+    private void cacheElement(XNode context) {
+        if (context != null) {
+            String type = context.getStringAttribute("type", "PERPETUAL");
+            // 获取Cache实现类, 默认为PerpetualCache
+            Class&lt;? extends Cache&gt; typeClass = typeAliasRegistry.resolveAlias(type);
+            String eviction = context.getStringAttribute("eviction", "LRU");
+            // 获取缓存淘汰算法, 默认为LRU
+            Class&lt;? extends Cache&gt; evictionClass = typeAliasRegistry.resolveAlias(eviction);
+            // 解析缓存配置
+            Long flushInterval = context.getLongAttribute("flushInterval");
+            Integer size = context.getIntAttribute("size");
+            boolean readWrite = !context.getBooleanAttribute("readOnly", false);
+            boolean blocking = context.getBooleanAttribute("blocking", false);
+            Properties props = context.getChildrenAsProperties();
+            // 创建缓存对象, 并注册到全局的Configuration中
+            builderAssistant.useNewCache(typeClass, evictionClass, flushInterval, size, readWrite, blocking, props);
+        }
+    }
+
+    private ResultMap resultMapElement(XNode resultMapNode, List&lt;ResultMapping&gt; additionalResultMappings, Class&lt;?&gt; enclosingType) {
+        String type = resultMapNode.getStringAttribute("type",
+            resultMapNode.getStringAttribute("ofType",
+                resultMapNode.getStringAttribute("resultType",
+                    resultMapNode.getStringAttribute("javaType"))));
+        Class&lt;?&gt; typeClass = resolveClass(type);
+        if (typeClass == null) {
+            typeClass = inheritEnclosingType(resultMapNode, enclosingType);
+        }
+        Discriminator discriminator = null;
+        List&lt;ResultMapping&gt; resultMappings = new ArrayList&lt;&gt;(additionalResultMappings);
+        List&lt;XNode&gt; resultChildren = resultMapNode.getChildren();
+        for (XNode resultChild : resultChildren) {
+            // 解析constructor
+            if ("constructor".equals(resultChild.getName())) {
+                processConstructorElement(resultChild, typeClass, resultMappings);
+                // 解析discriminator
+            } else if ("discriminator".equals(resultChild.getName())) {
+                discriminator = processDiscriminatorElement(resultChild, typeClass, resultMappings);
+            } else {
+                List&lt;ResultFlag&gt; flags = new ArrayList&lt;&gt;();
+                if ("id".equals(resultChild.getName())) {
+                    flags.add(ResultFlag.ID);
+                }
+                // 解析成ResultMapping对象, 包括列名, Bean的字段名, 类型等属性.
+                resultMappings.add(buildResultMappingFromContext(resultChild, typeClass, flags));
+            }
+        }
+        // 获取ResultMap的id
+        String id = resultMapNode.getStringAttribute("id",
+            resultMapNode.getValueBasedIdentifier());
+        // 获取当前ResultMap继承的ResultMap
+        String extend = resultMapNode.getStringAttribute("extends");
+
+        // 数据库列与Bean属性是否自动映射
+        Boolean autoMapping = resultMapNode.getBooleanAttribute("autoMapping");
+        ResultMapResolver resultMapResolver = new ResultMapResolver(builderAssistant, id, typeClass, extend, discriminator, resultMappings, autoMapping);
+        try {
+            // 创建ResultMap对象
+            return resultMapResolver.resolve();
+        } catch (IncompleteElementException e) {
+            configuration.addIncompleteResultMap(resultMapResolver);
+            throw e;
+        }
+    }
+
+    private void buildStatementFromContext(List&lt;XNode&gt; list, String requiredDatabaseId) {
+        for (XNode context : list) {
+            // 创建XMLStatementBuilder对象来解析Statement
+            final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
+            try {
+                statementParser.parseStatementNode();
+            } catch (IncompleteElementException e) {
+                configuration.addIncompleteStatement(statementParser);
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">BuildAssistant.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class BuildAssistant {
+
+    public Cache useCacheRef(String namespace) {
+        if (namespace == null) {
+            throw new BuilderException("cache-ref element requires a namespace attribute.");
+        }
+        try {
+            unresolvedCacheRef = true;
+            // Configuration中有namespace与Cache的对应关系.
+            Cache cache = configuration.getCache(namespace);
+            if (cache == null) {
+                throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
+            }
+            currentCache = cache;
+            unresolvedCacheRef = false;
+            return cache;
+        } catch (IllegalArgumentException e) {
+            throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.", e);
+        }
+    }
+
+    public Cache useNewCache(Class&lt;? extends Cache&gt; typeClass,
+                             Class&lt;? extends Cache&gt; evictionClass,
+                             Long flushInterval,
+                             Integer size,
+                             boolean readWrite,
+                             boolean blocking,
+                             Properties props) {
+        Cache cache = new CacheBuilder(currentNamespace)
+            .implementation(valueOrDefault(typeClass, PerpetualCache.class))
+            .addDecorator(valueOrDefault(evictionClass, LruCache.class))
+            .clearInterval(flushInterval)
+            .size(size)
+            .readWrite(readWrite)
+            .blocking(blocking)
+            .properties(props)
+            .build();
+        configuration.addCache(cache);
+        currentCache = cache;
+        return cache;
+    }
+
+    public ResultMap addResultMap(
+        String id,
+        Class&lt;?&gt; type,
+        String extend,
+        Discriminator discriminator,
+        List&lt;ResultMapping&gt; resultMappings,
+        Boolean autoMapping) {
+        id = applyCurrentNamespace(id, false);
+        extend = applyCurrentNamespace(extend, true);
+
+        if (extend != null) {
+            if (!configuration.hasResultMap(extend)) {
+                throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
+            }
+            ResultMap resultMap = configuration.getResultMap(extend);
+            List&lt;ResultMapping&gt; extendedResultMappings = new ArrayList&lt;&gt;(resultMap.getResultMappings());
+            extendedResultMappings.removeAll(resultMappings);
+            boolean declaresConstructor = false;
+            for (ResultMapping resultMapping : resultMappings) {
+                if (resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR)) {
+                    declaresConstructor = true;
+                    break;
+                }
+            }
+            if (declaresConstructor) {
+                extendedResultMappings.removeIf(resultMapping -&gt; resultMapping.getFlags().contains(ResultFlag.CONSTRUCTOR));
+            }
+            resultMappings.addAll(extendedResultMappings);
+        }
+        ResultMap resultMap = new ResultMap.Builder(configuration, id, type, resultMappings, autoMapping)
+            .discriminator(discriminator)
+            .build();
+        // 将ResultMap对象注册到全局Configuration中
+        configuration.addResultMap(resultMap);
+        return resultMap;
+    }
+
+    private void sqlElement(List&lt;XNode&gt; list, String requiredDatabaseId) {
+        for (XNode context : list) {
+            String databaseId = context.getStringAttribute("databaseId");
+            String id = context.getStringAttribute("id");
+            id = builderAssistant.applyCurrentNamespace(id, false);
+            if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {
+                // 记录id与sql片段的对应关系
+                sqlFragments.put(id, context);
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">XMLStatementBuilder.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class XMLStatementBuilder {
+
+    private final MapperBuilderAssistant builderAssistant;
+    private final XNode context;
+    private final String requiredDatabaseId;
+
+    public void parseStatementNode() {
+        String id = context.getStringAttribute("id");
+        String databaseId = context.getStringAttribute("databaseId");
+
+        String nodeName = context.getNode().getNodeName();
+        // 解析sql类型
+        SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
+        boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
+        boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
+        boolean useCache = context.getBooleanAttribute("useCache", isSelect);
+        boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
+
+        // 解析include标签
+        XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
+        // 根据refid找到对应的sql标签, 将include标签替换成sql标签里的内容
+        includeParser.applyIncludes(context.getNode());
+
+        String parameterType = context.getStringAttribute("parameterType");
+        Class&lt;?&gt; parameterTypeClass = resolveClass(parameterType);
+
+        String lang = context.getStringAttribute("lang");
+        LanguageDriver langDriver = getLanguageDriver(lang);
+        // 解析selectKey节点
+        processSelectKeyNodes(id, parameterTypeClass, langDriver);
+
+        KeyGenerator keyGenerator;
+        String keyStatementId = id + SelectKeyGenerator.SELECT_KEY_SUFFIX;
+        keyStatementId = builderAssistant.applyCurrentNamespace(keyStatementId, true);
+        // 如果使用了自定义的selectKey sql, 则为SelectKeyGenerator
+        if (configuration.hasKeyGenerator(keyStatementId)) {
+            keyGenerator = configuration.getKeyGenerator(keyStatementId);
+        } else {
+            // 否则使用自带的Jdbc3KeyGenerator
+            keyGenerator = context.getBooleanAttribute("useGeneratedKeys",
+                configuration.isUseGeneratedKeys() &amp;&amp; SqlCommandType.INSERT.equals(sqlCommandType))
+                ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
+        }
+
+        SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
+        StatementType statementType = StatementType.valueOf(context.getStringAttribute("statementType", StatementType.PREPARED.toString()));
+        Integer fetchSize = context.getIntAttribute("fetchSize");
+        Integer timeout = context.getIntAttribute("timeout");
+        String parameterMap = context.getStringAttribute("parameterMap");
+        String resultType = context.getStringAttribute("resultType");
+        Class&lt;?&gt; resultTypeClass = resolveClass(resultType);
+        String resultMap = context.getStringAttribute("resultMap");
+        String resultSetType = context.getStringAttribute("resultSetType");
+        ResultSetType resultSetTypeEnum = resolveResultSetType(resultSetType);
+        if (resultSetTypeEnum == null) {
+            resultSetTypeEnum = configuration.getDefaultResultSetType();
+        }
+        String keyProperty = context.getStringAttribute("keyProperty");
+        String keyColumn = context.getStringAttribute("keyColumn");
+        String resultSets = context.getStringAttribute("resultSets");
+
+        // 将解析完成的MappedStatement对象注册到全局的Configuration里, key为namespace+id
+        builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
+            fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
+            resultSetTypeEnum, flushCache, useCache, resultOrdered,
+            keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSets);
+    }
+
+    private void parseSelectKeyNode(String id, XNode nodeToHandle, Class&lt;?&gt; parameterTypeClass, LanguageDriver langDriver, String databaseId) {
+        String resultType = nodeToHandle.getStringAttribute("resultType");
+        Class&lt;?&gt; resultTypeClass = resolveClass(resultType);
+        StatementType statementType = StatementType.valueOf(nodeToHandle.getStringAttribute("statementType", StatementType.PREPARED.toString()));
+        String keyProperty = nodeToHandle.getStringAttribute("keyProperty");
+        String keyColumn = nodeToHandle.getStringAttribute("keyColumn");
+        boolean executeBefore = "BEFORE".equals(nodeToHandle.getStringAttribute("order", "AFTER"));
+
+        // defaults
+        boolean useCache = false;
+        boolean resultOrdered = false;
+        KeyGenerator keyGenerator = NoKeyGenerator.INSTANCE;
+        Integer fetchSize = null;
+        Integer timeout = null;
+        boolean flushCache = false;
+        String parameterMap = null;
+        String resultMap = null;
+        ResultSetType resultSetTypeEnum = null;
+
+        // 转化成SqlSource
+        SqlSource sqlSource = langDriver.createSqlSource(configuration, nodeToHandle, parameterTypeClass);
+        SqlCommandType sqlCommandType = SqlCommandType.SELECT;
+
+        // 将selectKey标签作为MappedStatement注册进全局的Configuration里
+        builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
+            fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
+            resultSetTypeEnum, flushCache, useCache, resultOrdered,
+            keyGenerator, keyProperty, keyColumn, databaseId, langDriver, null);
+
+        id = builderAssistant.applyCurrentNamespace(id, false);
+
+        MappedStatement keyStatement = configuration.getMappedStatement(id, false);
+        // 转化成KeyGenerator对象注册进全局的Configuration里
+        configuration.addKeyGenerator(id, new SelectKeyGenerator(keyStatement, executeBefore));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_执行"><a class="link" href="#_执行">4. 执行</a></h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="Execution.svg" alt="Diagram" width="2952" height="889">
+</div>
+</div>
+<div class="sect2">
+<h3 id="_获取sqlsession"><a class="link" href="#_获取sqlsession">4.1. 获取SqlSession</a></h3>
+<div class="listingblock">
+<div class="title">DefaultSqlSessionFactory.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class DefaultSqlSessionFactory implements SqlSessionFactory {
+
+    @Override
+    public SqlSession openSession() {
+        return openSessionFromDataSource(configuration.getDefaultExecutorType(), null, false);
+    }
+
+    private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
+        Transaction tx = null;
+        try {
+            final Environment environment = configuration.getEnvironment();
+            final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+            // 创建Transaction对象(默认为JdbcTransaction)
+            tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+            // 创建Executor对象(默认为SimpleExecutor)
+            final Executor executor = configuration.newExecutor(tx, execType);
+            return new DefaultSqlSession(configuration, executor, autoCommit);
+        } catch (Exception e) {
+            closeTransaction(tx); // may have fetched a connection so lets call close()
+            throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+        } finally {
+            ErrorContext.instance().reset();
+        }
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Configuration.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class Configuration {
+
+    public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+        executorType = executorType == null ? defaultExecutorType : executorType;
+        executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+        Executor executor;
+        // 根据executorType创建对应的Executor实现
+        if (ExecutorType.BATCH == executorType) {
+            executor = new BatchExecutor(this, transaction);
+        } else if (ExecutorType.REUSE == executorType) {
+            executor = new ReuseExecutor(this, transaction);
+        } else {
+            executor = new SimpleExecutor(this, transaction);
+        }
+        if (cacheEnabled) {
+            // 装饰Executor, 提供一级缓存功能
+            executor = new CachingExecutor(executor);
+        }
+        // JDK动态代理executor, 根据插件类上的注解拦截对应的方法
+        executor = (Executor) interceptorChain.pluginAll(executor);
+        return executor;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_生成mapper代理"><a class="link" href="#_生成mapper代理">4.2. 生成Mapper代理</a></h3>
+<div class="listingblock">
+<div class="title">MapperRegistry.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MapperRegistry {
+
+    public &lt;T&gt; T getMapper(Class&lt;T&gt; type, SqlSession sqlSession) {
+        final MapperProxyFactory&lt;T&gt; mapperProxyFactory = (MapperProxyFactory&lt;T&gt;) knownMappers.get(type);
+        if (mapperProxyFactory == null) {
+            throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
+        }
+        try {
+            // 根据Mapper类型获取之前注册Mapper接口创建的MapperProxyFactory对象, 生成一个动态代理Mapper接口的对象.
+            return mapperProxyFactory.newInstance(sqlSession);
+        } catch (Exception e) {
+            throw new BindingException("Error getting mapper instance. Cause: " + e, e);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_执行mapper方法"><a class="link" href="#_执行mapper方法">4.3. 执行Mapper方法</a></h3>
+<div class="listingblock">
+<div class="title">MapperProxy.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MapperProxy&lt;T&gt; implements InvocationHandler, Serializable {
+
+     @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        try {
+            if (Object.class.equals(method.getDeclaringClass())) {
+                return method.invoke(this, args);
+            } else {
+                // 缓存生成的MapperMethod
+                return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
+            }
+        } catch (Throwable t) {
+            throw ExceptionUtil.unwrapThrowable(t);
+        }
+    }
+
+    private MapperProxy.MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
+        try {
+            MapperProxy.MapperMethodInvoker invoker = methodCache.get(method);
+            if (invoker != null) {
+                return invoker;
+            }
+
+            return methodCache.computeIfAbsent(method, m -&gt; {
+                if (m.isDefault()) {
+                    try {
+                        // 如果是default方法, 则用DefaultMethodInvoker调用该方法
+                        if (privateLookupInMethod == null) {
+                            return new MapperProxy.DefaultMethodInvoker(getMethodHandleJava8(method));
+                        } else {
+                            return new MapperProxy.DefaultMethodInvoker(getMethodHandleJava9(method));
+                        }
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException
+                        | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    // 创建一个PlainMethodInvoker用来调用MapperMethod
+                    return new MapperProxy.PlainMethodInvoker(new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
+                }
+            });
+        } catch (RuntimeException re) {
+            Throwable cause = re.getCause();
+            throw cause == null ? re : cause;
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">MapperMethod.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class MapperMethod {
+
+    private final SqlCommand command;
+    private final MethodSignature method;
+
+    public Object execute(SqlSession sqlSession, Object[] args) {
+        Object result;
+        // 根据sql类型去调用SqlSession不同的方法
+        switch (command.getType()) {
+            case INSERT: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.insert(command.getName(), param));
+                break;
+            }
+            case UPDATE: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.update(command.getName(), param));
+                break;
+            }
+            case DELETE: {
+                Object param = method.convertArgsToSqlCommandParam(args);
+                result = rowCountResult(sqlSession.delete(command.getName(), param));
+                break;
+            }
+            case SELECT:
+                if (method.returnsVoid() &amp;&amp; method.hasResultHandler()) {
+                    executeWithResultHandler(sqlSession, args);
+                    result = null;
+                } else if (method.returnsMany()) {
+                    result = executeForMany(sqlSession, args);
+                } else if (method.returnsMap()) {
+                    result = executeForMap(sqlSession, args);
+                } else if (method.returnsCursor()) {
+                    result = executeForCursor(sqlSession, args);
+                } else {
+                    Object param = method.convertArgsToSqlCommandParam(args);
+                    result = sqlSession.selectOne(command.getName(), param);
+                    if (method.returnsOptional()
+                        &amp;&amp; (result == null || !method.getReturnType().equals(result.getClass()))) {
+                        result = Optional.ofNullable(result);
+                    }
+                }
+                break;
+            case FLUSH:
+                result = sqlSession.flushStatements();
+                break;
+            default:
+                throw new BindingException("Unknown execution method for: " + command.getName());
+        }
+        if (result == null &amp;&amp; method.getReturnType().isPrimitive() &amp;&amp; !method.returnsVoid()) {
+            throw new BindingException("Mapper method '" + command.getName()
+                + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        }
+        return result;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">CachingExecutor.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class CachingExecutor extends BaseExecutor {
+
+    @Override
+    public &lt;E&gt; List&lt;E&gt; query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+        throws SQLException {
+        // 首先从MappedStatement里的二级缓存中取值
+        Cache cache = ms.getCache();
+        if (cache != null) {
+            flushCacheIfRequired(ms);
+            if (ms.isUseCache() &amp;&amp; resultHandler == null) {
+                ensureNoOutParams(ms, boundSql);
+                @SuppressWarnings("unchecked")
+                List&lt;E&gt; list = (List&lt;E&gt;) tcm.getObject(cache, key);
+                if (list == null) {
+                    list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+                    tcm.putObject(cache, key, list); // issue #578 and #116
+                }
+                return list;
+            }
+        }
+        return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">BaseExecutor.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">// BaseExecutor实现了缓存管理和事务管理的方法, 对数据库的具体操作交由子类实现
+public class BaseExecutor {
+
+    protected Transaction transaction;
+    protected Executor wrapper;
+
+    protected ConcurrentLinkedQueue&lt;DeferredLoad&gt; deferredLoads;
+    protected PerpetualCache localCache;
+    protected PerpetualCache localOutputParameterCache;
+    protected Configuration configuration;
+
+    protected int queryStack;
+    private boolean closed;
+
+    @Override
+    public &lt;E&gt; List&lt;E&gt; query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+        ErrorContext.instance().resource(ms.getResource()).activity("executing a query").object(ms.getId());
+        if (closed) {
+            throw new ExecutorException("Executor was closed.");
+        }
+        // 第一次执行时如果是非select语句就会先清除一级缓存
+        if (queryStack == 0 &amp;&amp; ms.isFlushCacheRequired()) {
+            clearLocalCache();
+        }
+        List&lt;E&gt; list;
+        try {
+            queryStack++;
+            // 如果resultHandler为null, 先从一级缓存里取结果.
+            // 缓存的key由MappedStatement的id, offset, limit, SQL语句, 参数和Environment的id组成
+            list = resultHandler == null ? (List&lt;E&gt;) localCache.getObject(key) : null;
+            if (list != null) {
+                handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
+            } else {
+                list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
+            }
+        } finally {
+            queryStack--;
+        }
+        if (queryStack == 0) {
+            // 从缓存中拿到将延迟加载的结果集
+            for (BaseExecutor.DeferredLoad deferredLoad : deferredLoads) {
+                deferredLoad.load();
+            }
+            deferredLoads.clear();
+            // 如果localCacheScope为STATEMENT, 则立即清除一级缓存
+            if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
+                clearLocalCache();
+            }
+        }
+        return list;
+    }
+
+    private &lt;E&gt; List&lt;E&gt; queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+        List&lt;E&gt; list;
+        // 先在一级缓存中插入一个占位符
+        localCache.putObject(key, EXECUTION_PLACEHOLDER);
+        try {
+            // 执行真正的
+            list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
+        } finally {
+            localCache.removeObject(key);
+        }
+        localCache.putObject(key, list);
+        if (ms.getStatementType() == StatementType.CALLABLE) {
+            localOutputParameterCache.putObject(key, parameter);
+        }
+        return list;
+    }
+
+    @Override
+    public void commit(boolean required) throws SQLException {
+        if (closed) {
+            throw new ExecutorException("Cannot commit, transaction is already closed");
+        }
+        // commit前面先清除一级缓存
+        clearLocalCache();
+        // 执行缓存的sql
+        flushStatements();
+        if (required) {
+            transaction.commit();
+        }
+    }
+
+    @Override
+    public void rollback(boolean required) throws SQLException {
+        if (!closed) {
+            try {
+                clearLocalCache();
+                // 清除本地缓存的未执行的sql
+                flushStatements(true);
+            } finally {
+                if (required) {
+                    transaction.rollback();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void clearLocalCache() {
+        if (!closed) {
+            // 清空一级缓存
+            localCache.clear();
+            localOutputParameterCache.clear();
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">SimpleExecutor.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class SimpleExecutor extends BaseExecutor {
+
+    private final TransactionalCacheManager tcm = new TransactionalCacheManager();
+
+    @Override
+    public &lt;E&gt; List&lt;E&gt; doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
+        Statement stmt = null;
+        try {
+            Configuration configuration = ms.getConfiguration();
+            StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+            stmt = prepareStatement(handler, ms.getStatementLog());
+            return handler.query(stmt, resultHandler);
+        } finally {
+            closeStatement(stmt);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2021-02-03 11:42:52 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

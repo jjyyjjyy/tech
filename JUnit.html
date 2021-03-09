@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>JUnit</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>JUnit</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_junit5模块组成">1. JUnit5模块组成</a></li>
+<li><a href="#_junit依赖导入">2. JUnit依赖导入</a></li>
+<li><a href="#_junit测试方法和测试类">3. JUnit测试方法和测试类</a></li>
+<li><a href="#_junit使用">4. JUnit使用</a>
+<ul class="sectlevel2">
+<li><a href="#_test">4.1. @Test</a></li>
+<li><a href="#_parameterizedtest">4.2. @ParameterizedTest</a>
+<ul class="sectlevel3">
+<li><a href="#_argumentsprovider">4.2.1. ArgumentsProvider</a></li>
+<li><a href="#_argumentaccessor">4.2.2. ArgumentAccessor</a></li>
+<li><a href="#_parameterresolver">4.2.3. ParameterResolver</a></li>
+</ul>
+</li>
+<li><a href="#_repeatedtest">4.3. @RepeatedTest</a></li>
+<li><a href="#_testfactory">4.4. @TestFactory</a></li>
+<li><a href="#_testmethodorder">4.5. @TestMethodOrder</a></li>
+<li><a href="#_testinstance">4.6. @TestInstance</a></li>
+<li><a href="#_execution">4.7. @Execution</a>
+<ul class="sectlevel3">
+<li><a href="#_测试类并行执行但同一类方法顺序执行">4.7.1. 测试类并行执行但同一类方法顺序执行</a></li>
+<li><a href="#_测试类顺序执行但同一类方法并行执行">4.7.2. 测试类顺序执行但同一类方法并行执行</a></li>
+</ul>
+</li>
+<li><a href="#_条件执行">4.8. 条件执行</a></li>
+</ul>
+</li>
+<li><a href="#_extension机制">5. Extension机制</a>
+<ul class="sectlevel2">
+<li><a href="#_注册extension的方式">5.1. 注册Extension的方式</a>
+<ul class="sectlevel3">
+<li><a href="#_注解">5.1.1. 注解</a></li>
+<li><a href="#_spi">5.1.2. SPI</a></li>
+<li><a href="#_registerextension注解">5.1.3. @RegisterExtension注解</a></li>
+</ul>
+</li>
+<li><a href="#_extension的生命周期">5.2. Extension的生命周期</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>文档: <a href="https://junit.org/junit5/docs/current/user-guide" class="bare" target="_blank" rel="noopener">https://junit.org/junit5/docs/current/user-guide</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_junit5模块组成"><a class="link" href="#_junit5模块组成">1. JUnit5模块组成</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>JUnit5包含三个模块: <code>JUnit Platform</code> , <code>JUnit Jupiter</code> 和 <code>JUnit Vintage</code> .</p>
+</div>
+<div class="ulist">
+<div class="title">JUnit5的各个模块职责</div>
+<ul>
+<li>
+<p>JUnit Platform:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>junit-platform-common</code>: JUnit基础工具包.</p>
+</li>
+<li>
+<p><code>junit-platform-engine</code>: 提供TestEngine相关基础类.</p>
+</li>
+<li>
+<p><code>junit-platform-launcher</code>: 提供让客户端执行Test和收集测试结果的入口.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>JUnit Jupiter:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>junit-jupiter-api</code>: JUnit Jupiter测试相关基础类/注解以及一些生命周期接口.</p>
+</li>
+<li>
+<p><code>junit-jupiter-params</code>: 提供参数化测试的扩展功能.</p>
+</li>
+<li>
+<p><code>junit-jupiter-engine</code>: 提供JUnit Jupiter的TestEngine实现.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>JUnit Vintage: 用来兼容运行JUnit3和4的Test用例.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="https://junit.org/junit5/docs/current/user-guide/images/component-diagram.svg" alt="component diagram">
+</div>
+<div class="title">Figure 1. JUnit5模块依赖图</div>
+</div>
+<div class="paragraph">
+<p>总之, <code>JUnit Platform</code> 模块抽象出了一个单元测试框架的上层API, <code>JUnit Jupiter</code> 模块则是JUnit5针对 <code>JUnit Platform</code> 包具体的实现.<br>
+而JUnit Vintage模块是为了向前兼容, 让JUnit5也能执行老版本的测试代码.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_junit依赖导入"><a class="link" href="#_junit依赖导入">2. JUnit依赖导入</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="xml" class="language-xml hljs">    &lt;dependencyManagement&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.junit&lt;/groupId&gt;
+                &lt;artifactId&gt;junit-bom&lt;/artifactId&gt;
+                &lt;version&gt;5.6.2&lt;/version&gt;
+                &lt;type&gt;pom&lt;/type&gt;
+                &lt;scope&gt;import&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/dependencyManagement&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+            &lt;artifactId&gt;junit-jupiter&lt;/artifactId&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.junit.platform&lt;/groupId&gt;
+            &lt;artifactId&gt;junit-platform-launcher&lt;/artifactId&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>JUnit5提供了自己各个模块版本的pom包, 所以直接引入junit-bom来管理JUnit版本就行了.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_junit测试方法和测试类"><a class="link" href="#_junit测试方法和测试类">3. JUnit测试方法和测试类</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>标有 <code>@Test/@RepeatedTest/@ParameterizedTest/@TestFactory/@TestTemplate</code> 注解的方法为测试方法, JUnit会在启动的时候执行这些方法. 测试方法访问修饰符可以为default.</p>
+</div>
+<div class="paragraph">
+<p>测试类就是包含了一系列测试方法的Java类, 测试类可以有三种表现形式:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>标准的Java Class.</p>
+</li>
+<li>
+<p>静态内部类.</p>
+</li>
+<li>
+<p>标有@Nested注解的成员内部类.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>测试类只能有一个构造方法, 且不能为抽象类. 测试类访问修饰符可以为default.</p>
+</div>
+<div class="paragraph">
+<p>测试类中除了待执行的测试方法, 还可以包含一些测试生命周期的方法, 如标有 <code>@BeforeEach</code> 的方法会在每个方法执行前被执行.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_junit使用"><a class="link" href="#_junit使用">4. JUnit使用</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_test"><a class="link" href="#_test">4.1. @Test</a></h3>
+<div class="paragraph">
+<p>标有 <code>@Test</code> 注解的方法即为一个标准的测试方法.<br>
+测试方法执行抛出异常或者与断言预期不一致, 则测试方法不通过.</p>
+</div>
+<div class="listingblock">
+<div class="title">JUnitHelloWorld.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@Slf4j
+class JUnitHelloWorld {
+
+    @Test
+    void succeedingTest() {
+        Assertions.assertTrue(true);
+        log.info("succeedingTest");
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_parameterizedtest"><a class="link" href="#_parameterizedtest">4.2. @ParameterizedTest</a></h3>
+<div class="paragraph">
+<p>@ParameterizedTest用来给测试方法注入预定义的一些参数去执行, 实现了测试参数与测试代码的职责分离.</p>
+</div>
+<div class="paragraph">
+<p>参数有三种注入形式:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ArgumentsProvider</code> : 字面量和参数属于一对一的映射关系, JUnit预先提供了 <code>@xxxSource</code> 类注解来配和 <code>@ParameterizedTest</code> 使用.</p>
+</li>
+<li>
+<p><code>ArgumentsAccessor</code> : 测试方法里手动根据字面量和其索引来创建参数需要的对象.</p>
+</li>
+<li>
+<p><code>ParameterResolver</code> : 运行时动态注入参数需要的对象.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_argumentsprovider"><a class="link" href="#_argumentsprovider">4.2.1. ArgumentsProvider</a></h4>
+<div class="sect4">
+<h5 id="_valuesource"><a class="link" href="#_valuesource">@ValueSource</a></h5>
+<div class="paragraph">
+<p><code>@ValueSource</code> 可以声明以下类型的字面量参数:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>基本数据类型: <code>byte/short/int/long/boolean/char/float/double</code></p>
+</li>
+<li>
+<p><code>String</code></p>
+</li>
+<li>
+<p><code>Class</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">@ValueSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6})
+    void testValueSource(int i) { // 该测试方法会执行6次, 依次传入ints数组的元素
+        assertTrue(i &gt; 0);
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_nullsource"><a class="link" href="#_nullsource">@NullSource</a></h5>
+<div class="paragraph">
+<p><code>@NullSource</code> 可以赋值给引用类型的参数为null.</p>
+</div>
+<div class="listingblock">
+<div class="title">@NullSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @NullSource
+    void testNullString(String nullableString) {
+        assertNull(nullableString);
+    }
+
+    @ParameterizedTest
+    @NullSource
+    void testZeroNumber(int zero) {
+        assertEquals(0, zero); // 错误, 无法将null复制给int类型的参数
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_emptysource"><a class="link" href="#_emptysource">@EmptySource</a></h5>
+<div class="paragraph">
+<p><code>@EmptySource</code> 可以为参数创建一个空的值, 具体表现为:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>String: 初始化为一个空的字符串.</p>
+</li>
+<li>
+<p>数组: 初始化为一个长度为0的数组.</p>
+</li>
+<li>
+<p>集合: 初始化为Collections.emptyXXX()方法返回的空集合, 如 <code>List</code> 参数会被初始化为 <code>Collections.emptyList()</code> 方法返回的对象.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">@EmptySource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @EmptySource
+    void testEmptyString(String str) {
+        assertEquals(0, str.length());
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void testEmptyList(List&lt;String&gt; list) {
+        assertSame(Collections.emptyList(), list);
+        assertEquals(0, list.size());
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void testEmptySet(Set&lt;String&gt; set) {
+        assertSame(Collections.emptySet(), set);
+        assertEquals(0, set.size());
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void testEmptyMap(Map&lt;String, Object&gt; map) {
+        assertSame(Collections.emptyMap(), map);
+        assertEquals(0, map.size());
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void testEmptyArray(int[] arr) {
+        assertEquals(0, arr.length);
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_nullandemptysource"><a class="link" href="#_nullandemptysource">@NullAndEmptySource</a></h5>
+<div class="paragraph">
+<p><code>@NullAndEmptySource</code> 注解是 <code>@NullSource</code> 和 <code>@EmptySource</code> 两个注解的组合: 会分别将方法参数注入一个null和一个空对象, 也就是说测试方法会被执行两次.<br>
+可以用来测试方法的鲁棒性👀.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_enumsource"><a class="link" href="#_enumsource">@EnumSource</a></h5>
+<div class="paragraph">
+<p><code>@EnumSource</code> 用来注入枚举类参数.</p>
+</div>
+<div class="listingblock">
+<div class="title">@EnumSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @EnumSource
+    void testEnumSource(Gender gender) {
+        assertTrue(Arrays.stream(Gender.class.getEnumConstants()).anyMatch(e -&gt; e == gender)); // 该方法会执行3次, 分别注入Gender的三个枚举值.
+    }
+
+    public enum Gender {
+        MALE, FEMALE, UNKNOWN
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>@EnumSource</code> 也可以通过设置 <code>names</code> 和 <code>mode</code> 属性来过滤注入的枚举值.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_methodsource"><a class="link" href="#_methodsource">@MethodSource</a></h5>
+<div class="paragraph">
+<p><code>@MethodSource</code> 用来通过方法返回值来注入参数.<br>
+methodSource方法需要为static.<br>
+方法的返回值需要为 <code>Stream/Collection/Iterator/Iterable/数组</code> 类型.<br>
+如果泛型为 <code>Arguments</code> 类型, 则可以同时注入多个参数.</p>
+</div>
+<div class="listingblock">
+<div class="title">MethodSource注入单个参数例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @MethodSource("generateInts")
+    void testIntMethodSource(int i) { // 注入1到9
+        assertTrue(i &gt; 0 &amp;&amp; i &lt; 10);
+    }
+
+    static IntStream generateInts() {
+        return IntStream.range(1, 10)
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">MethodSource注入多个参数例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @MethodSource("generateArguments")
+    void testArgumentsMethodSource(String str, int i) {
+        assertEquals(i, str.length());
+    }
+
+    static Stream&lt;Arguments&gt; generateArguments() {
+        return Stream.of(
+            Arguments.of("a", 1),
+            Arguments.of("aa", 2),
+            Arguments.of("aaa", 3)
+        );
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_csvsource"><a class="link" href="#_csvsource">@CsvSource</a></h5>
+<div class="paragraph">
+<p><code>@CsvSource</code> 可以同时注入多个字面量参数.</p>
+</div>
+<div class="listingblock">
+<div class="title">@CsvSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @CsvSource({"a,1", "aa,2", "aaa,3"})
+    void testCsvSource(String str, int i) {
+        assertEquals(i, str.length());
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_csvfilesource"><a class="link" href="#_csvfilesource">@CsvFileSource</a></h5>
+<div class="paragraph">
+<p><code>@CsvFileSource</code> 可以读取csv文件, 然后注入字面量参数.</p>
+</div>
+<div class="listingblock">
+<div class="title">@CsvFileSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @CsvFileSource(resources = "/str.csv")
+    void testCsvFileSource(String str, int i) {
+        assertEquals(i, str.length());
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">str.csv</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="csv" class="language-csv hljs">a,1
+aa,2
+aaa,3</code></pre>
+</div>
+</div>
+<div class="ulist">
+<div class="title">@CsvFileSource的几点使用心得:</div>
+<ul>
+<li>
+<p>如果csv文件第一行为表头, 可以设置 <code>numLinesToSkip = 1</code> 来过滤掉第一行.</p>
+</li>
+<li>
+<p>如果某一列里面包含逗号, 会导致csv解析出现异常, 可以通过设置 <code>delimiterString</code> 来区分列.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_argumentssource"><a class="link" href="#_argumentssource">@ArgumentsSource</a></h5>
+<div class="paragraph">
+<p><code>@ArgumentsSource</code> 可以指定一个 <code>ArgumentsProvider</code> 的实现类来注入参数.</p>
+</div>
+<div class="listingblock">
+<div class="title">@ArgumentsSource例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @ArgumentsSource(SequenceArgumentProvider.class)
+    void testArgumentsSource(int i) {
+        assertTrue(i &gt; 0 &amp;&amp; i &lt; 10);
+    }
+
+    public static class SequenceArgumentProvider implements ArgumentsProvider{
+        @Override
+        public Stream&lt;Arguments&gt; provideArguments(ExtensionContext context) {
+            return IntStream.range(1, 10).mapToObj(Arguments::of);
+        }
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_参数类型转换"><a class="link" href="#_参数类型转换">参数类型转换</a></h5>
+<div class="paragraph">
+<p>字面量和参数的类型转换分为隐式类型转换和显示类型转换.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>隐式类型转换: JUnit内置的转换机制.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>字面量的转换: 支持的类型见文档: <a href="https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests-argument-conversion-implicit" class="bare external" target="_blank" rel="noopener">https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests-argument-conversion-implicit</a></p>
+</li>
+<li>
+<p>如果目标类型不在支持范围内, JUnit会尝试调用类型里的static方法/构造方法(方法有且仅有一个String参数)来创建实例.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>显示类型转换:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>实现 <code>ArgumentConverter</code> 接口, 方法参数加上 <code>ConvertWith</code> 注解来指定 <code>ArgumentConverter</code> 即可.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">ArgumentConverter例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @CsvSource({"'1,3,2', '1,2,3'"})
+    void testConverter(@ConvertWith(ToArrayArgumentConverter.class) int[] arr,
+                       @ConvertWith(ToArrayArgumentConverter.class) int[] expect) {
+        Arrays.sort(arr);
+        assertArrayEquals(expect, arr);
+    }
+
+    public static class ToArrayArgumentConverter implements ArgumentConverter {
+
+        @Override
+        public Object convert(Object source, ParameterContext context) throws ArgumentConversionException {
+            Class&lt;?&gt; type = context.getParameter().getType();
+            String[] strings = source.toString().split("\\s*,\\s*");
+            if (int[].class == type) {
+                return Arrays.stream(strings).mapToInt(Integer::valueOf).toArray();
+            }
+            return strings;
+        }
+    }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_argumentaccessor"><a class="link" href="#_argumentaccessor">4.2.2. ArgumentAccessor</a></h4>
+<div class="paragraph">
+<p><code>ArgumentAccessor</code> 可以通过获取指定位置的参数来在方法内部获取参数值.<br>
+有两种使用方式:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>将 <code>ArgumentAccessor</code> 作为参数, 然后在方法内部使用.</p>
+</li>
+<li>
+<p>实现 <code>ArgumentsAggregator</code> 接口, 使用 <code>@AggregateWith</code> 注解指定 <code>ArgumentsAggregator</code> 来实现参数类型转换.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">ArgumentAccessor参数例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @CsvSource({"1", "2", "3", "4", "5", "6"})
+    void testWithArgumentsAccessor(ArgumentsAccessor argumentsAccessor) {
+        Integer i = argumentsAccessor.getInteger(0);
+        assertTrue(i &gt; 0);
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">AggregateWith注解例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @ParameterizedTest
+    @CsvSource({"1", "2", "3", "4", "5", "6"})
+    void testWithArgumentsAccessor(@AggregateWith(ToIntArgumentsAggregator.class) int i) {
+        assertTrue(i &gt; 0);
+    }
+
+    public static class ToIntArgumentsAggregator implements ArgumentsAggregator {
+        @Override
+        public Object aggregateArguments(ArgumentsAccessor accessor, ParameterContext context) throws ArgumentsAggregationException {
+            return accessor.getInteger(0);
+        }
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_parameterresolver"><a class="link" href="#_parameterresolver">4.2.3. ParameterResolver</a></h4>
+<div class="paragraph">
+<p><code>JUnit5</code> 允许使用外部扩展的方式来注入参数值.</p>
+</div>
+<div class="listingblock">
+<div class="title">RandomInt.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @Target(ElementType.PARAMETER)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @Documented
+    public @interface RandomInt {
+    }</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">DemoExtension.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">public class DemoExtension implements ParameterResolver {
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return parameterContext.isAnnotated(RandomInt.class);
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return ThreadLocalRandom.current().nextInt();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">DemoTest.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@ExtendWith(DemoExtension.class)
+public class DemoTest {
+    @Test
+    void testRandomInt(@RandomInt int i) {
+        // i被设置成随机数
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_repeatedtest"><a class="link" href="#_repeatedtest">4.3. @RepeatedTest</a></h3>
+<div class="paragraph">
+<p><code>@RepeatedTest</code> 可以让JUnit重复执行测试方法.<br>
+方法参数可以注入一个运行时的 <code>RepetitionInfo</code> 对象来让方法内部获取到重复执行的序号和总次数.</p>
+</div>
+<div class="listingblock">
+<div class="title">@RepeatedTest例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @RepeatedTest(3)
+    void testWithRepeatedTest() {
+        assertTrue(true); // 方法会执行3次
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testfactory"><a class="link" href="#_testfactory">4.4. @TestFactory</a></h3>
+<div class="paragraph">
+<p><code>@TestFactory</code> 可以像 <code>@MethodSource</code> 一样以编程式的方式执行测试用例.<br>
+定义一个方法, 返回Stream/Collection/Iterator/Iterable/数组类型, 泛型类型需要为 <code>DynamicTest</code> .</p>
+</div>
+<div class="listingblock">
+<div class="title">@TestFactory例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @TestFactory
+    Stream&lt;DynamicTest&gt; dynamicTestStream() {
+        return Stream.of("a", "b", "c")
+            .map(text -&gt; DynamicTest.dynamicTest(text, () -&gt; assertTrue(true)));
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testmethodorder"><a class="link" href="#_testmethodorder">4.5. @TestMethodOrder</a></h3>
+<div class="paragraph">
+<p><code>@TestMethodOrder</code> 可以指定测试方法的执行顺序:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Alphanumeric</code> : 按照测试方法名和参数列表字母排序执行.</p>
+</li>
+<li>
+<p><code>OrderAnnotation</code> : 按照测试方法上的 <code>@Order</code> 注解指定的顺序执行, 如果没有注解则默认为 <code>Integer.MAX_VALUE / 2</code>.</p>
+</li>
+<li>
+<p><code>Random</code> : 随机顺序执行.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testinstance"><a class="link" href="#_testinstance">4.6. @TestInstance</a></h3>
+<div class="paragraph">
+<p>默认情况下, 每次执行测试方法时都会新创建测试类的一个实例, 等同于 <code>@TestInstance(PER_METHOD)</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">class JUnitApiTest {
+
+    private int i;
+
+    @RepeatedTest(10)
+    void testPerMethod1() {
+        i++;
+        // 每次都会在一个新的实例中执行该方法, 所以i++均为1.
+        assertEquals(1, i);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>@TestInstance(PER_CLASS)</code> 情况下, 测试类只会实例化一次.<br>
+此外 <code>PER_CLASS 下 `@BeforeAll</code> 和 <code>@AfterAll</code> 注解可以用在类的实例方法或者接口的default方法上.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_execution"><a class="link" href="#_execution">4.7. @Execution</a></h3>
+<div class="paragraph">
+<p><code>@Execution</code> 可以设置测试方法在同一个线程中执行, 还是使用ForkJoin线程池并行执行.</p>
+</div>
+<div class="paragraph">
+<p>除了使用 <code>@Execution</code> 注解, 还可以在 <code>junit-platform.properties</code> 中全局配置.</p>
+</div>
+<div class="sect3">
+<h4 id="_测试类并行执行但同一类方法顺序执行"><a class="link" href="#_测试类并行执行但同一类方法顺序执行">4.7.1. 测试类并行执行但同一类方法顺序执行</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">junit.jupiter.execution.parallel.enabled = true
+junit.jupiter.execution.parallel.mode.default = same_thread
+junit.jupiter.execution.parallel.mode.classes.default = concurrent</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_测试类顺序执行但同一类方法并行执行"><a class="link" href="#_测试类顺序执行但同一类方法并行执行">4.7.2. 测试类顺序执行但同一类方法并行执行</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="properties" class="language-properties hljs">junit.jupiter.execution.parallel.enabled = true
+junit.jupiter.execution.parallel.mode.default = concurrent
+junit.jupiter.execution.parallel.mode.classes.default = same_thread</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_条件执行"><a class="link" href="#_条件执行">4.8. 条件执行</a></h3>
+<div class="paragraph">
+<p>可以指定测试方法在特定环境下才执行.</p>
+</div>
+<div class="listingblock">
+<div class="title">ExecutionCondition例子</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">    @Test
+    @EnabledOnJre(JAVA_8)
+    void onlyOnJava8() {
+    // Java8 才执行
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>本质上是执行了 <code>ExecutionCondition::evaluateExecutionCondition</code> 方法来判断是否执行.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_extension机制"><a class="link" href="#_extension机制">5. Extension机制</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>JUnit 提供了扩展接口, 来在测试方法执行前后执行一些自定义的回调.<br>
+Extension的功能主要包括:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>对实例化测试类对象时后置处理.</p>
+</li>
+<li>
+<p>测试类执行条件判断.</p>
+</li>
+<li>
+<p>生命周期回调.</p>
+</li>
+<li>
+<p>自定义参数解析.</p>
+</li>
+<li>
+<p>异常处理.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_注册extension的方式"><a class="link" href="#_注册extension的方式">5.1. 注册Extension的方式</a></h3>
+<div class="sect3">
+<h4 id="_注解"><a class="link" href="#_注解">5.1.1. 注解</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="java" class="language-java hljs">@ExtendWith(DemoExtension.class)
+class ExtensionTest {
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_spi"><a class="link" href="#_spi">5.1.2. SPI</a></h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>/META-INF/services/org.junit.jupiter.api.extension.Extension</code> 文件里添加自定义的Extension类的全限定名.</p>
+</li>
+<li>
+<p><code>junit-platform.properties</code> 里添加 <code>junit.jupiter.extensions.autodetection.enabled=true</code> .</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_registerextension注解"><a class="link" href="#_registerextension注解">5.1.3. @RegisterExtension注解</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>@RegisterExtension</code> 注解static字段.</p>
+</li>
+<li>
+<p><code>@RegisterExtension</code> 注解实例字段.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_extension的生命周期"><a class="link" href="#_extension的生命周期">5.2. Extension的生命周期</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>BeforeAllCallback</p>
+</li>
+<li>
+<p>@BeforeAll</p>
+</li>
+<li>
+<p>TestInstancePostProcessor</p>
+</li>
+<li>
+<p>BeforeEachCallback</p>
+</li>
+<li>
+<p>@BeforeEach</p>
+</li>
+<li>
+<p>BeforeTestExecutionCallback</p>
+</li>
+<li>
+<p>@Test</p>
+</li>
+<li>
+<p>AfterTestExecutionCallback</p>
+</li>
+<li>
+<p>@AfterEach</p>
+</li>
+<li>
+<p>AfterEachCallback</p>
+</li>
+<li>
+<p>@AfterAll</p>
+</li>
+<li>
+<p>AfterAllCallback</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-07-28 19:16:48 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

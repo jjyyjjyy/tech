@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-volume-pod
+  namespace: jy-test
+spec:
+  containers:
+    - name: kubia
+      image: registry.cn-hangzhou.aliyuncs.com/jy-test/kubia
+      ports:
+        - containerPort: 8080
+      volumeMounts:
+        - mountPath: /var/log/kubia/
+          name: log
+    - name: nginx
+      image: nginx:alpine
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: log
+          readOnly: true
+      ports:
+        - containerPort: 80
+          hostPort: 8880
+  volumes:
+    - name: log
+      emptyDir:
+        {}

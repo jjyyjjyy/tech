@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia-rs
+  namespace: jy-test
+spec:
+  replicas: 2
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - kubia
+  template:
+    metadata:
+      name: kubia-v3
+      namespace: jy-test
+      labels:
+        env: test
+        lang: java
+        app: kubia
+    spec:
+      containers:
+        - name: kubia
+          image: registry.cn-hangzhou.aliyuncs.com/jy-test/kubia
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 60
+            failureThreshold: 3
+            httpGet:
+              port: 8080
+              path: /
+          readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              port: 8080
+              path: /actuator/health

@@ -1,0 +1,20 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+interface SqlNode {
+    boolean apply(DynamicContext context);
+}
+
+SqlNode <.. StaticTextSqlNode
+SqlNode <.. TextSqlNode
+SqlNode <.. VarDeclSqlNode
+SqlNode <.. ForEachSqlNode
+SqlNode <.. ChooseSqlNode
+SqlNode <.. IfSqlNode
+SqlNode <.. MixedSqlNode
+SqlNode <.. TrimSqlNode
+TrimSqlNode <.. SetSqlNode
+TrimSqlNode <.. WhereSqlNode
+
+@enduml

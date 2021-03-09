@@ -1,0 +1,22 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+node 虚拟机 {
+  interface 操作系统
+
+  node 进程 {
+    node 指令集架构 {
+      interface 处理器
+    }
+
+    node 虚拟内存 {
+      interface 主存
+
+      node 文件 {
+        interface I/O设备
+      }
+    }
+  }
+}
+@enduml

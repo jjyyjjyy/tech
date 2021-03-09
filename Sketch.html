@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Sketch</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Sketch</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_演讲">1. 演讲</a></li>
+<li><a href="#_习惯">2. 习惯</a></li>
+<li><a href="#_时间黑洞">3. 时间黑洞</a>
+<ul class="sectlevel2">
+<li><a href="#_时间黑洞解释">3.1. 时间黑洞解释</a></li>
+<li><a href="#_避开时间黑洞的一些策略">3.2. 避开时间黑洞的一些策略</a></li>
+</ul>
+</li>
+<li><a href="#_价值观">4. 价值观</a></li>
+<li><a href="#_目标">5. 目标</a>
+<ul class="sectlevel2">
+<li><a href="#_目标的作用">5.1. 目标的作用</a></li>
+<li><a href="#_达不成目标的原因">5.2. 达不成目标的原因</a></li>
+</ul>
+</li>
+<li><a href="#_刻意练习">6. 刻意练习</a></li>
+<li><a href="#_战胜拖延的两个方法">7. 战胜拖延的两个方法</a></li>
+<li><a href="#_计划完成不了怎么办">8. 计划完成不了怎么办</a></li>
+<li><a href="#_看书分心怎么办">9. 看书分心怎么办</a></li>
+<li><a href="#_什么场景下可以帮助别人">10. 什么场景下可以帮助别人</a></li>
+<li><a href="#_学习一个新的框架的方法论">11. 学习一个新的框架的方法论</a>
+<ul class="sectlevel2">
+<li><a href="#_学会使用">11.1. 学会使用</a></li>
+<li><a href="#_深入理解">11.2. 深入理解</a></li>
+<li><a href="#_融会贯通">11.3. 融会贯通</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_演讲"><a class="link" href="#_演讲">1. 演讲</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>将演讲划分为多个阶段, 每个阶段设立检查点, 确认大家是否都听懂了. <code>保证演讲行之有效, 否则就是在浪费时间</code></p>
+</li>
+<li>
+<p>演讲过程中尽量问封闭性问题, 少问开放性问题. <code>防止被带偏</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_习惯"><a class="link" href="#_习惯">2. 习惯</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>降低启动难度.</p>
+</li>
+<li>
+<p>养成满足欲望的习惯.</p>
+</li>
+<li>
+<p>用一个好的习惯替代坏的习惯.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_时间黑洞"><a class="link" href="#_时间黑洞">3. 时间黑洞</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_时间黑洞解释"><a class="link" href="#_时间黑洞解释">3.1. 时间黑洞解释</a></h3>
+<div class="paragraph">
+<p>衡量一件事情是不是有意义, 主要看投入时间后是否有预期的产出.<br>
+如果没有达到预期效果, 那么就是浪费时间.<br>
+<strong>时间黑洞</strong> 就是被浪费掉的时间的集合.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_避开时间黑洞的一些策略"><a class="link" href="#_避开时间黑洞的一些策略">3.2. 避开时间黑洞的一些策略</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>关闭聊天工具.</p>
+</li>
+<li>
+<p>关闭邮箱的到达提醒功能.</p>
+</li>
+<li>
+<p>保持工作环境的干净整洁, 保证需要的办公用品触手可及.</p>
+</li>
+<li>
+<p>工作前就给水杯倒满水, 防止因为去倒水而打断注意力.</p>
+</li>
+<li>
+<p>列一张当天的任务清单, 完成一项就划掉一项, 这样使你既有责任感又有成就感.</p>
+</li>
+<li>
+<p>选一张舒适的椅子.</p>
+</li>
+<li>
+<p>尽量隔离自己, 不让别人打扰你.</p>
+</li>
+<li>
+<p>做事情要分轻重缓急, 先解决最重要的事情.</p>
+</li>
+<li>
+<p>当无法集中精力的时候就休息一会儿.</p>
+</li>
+<li>
+<p>设置任务的deadline, 一个适当的deadline会提高工作效率, 挖掘你的潜力.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_价值观"><a class="link" href="#_价值观">4. 价值观</a></h2>
+<div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>价值观指一个人对周围的客观事物的意义/重要性的评价和看法.</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p><a href="https://ib2i7.csb.app/" target="_blank" rel="noopener">价值观测试</a></p>
+</div>
+<div class="paragraph">
+<p>事情越符合自己的价值观, 就越重要.<br>
+事情越接近deadline, 就越紧急.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_目标"><a class="link" href="#_目标">5. 目标</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_目标的作用"><a class="link" href="#_目标的作用">5.1. 目标的作用</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>给人明确的方向感, 使人充分了解每个行为的目的.</p>
+</li>
+<li>
+<p>清晰地评估自己的行为, 进而正面检讨自己的行为.</p>
+</li>
+<li>
+<p>让人从忙乱中转移到自己的工作重点上.</p>
+</li>
+<li>
+<p>让人更关注结果, 产生持久的动力.</p>
+</li>
+<li>
+<p>激发出人的潜能.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_达不成目标的原因"><a class="link" href="#_达不成目标的原因">5.2. 达不成目标的原因</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>设定了不可达成的目标. <code>用正确的方式描述目标, 参考SMART法则: 树立的目标必须是具体的, 可测量的, 可实现的, 现实的, 有截止时间的.</code></p>
+</li>
+<li>
+<p>没有将目标分解成计划. <code>分解大目标, 然后写出每个目标实现的计划步骤. 优先攻克最大的障碍.</code></p>
+</li>
+<li>
+<p>放任偶尔的失败. <code>第一次失败后, 客观分析原因, 避免类似的失败.</code></p>
+</li>
+<li>
+<p>没有把目标写下来. <code>把要做的事情写下来/记到日程表里/设置一个闹钟.</code></p>
+</li>
+<li>
+<p>没有及时修正目标. <code>以变化应对变化. 调整不合理的计划.</code></p>
+</li>
+<li>
+<p>没有行动. <code>将目标转化成习惯.</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_刻意练习"><a class="link" href="#_刻意练习">6. 刻意练习</a></h2>
+<div class="sectionbody">
+<div class="paragraph lead">
+<p>如何成为所在行业的高手? <span class="line-through">一万小时专家</span></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>建立理论</strong> 找到行业大师, 分析他们杰出的原因, 接着再提炼出训练方法.</p>
+</li>
+<li>
+<p><strong>制定计划</strong> 根据得到的理论, 制定切实可行的计划.</p>
+</li>
+<li>
+<p><strong>刻意练习</strong></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>需要保持专注.</p>
+</li>
+<li>
+<p>每一次刻意练习都要有明确的目标.</p>
+</li>
+<li>
+<p>刻意练习的过程中, 能够得到及时的反馈.</p>
+</li>
+<li>
+<p>需要走出自己的舒适区, 不在舒适区内练习.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>获得反馈</strong> 获得反馈是为了更及时的发现自己的问题, 以及为什么会出现这些问题.<br>
+这些反馈可以使群众的评价, 同行的建议, 大师的指导等.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>弗曼学习法: 用通俗易通的语言给外行讲懂.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_战胜拖延的两个方法"><a class="link" href="#_战胜拖延的两个方法">7. 战胜拖延的两个方法</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>结构化方法: 一般拖延的事情难度普遍比较大, 如果实在想拖延, 就去做一件更难的事情.</p>
+</li>
+<li>
+<p>烂开始法: 不要去想一次性就把事情做到完美, 好的开始是成功的一半, 烂的开始是完成的一半.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_计划完成不了怎么办"><a class="link" href="#_计划完成不了怎么办">8. 计划完成不了怎么办</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<div class="title">计划完成不了一般会有三个原因:</div>
+<ul>
+<li>
+<p>计划的总时长超过了实际的工作时长.</p>
+</li>
+<li>
+<p>没有预留缓冲时间.</p>
+</li>
+<li>
+<p>计划里都是想法, 而不是切实的行动项.</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">对策:</div>
+<ul>
+<li>
+<p>把所有答应别人要做的事情或者自己计划要做的事情写下来.</p>
+</li>
+<li>
+<p>将待办事项分类:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>Do it now</code> 立即去做.</p>
+</li>
+<li>
+<p><code>Delay</code> 计划去做.</p>
+</li>
+<li>
+<p>呈现: 对计划中的大的任务项进行拆分, 变成多个可独立执行的子任务.</p>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_看书分心怎么办"><a class="link" href="#_看书分心怎么办">9. 看书分心怎么办</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>做加法: 眼到手到心到. 例如看书的时候可以适当做一些笔记, 总结自己阅读的收获或自己的看法.</p>
+</li>
+<li>
+<p>做减法: 交替学习, 使大脑受到新鲜事物的刺激.</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">改正3个读书的坏习惯</div>
+<ul>
+<li>
+<p>不要光读不做. 有些书不是要读懂, 而是要做懂.</p>
+</li>
+<li>
+<p>读书的时候不要把手机放在身边.</p>
+</li>
+<li>
+<p>读书不要陷入细节, 而看不到本体.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_什么场景下可以帮助别人"><a class="link" href="#_什么场景下可以帮助别人">10. 什么场景下可以帮助别人</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>问问题的人没有持有一种托付心态.</p>
+</li>
+<li>
+<p>问题没有现成的答案, 如在搜索引擎里能直接搜到.</p>
+</li>
+<li>
+<p>问题属于自己的责任范围.</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">如何优雅的拒绝帮助别人?</div>
+<ul>
+<li>
+<p>说出现实情况, 如自己手头还有5项任务.</p>
+</li>
+<li>
+<p>谈感受, 如今天下午5点前就要做完, 没有时间抽空帮忙.</p>
+</li>
+<li>
+<p>给出建议, 如去搜索引擎上找答案, 或去找某个懂得人帮忙.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_学习一个新的框架的方法论"><a class="link" href="#_学习一个新的框架的方法论">11. 学习一个新的框架的方法论</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_学会使用"><a class="link" href="#_学会使用">11.1. 学会使用</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>看官网介绍, 了解使用场景以及大概的功能(快速浏览文档目录).</p>
+</li>
+<li>
+<p>在知乎等论坛上找到几篇介绍如何使用该框架的文章.</p>
+</li>
+<li>
+<p>跑一个demo运行起来看看(官网提供或者按照网上的入门文章自己撘一个).</p>
+</li>
+<li>
+<p>通篇阅读框架文档.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_深入理解"><a class="link" href="#_深入理解">11.2. 深入理解</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>从一个最小的demo入手, debug到框架内部代码, 快速step over, 了解执行过程.</p>
+</li>
+<li>
+<p>抓住主线, 找到核心组件/接口.</p>
+</li>
+<li>
+<p>画出代码执行的流程图/时序图.</p>
+</li>
+<li>
+<p>整合总结, 将自己的理解与网上别人的源码分析做对比, 取长补短.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_融会贯通"><a class="link" href="#_融会贯通">11.3. 融会贯通</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>尝试新增一些核心接口的实现类, 自定义框架功能.</p>
+</li>
+<li>
+<p>尝试修复官方issue.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-06-28 11:56:46 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

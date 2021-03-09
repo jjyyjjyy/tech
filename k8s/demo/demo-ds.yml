@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kubia-rs
+  namespace: jy-test
+spec:
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      name: kubia-v4
+      namespace: jy-test
+      labels:
+        app: kubia
+    spec:
+      nodeSelector:
+        node: test
+      containers:
+        - name: kubia
+          image: registry.cn-hangzhou.aliyuncs.com/jy-test/kubia
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 60
+            failureThreshold: 3
+            httpGet:
+              port: 8080
+              path: /

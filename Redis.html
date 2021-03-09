@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Redis</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Redis</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_安装">1. 安装</a></li>
+<li><a href="#_数据结构">2. 数据结构</a>
+<ul class="sectlevel2">
+<li><a href="#_string">2.1. string</a>
+<ul class="sectlevel3">
+<li><a href="#_命令">2.1.1. 命令</a></li>
+<li><a href="#_内部编码">2.1.2. 内部编码</a></li>
+<li><a href="#_使用场景">2.1.3. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_hash">2.2. hash</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_2">2.2.1. 命令</a></li>
+<li><a href="#_内部编码_2">2.2.2. 内部编码</a></li>
+<li><a href="#_使用场景_2">2.2.3. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_list">2.3. list</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_3">2.3.1. 命令</a></li>
+<li><a href="#_内部编码_3">2.3.2. 内部编码</a></li>
+<li><a href="#_使用场景_3">2.3.3. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_set">2.4. set</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_4">2.4.1. 命令</a></li>
+<li><a href="#_内部编码_4">2.4.2. 内部编码</a></li>
+<li><a href="#_使用场景_4">2.4.3. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_zset">2.5. zset</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_5">2.5.1. 命令</a></li>
+<li><a href="#_内部编码_5">2.5.2. 内部编码</a></li>
+<li><a href="#_使用场景_5">2.5.3. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_hyperloglog">2.6. HyperLogLog</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_6">2.6.1. 命令</a></li>
+<li><a href="#_使用场景_6">2.6.2. 使用场景</a></li>
+</ul>
+</li>
+<li><a href="#_bitmap">2.7. bitmap</a>
+<ul class="sectlevel3">
+<li><a href="#_命令_7">2.7.1. 命令</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_key管理">3. key管理</a></li>
+<li><a href="#_慢查询">4. 慢查询</a></li>
+<li><a href="#_redis_shell">5. Redis Shell</a>
+<ul class="sectlevel2">
+<li><a href="#_redis_cli">5.1. redis-cli</a></li>
+<li><a href="#_redis_benchmark">5.2. redis-benchmark</a></li>
+</ul>
+</li>
+<li><a href="#_事务">6. 事务</a>
+<ul class="sectlevel2">
+<li><a href="#_原子性">6.1. 原子性</a></li>
+<li><a href="#_隔离性">6.2. 隔离性</a></li>
+<li><a href="#_原子性_2">6.3. 原子性</a></li>
+</ul>
+</li>
+<li><a href="#_bitmap_2">7. bitmap</a></li>
+<li><a href="#_hyperloglog_2">8. HyperLogLog</a></li>
+<li><a href="#_publishsubscribe">9. Publish/Subscribe</a></li>
+<li><a href="#_redis_serialization_protocol">10. Redis Serialization Protocol</a>
+<ul class="sectlevel2">
+<li><a href="#_request">10.1. Request</a></li>
+<li><a href="#_response">10.2. Response</a></li>
+</ul>
+</li>
+<li><a href="#_持久化">11. 持久化</a>
+<ul class="sectlevel2">
+<li><a href="#_rdb">11.1. RDB</a>
+<ul class="sectlevel3">
+<li><a href="#_手动触发">11.1.1. 手动触发</a></li>
+<li><a href="#_自动触发">11.1.2. 自动触发</a></li>
+<li><a href="#_问题">11.1.3. 问题</a></li>
+</ul>
+</li>
+<li><a href="#_aof">11.2. AOF</a></li>
+<li><a href="#_持久化文件加载流程">11.3. 持久化文件加载流程</a></li>
+</ul>
+</li>
+<li><a href="#_主从复制">12. 主从复制</a>
+<ul class="sectlevel2">
+<li><a href="#_从节点开启方式">12.1. 从节点开启方式</a></li>
+<li><a href="#_从节点断开">12.2. 从节点断开</a></li>
+<li><a href="#_数据同步方式">12.3. 数据同步方式</a></li>
+</ul>
+</li>
+<li><a href="#_sentinel">13. Sentinel</a>
+<ul class="sectlevel2">
+<li><a href="#_安装_2">13.1. 安装</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_安装"><a class="link" href="#_安装">1. 安装</a></h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">version: '3'
+services:
+    redis:
+        image: redis:alpine
+        container_name: redis
+        volumes:
+            - ~/volumes/redis/data/:/data
+        command: redis-server --appendonly yes
+        network_mode: host</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据结构"><a class="link" href="#_数据结构">2. 数据结构</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_string"><a class="link" href="#_string">2.1. string</a></h3>
+<div class="sect3">
+<h4 id="_命令"><a class="link" href="#_命令">2.1.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>set key value [EX seconds] [PX milliseconds] [NX|XX]</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>set a 1</p>
+</li>
+<li>
+<p>set a 1 PX 10000</p>
+</li>
+<li>
+<p>set a 1 NX <code>NX: 只有key不存在的时候才设置值.</code></p>
+</li>
+<li>
+<p>set a 1 XX <code>XX: 只有key存在的时候才设置值.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>get key</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>get a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>mset key1 value1 [key2 value2 &#8230;&#8203;]</code> <code>批量set.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>mset a 1 b 2 c 3</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>mget key [key1 key2 key3 &#8230;&#8203;]</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>mget a b c <code>批量get.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>msetnx key1 value1 [key2 value2 &#8230;&#8203;]</code> <code>批量set, 但是只有所有key不存在时才能设置.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>msetnx a 1 b 2</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>strlen key</code> <code>返回key的长度.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>strlen a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>append key chars</code> <code>在key后面追加字符串.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>append a world</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>getset key value</code> <code>设置并返回值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>getset a 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>getrange key start end</code> <code>截取key从start到end的字符串, 闭区间.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>getrange demo 0 -1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>setrange key start substitute</code> <code>key从start位置开始替换值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>setrange demo 5 Redis <code>Hello World &#8594; HelloRedisd</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>incr key</code> <code>将key的值加1</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>incr a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>incrbyfloat key increment</code> <code>加上浮点数. 最多保留小数后17位.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>incrbyfloat demo 1.23</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内部编码"><a class="link" href="#_内部编码">2.1.2. 内部编码</a></h4>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+可以使用 <code>object encoding KEY</code> 查看内部编码方式.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>int</code> : 8个字节的长整型.</p>
+</li>
+<li>
+<p><code>embstr</code> : 小于等于39个字节的字符串.</p>
+</li>
+<li>
+<p><code>raw</code> : 大于39个字节的字符串.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>当字符串长度小于1MB时, 扩容都是加倍现有的空间.
+如果长度大于1MB, 扩容时只会增加1MB的空间.
+字符串长度最大为512MB.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景"><a class="link" href="#_使用场景">2.1.3. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>缓存 <code>setex, get</code></p>
+</li>
+<li>
+<p>计数 <code>incr</code></p>
+</li>
+<li>
+<p>session共享 <code>setex, get</code></p>
+</li>
+<li>
+<p>限速 <code>setnx, decr</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hash"><a class="link" href="#_hash">2.2. hash</a></h3>
+<div class="sect3">
+<h4 id="_命令_2"><a class="link" href="#_命令_2">2.2.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>hset key field value</code> <code>为hash的指定field设置值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hset k a 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hsetnx key field value</code> <code>当field不存在时为field设置值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hsetnx k a 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hget key field</code> <code>获取hash的指定field的值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hget k a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hincrby key field increment</code> <code>给指定field增加值</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hincrby k a 111</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hstrlen key field</code> <code>获取field值的长度</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hstrlen k a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hlen key</code> <code>获取hash字段数量</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hlen k</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hdel key field [field &#8230;&#8203;]</code> <code>删除hash内字段.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hdel k a b c</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hmset key value [key1 value1 &#8230;&#8203;]</code> <code>批量设置hash field的值</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hmset k a 1 b 2 c 3</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hmget key [key1 key2 &#8230;&#8203;]</code> <code>批量获取hash field的值</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hmget k a b c</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hexists key field</code> <code>field是否存在</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hexists k a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hkeys key</code> <code>获取所有的field</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hkeys k</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hvals key</code> <code>获取所有的value</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hvals k</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>hgetall key</code> <code>获取hash内所有的field-value</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hgetall k</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内部编码_2"><a class="link" href="#_内部编码_2">2.2.2. 内部编码</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ziplist</code> : 当哈希元素个数小于 <code>hash-max-ziplist-entries(512)</code> 同时所有值的大小都小于 <code>hash-max-ziplist-value(64B)</code> 时, Redis内部使用 <code>ziplist</code> 作为hash的实现, 结构紧凑, 节省内存.</p>
+</li>
+<li>
+<p><code>hashtable</code> : 元素数量过多会导致 <code>ziplist</code> 读写效率下降, 此时使用 <code>hashtable</code> 作为hash的内部实现.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_2"><a class="link" href="#_使用场景_2">2.2.3. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>缓存 <code>hmset, hgetall</code></p>
+</li>
+<li>
+<p>存储稀疏图 <code>hset, hgetall</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_list"><a class="link" href="#_list">2.3. list</a></h3>
+<div class="sect3">
+<h4 id="_命令_3"><a class="link" href="#_命令_3">2.3.1. 命令</a></h4>
+<div class="ulist">
+<div class="title">增</div>
+<ul>
+<li>
+<p><code>lpush key value [value1 value2 &#8230;&#8203;]</code> <code>从左向右push.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lpush k 1 2 3</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>rpush key value [value1 value2 &#8230;&#8203;]</code> <code>从右向左push.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>rpush k 3 2 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>lpushx key value</code> <code>当key存在时才后插入值, 一次只能插入一个值</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lpushx dummy val</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>linsert key before|after pivot value</code> <code>插入值到指定元素前/后.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>linsert k before 1 0</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">删</div>
+<ul>
+<li>
+<p><code>lpop key</code> <code>从左边取出第一个值.</code></p>
+</li>
+<li>
+<p><code>rpop key</code> <code>从右边取出第一个值.</code></p>
+</li>
+<li>
+<p><code>rpoplpush source target</code> <code>从source右端弹出元素, 并将其推入target左端. 如果source为空则执行失败.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>rpoplpush l1 l2</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>lrem key count value</code> <code>删除值为value的元素.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lrem k 0 1 <code>删除所有值为1的元素.</code></p>
+</li>
+<li>
+<p>lrem k 1 1 <code>从左向右删除1个值为1的元素.</code></p>
+</li>
+<li>
+<p>lrem k -1 1 <code>从右向左删除1个值为1的元素.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>ltrim key start end</code> <code>保留索引从start到end的元素, 索引从0到N-1.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>ltrim k 1 3 <code>保留索引从1到3的元素.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>blpop|brpop key [key1 key2 &#8230;&#8203;] timeout</code> <code>从多个列表中取出左/右边第一个元素</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>blop k k1 k2 0</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">改</div>
+<ul>
+<li>
+<p><code>lset key index value</code> <code>将索引为index的元素值修改为value.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lset k 1 111</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">查</div>
+<ul>
+<li>
+<p><code>lrange key start end</code> <code>取出列表中从left到end的元素(左右都是闭区间). list从左到右索引下标为0到N-1, 从右向左索引下标为-1到-N.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lrange k 0 -1 <code>取出列表所有元素.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>lindex key index</code> <code>查看index处的值.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>lindex k 3</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>llen key</code> <code>获取列表长度.</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内部编码_3"><a class="link" href="#_内部编码_3">2.3.2. 内部编码</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ziplist</code> : 当列表元素个数小于 <code>hash-max-ziplist-entries(512)</code> 同时每个元素大小都小于 <code>hash-max-ziplist-value(64B)</code> 时, Redis内部使用 <code>ziplist</code> 作为list的实现, 结构紧凑, 节省内存.</p>
+</li>
+<li>
+<p><code>linkedlist</code> : 元素过多或过大时使用 <code>linkedlist</code> 作为list的实现.</p>
+</li>
+<li>
+<p><code>quicklist</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_3"><a class="link" href="#_使用场景_3">2.3.3. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>消息队列 <code>lpush, brpop</code></p>
+</li>
+<li>
+<p>实体列表 <code>lpush, lrange</code></p>
+</li>
+<li>
+<p>有限集合 <code>lpush, ltrim</code></p>
+</li>
+<li>
+<p>优先级调度 <code>lpush l1/l2/l3&#8230;&#8203;, brpop l1 l2 l3 0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_set"><a class="link" href="#_set">2.4. set</a></h3>
+<div class="sect3">
+<h4 id="_命令_4"><a class="link" href="#_命令_4">2.4.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sadd key value [value1 value2 &#8230;&#8203;]</code></p>
+</li>
+<li>
+<p><code>srem key value [value1 value2 &#8230;&#8203;]</code> <code>删除set中元素.</code></p>
+</li>
+<li>
+<p><code>scard key</code> <code>获取set元素个数.</code></p>
+</li>
+<li>
+<p><code>smove source target value</code> <code>将value从source移动到target.</code></p>
+</li>
+<li>
+<p><code>sismember key value</code> <code>set中是否存在该元素.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sismember k 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>srandmember key [count]</code> <code>随机获取set中元素.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>srandmember k 10</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>spop key [count]</code> <code>随机弹出set中元素.</code></p>
+</li>
+<li>
+<p><code>sinter key [key1 key2 &#8230;&#8203;]</code> <code>取多个set的交集.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sinter a b c</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>sunion key [key1 key2 &#8230;&#8203;]</code> <code>取多个set的并集.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sunion a b c</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>sdiff key [key1 key2 &#8230;&#8203;]</code> <code>取多个set的差集(key-key1).</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sdiff a b</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>sinterstore|sunionstore|sdiffstore key [key1 key2 &#8230;&#8203;]</code> <code>取key1,key2&#8230;&#8203;的交/并/差集, 存到key中.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sdiff dest a b</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内部编码_4"><a class="link" href="#_内部编码_4">2.4.2. 内部编码</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>intset</code> : 集合中的元素都是整数, 且元素个数小于 <code>set-max-intset-entries(512)</code> 时使用intset作为集合的内部实现.</p>
+</li>
+<li>
+<p><code>hashtable</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_4"><a class="link" href="#_使用场景_4">2.4.3. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>打tag <code>sinter</code></p>
+</li>
+<li>
+<p>抽奖 <code>spop, srandmember</code></p>
+</li>
+<li>
+<p>社交关系 <code>sadd, spop, srem, smembers</code></p>
+</li>
+<li>
+<p>共同关注 <code>sinter</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_zset"><a class="link" href="#_zset">2.5. zset</a></h3>
+<div class="sect3">
+<h4 id="_命令_5"><a class="link" href="#_命令_5">2.5.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>zadd key [NX|XX|INCR|CH] score member [score1 member1 &#8230;&#8203;]</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zadd k 1 a 2 b</p>
+</li>
+<li>
+<p>zadd k NX 1 a 2 b <code>NX表示member不存在才添加.</code></p>
+</li>
+<li>
+<p>zadd k XX 11 a 2 c <code>XX表示member存在才更新.</code></p>
+</li>
+<li>
+<p>zadd k INCR 123 a <code>INCR表示加分数.</code></p>
+</li>
+<li>
+<p>zadd k CH 123 a 1000 b <code>CH表示修改的成员数量.</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zcard key</code> : <code>获取member数量.</code></p>
+</li>
+<li>
+<p><code>zrem key member</code> : <code>删除某个member.</code></p>
+</li>
+<li>
+<p><code>zscore key member</code> : <code>获取member的分数.</code></p>
+</li>
+<li>
+<p><code>zrank key member</code> : <code>分数从低到高获取member名次.</code></p>
+</li>
+<li>
+<p><code>zrevrank key member</code> : <code>分数从高到低获取member名次.</code></p>
+</li>
+<li>
+<p><code>zincrby key increment member</code> : <code>给某个member加score.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zincrby k 10 a</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zrange|zrevrange key start end [withscores]</code> <code>从低到高/从高到低获取排行start到end的member[和它的分数].</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zrange k 0 2 withscores</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zrangebyscore key min max [withscores] [limit offset count]</code> <code>根据分数范围列出member.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zrangebyscore k 10 11 withscores limit 0 1</p>
+</li>
+<li>
+<p>zrangebyscore k (10 11</p>
+</li>
+<li>
+<p>zrangebyscore k -inf 11</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zcount key min max</code> <code>获取分数从min到max的member数量.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zcount k 10 11</p>
+</li>
+<li>
+<p>zcount k 10 (11</p>
+</li>
+<li>
+<p>zcount k -inf +inf</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zremrangebyrank key start end</code> <code>删除排行从start到end的member.</code></p>
+</li>
+<li>
+<p><code>zremrangebyscore key min max</code> <code>删除分数从min到max的member.</code></p>
+</li>
+<li>
+<p><code>zinterstore|zunionstore destination numKeys key [key1 &#8230;&#8203;] [weights weight] [aggregate SUM|MIN|MAX]</code> <code>将numKeys个zset成员乘以按照各自的权重进行SUM/MIN/MAX操作, 存放到destination中.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>zinterstore dest 2 k1 k2 weights 1 0.5 aggregate sum</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>zrangebylex key min max</code> <code>按照字典顺序过滤成员.</code></p>
+</li>
+<li>
+<p><code>zlexcount key min max</code> <code>按照字典顺序过滤成员, 再获取数量.</code></p>
+</li>
+<li>
+<p><code>zremrangebylex key min max</code> <code>删除字典顺序内成员.</code></p>
+</li>
+<li>
+<p><code>zpopmax</code> <code>移除分最高的成员.</code></p>
+</li>
+<li>
+<p><code>zpopmin</code> <code>移除分最低的成员.</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_内部编码_5"><a class="link" href="#_内部编码_5">2.5.2. 内部编码</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ziplist</code> : 有序集合的元素个数小于 <code>zset-max-ziplist-entries(128)</code> , 同时每个成员的大小小于 <code>zset-max-ziplist-value(64B)</code> 时用 <code>ziplist</code> 实现zset.</p>
+</li>
+<li>
+<p><code>skiplist</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_5"><a class="link" href="#_使用场景_5">2.5.3. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>排行榜</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hyperloglog"><a class="link" href="#_hyperloglog">2.6. HyperLogLog</a></h3>
+<div class="sect3">
+<h4 id="_命令_6"><a class="link" href="#_命令_6">2.6.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>pfadd key element [element &#8230;&#8203;]</code> <code>添加元素.</code></p>
+</li>
+<li>
+<p><code>pfcount key [key2 key3 &#8230;&#8203;]</code> <code>获取集合的近似基数.</code></p>
+</li>
+<li>
+<p><code>pfmerge destKey sourceKey1 [sourceKey2 &#8230;&#8203;]</code> <code>将其他HyperLogLog合并到destKey.</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用场景_6"><a class="link" href="#_使用场景_6">2.6.2. 使用场景</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>统计uv</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bitmap"><a class="link" href="#_bitmap">2.7. bitmap</a></h3>
+<div class="sect3">
+<h4 id="_命令_7"><a class="link" href="#_命令_7">2.7.1. 命令</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>setbit key index value</code> <code>设置指定位置上的值</code></p>
+</li>
+<li>
+<p><code>getbit key index</code> <code>获取指定位置上的值.</code></p>
+</li>
+<li>
+<p><code>bitcount key [start, end]</code> <code>统计从start到end的1. (字节为单位偏移量, 1字节等于8位.)</code></p>
+</li>
+<li>
+<p><code>bitpos key {0|1} [start, end]</code> <code>获取第一个指定值的位置.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>在一个全为0的位图里找1, 返回-1</p>
+</li>
+<li>
+<p>在一个全为1的位图里找0, 返回下一个位置的索引</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>bitop [AND|OR|XOR|NOT] result_key bitmap1 [bitmap2 &#8230;&#8203;]</code> <code>对多个bitmap进行算术操作.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>处理不同长度的bitmap时, 空的位置会视作0.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>bitfield key [SET|GET|INCRBY|OVERFLOW] type offset value</code> ``</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_key管理"><a class="link" href="#_key管理">3. key管理</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>rename/renamenx key newKey</code> <code>重命名/newKey不存在时才重命名成功.</code></p>
+</li>
+<li>
+<p><code>randomkey</code> <code>随机返回一个key.</code></p>
+</li>
+<li>
+<p><code>dbsize</code> <code>获取key的数量.</code></p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">管理key时效时间</div>
+<ul>
+<li>
+<p><code>expire key seconds</code> <code>让key在seconds秒后过期.</code></p>
+</li>
+<li>
+<p><code>expireat key epochSecond</code> <code>让key在epochSecond时过期.</code></p>
+</li>
+<li>
+<p><code>pexpire key millseconds</code> <code>让key在millseconds毫秒后过期.</code></p>
+</li>
+<li>
+<p><code>persist key</code> <code>取消key的过期时间.</code></p>
+</li>
+<li>
+<p><code>ttl key</code> <code>获取key的过期时间.</code></p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<code>set</code> 命令会使key的失效时间消失.
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<div class="title">遍历key</div>
+<ul>
+<li>
+<p><code>keys pattern</code> <code>根据pattern正则列出key.</code></p>
+</li>
+<li>
+<p><code>scan cursor [match pattern] [count number]</code> <code>使用游标遍历键.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>scan 0</p>
+</li>
+<li>
+<p>scan 0 match k* count 1</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">key迁移</div>
+<ul>
+<li>
+<p><code>move key db_idx</code> <code>将key移动到db_idx数据库里.</code></p>
+</li>
+<li>
+<p><code>dump + restore</code> <code>dump指定key再restore</code></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>select 0</p>
+</li>
+<li>
+<p>set hello world</p>
+</li>
+<li>
+<p>dump hello</p>
+</li>
+<li>
+<p>select 1</p>
+</li>
+<li>
+<p>restore hello 0 "\x00\x05hello\x09\x00\xB3\x80\x8E\xBA1\xB2C\xBB"</p>
+</li>
+<li>
+<p>get hello</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><code>migrate host ip key|"" destination_db_idx timeout [auth password] [COPY] [REPLACE] [KEYS k1 k2 &#8230;&#8203;]</code> <code>批量迁移key到host:ip:destination_db_idx里, 如果key为"",则按KEYS后的key列表迁移.</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p>migrate 192.168.0.227 6379 "" 1 1000 COPY REPLACE KEYS k1 k2 k3</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<code>migrate</code> 命令不能在同一Redis实例上执行.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_慢查询"><a class="link" href="#_慢查询">4. 慢查询</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>slowlog-log-slower-than(微秒)</code> : 慢查询执行阈值, 默认10000微秒, 负数时不记录慢查询.
+<strong>建议设置为1000.</strong></p>
+</li>
+<li>
+<p><code>slowlog-max-len</code> : 慢查询日志最多存储多少条.
+<strong>建议设置为1000以上.</strong></p>
+</li>
+<li>
+<p><code>slowlog get [n]</code> : 获取前n条慢查询.</p>
+</li>
+<li>
+<p><code>slowlog len</code> : 获取慢查询数量.</p>
+</li>
+<li>
+<p><code>slowlog reset</code> : 重置慢查询.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_redis_shell"><a class="link" href="#_redis_shell">5. Redis Shell</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_redis_cli"><a class="link" href="#_redis_cli">5.1. redis-cli</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>-r n</code> : 将命令重复执行n次.</p>
+</li>
+<li>
+<p><code>-i n</code> : 每隔几秒执行一次.</p>
+</li>
+<li>
+<p><code>-a password</code> : 密码认证.</p>
+</li>
+<li>
+<p><code>--scan --pattern</code> : scan key名.</p>
+</li>
+<li>
+<p><code>--rdb filename</code> : dump数据到rdb文件中.</p>
+</li>
+<li>
+<p><code>--bigkeys</code> : 找到内存占比比较大的key.</p>
+</li>
+<li>
+<p><code>--latency</code> : 测试延迟.</p>
+</li>
+<li>
+<p><code>--stat</code> : 获取Redis统计信息.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_redis_benchmark"><a class="link" href="#_redis_benchmark">5.2. redis-benchmark</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>-c</code> : 客户端的并发数量, 默认50.</p>
+</li>
+<li>
+<p><code>-n</code> : 客户端的请求总数, 默认100K.</p>
+</li>
+<li>
+<p><code>-q</code> : 每秒请求数.</p>
+</li>
+<li>
+<p><code>-r</code> : 插入随机键, 10000表示对后四位处理.</p>
+</li>
+<li>
+<p><code>-t</code> : 对指定命令进行基准测试.</p>
+</li>
+<li>
+<p><code>--csv</code> : 结果按csv格式输出.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_事务"><a class="link" href="#_事务">6. 事务</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_原子性"><a class="link" href="#_原子性">6.1. 原子性</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>multi</code></p>
+</li>
+<li>
+<p><code>commands &#8230;&#8203;</code></p>
+</li>
+<li>
+<p><code>discard/exec</code></p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>事务期间命令拼错会导致整个事务回滚.</p>
+</li>
+<li>
+<p>事务期间命令没有拼写错误, 但是命令使用错误(如对set执行zadd), 则会执行没有错误的部分命令.</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_隔离性"><a class="link" href="#_隔离性">6.2. 隔离性</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>watch</code></p>
+</li>
+<li>
+<p><code>multi</code></p>
+</li>
+<li>
+<p><code>commands &#8230;&#8203;</code></p>
+</li>
+<li>
+<p><code>discard/exec</code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>watch某一个key期间, 如果 <code>exec</code> 后返回null, 则表示这期间key其他client修改过, 直接回滚.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_原子性_2"><a class="link" href="#_原子性_2">6.3. 原子性</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>script load &lt;lua content&gt;</code> : load lua脚本到redis server中, 返回一个SHA1值, 以后可以直接用SHA1值调用lua脚本.</p>
+</li>
+<li>
+<p><code>script flush</code> : 删除所有被加载过的lua脚本.</p>
+</li>
+<li>
+<p><code>script kill</code> : 取消正在执行读操作的lua脚本.</p>
+</li>
+<li>
+<p><code>script exists &lt;SHA1&gt;</code> : 返回相关lua脚本的SHA1是否被加载过.</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<div class="title">lua脚本执行</div>
+<ul>
+<li>
+<p><code>eval &lt;script&gt; numberKeys key args</code></p>
+</li>
+<li>
+<p><code>evalsha &lt;SHA1&gt; numberKeys key args</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bitmap_2"><a class="link" href="#_bitmap_2">7. bitmap</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>setbit &lt;bitmap_key&gt; &lt;offset&gt; 1|0</code> : 设置offset为1/0.</p>
+</li>
+<li>
+<p><code>getbit &lt;bitmap_key&gt; &lt;offset&gt;</code> : 获取offset处是1还是0.</p>
+</li>
+<li>
+<p><code>bitcount [&lt;bitmap_key&gt; start end]</code> : 获取start到end的1的个数.</p>
+</li>
+<li>
+<p><code>bitop and|or|not|nor &lt;destination_key&gt; key [key1 key2 &#8230;&#8203;]</code> : 对多个bitmap key执行逻辑操作.</p>
+</li>
+<li>
+<p><code>bitpos &lt;bitmap_key&gt; 1|0 [start end]</code> : 获取第一个值为1/0的偏移量.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_hyperloglog_2"><a class="link" href="#_hyperloglog_2">8. HyperLogLog</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>pfadd key element [element &#8230;&#8203;]</code> : 添加元素.</p>
+</li>
+<li>
+<p><code>pfcount key</code> : 计数.</p>
+</li>
+<li>
+<p><code>pfmerge &lt;destination_key&gt; key [key1 key2 &#8230;&#8203;]</code> : 求多个key的并集, 插入到destination_key中.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_publishsubscribe"><a class="link" href="#_publishsubscribe">9. Publish/Subscribe</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>publish &lt;channel&gt; &lt;message&gt;</code> : 向channel的每个订阅者发送message.</p>
+</li>
+<li>
+<p><code>subscribe &lt;channel&gt;</code> : 订阅channel.</p>
+</li>
+<li>
+<p><code>pubsub channels</code> : 查看当前活跃的channel.</p>
+</li>
+<li>
+<p><code>psubscribe/punsubscribe &lt;pattern&gt;</code> : 批量订阅channel.</p>
+</li>
+<li>
+<p><code>pubsub numsub &lt;channel&gt;</code> : 查看channel的订阅数.</p>
+</li>
+<li>
+<p><code>pubsub numpat</code> : 查看按模式订阅数.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_redis_serialization_protocol"><a class="link" href="#_redis_serialization_protocol">10. Redis Serialization Protocol</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_request"><a class="link" href="#_request">10.1. Request</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="bash" class="language-bash hljs">*&lt;参数数量&gt; CRLF
+$&lt;参数1的字节数&gt; CRLF
+&lt;参数1&gt; CRLF
+$&lt;参数2的字节数&gt; CRLF
+&lt;参数2&gt; CRLF
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_response"><a class="link" href="#_response">10.2. Response</a></h3>
+<div class="ulist">
+<div class="title">Response的第一个字节</div>
+<ul>
+<li>
+<p>状态回复: <code>+</code></p>
+</li>
+<li>
+<p>错误回复: <code>-</code></p>
+</li>
+<li>
+<p>整数回复: <code>:</code></p>
+</li>
+<li>
+<p>字符串回复: <code>$</code></p>
+</li>
+<li>
+<p>多条字符串回复: <code>*</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_持久化"><a class="link" href="#_持久化">11. 持久化</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_rdb"><a class="link" href="#_rdb">11.1. RDB</a></h3>
+<div class="paragraph">
+<p>RDB持久化是把当前进程的数据生成快照保存到硬盘里.</p>
+</div>
+<div class="sect3">
+<h4 id="_手动触发"><a class="link" href="#_手动触发">11.1.1. 手动触发</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>save</code> : 阻塞redis server直到RDB过程完成为止.</p>
+</li>
+<li>
+<p><code>bgsave</code> : fork出子进程, 让子进程持久化.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_自动触发"><a class="link" href="#_自动触发">11.1.2. 自动触发</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>save &lt;m&gt; &lt;n&gt;</code> : 表示m秒内数据存在n次修改时, 自动触发bgsave.</p>
+</li>
+<li>
+<p>如果从节点执行全量复制操作, 主节点自动执行bgsave生成RDB文件发送给从节点.</p>
+</li>
+<li>
+<p><code>debug reload</code></p>
+</li>
+<li>
+<p><code>shutdown</code> : 如果没有开启AOF持久化功能则自动执行 <code>bgsave</code> .</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_问题"><a class="link" href="#_问题">11.1.3. 问题</a></h4>
+<div class="ulist">
+<ul>
+<li>
+<p>bgsave 属于全量复制, 每次执行都要创建子进程, 频繁操作执行成本太高.</p>
+</li>
+<li>
+<p>RDB使用特定二进制格式保存, 可能会出现不兼容的问题.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_aof"><a class="link" href="#_aof">11.2. AOF</a></h3>
+<div class="paragraph">
+<p>所有的写入命令追加到aof_buf中, aof_buf会根据相应的策略向磁盘做同步操作.</p>
+</div>
+<div class="ulist">
+<div class="title">AOF重写</div>
+<ul>
+<li>
+<p><code>bgrewriteaof</code></p>
+</li>
+<li>
+<p>根据 <code>auto-aof-rewrite-min-size</code> 和 <code>auto-aof-rewrite-percentage</code> 参数确定自动触发时机. <code>aof_current_size &gt; auto-aof-rewrite-min-size &amp;&amp; (aof_current_size - aof_base_size) / aof_base_size &gt;= auto-aof-rewrite-percentage</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>auto-aof-rewrite-min-size</code> : AOF文件重写时文件最小体积.</p>
+</li>
+<li>
+<p><code>auto-aof-rewrite-percentage</code> : 当前aof文件体积和上一次重写后aof文件体积比值.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_持久化文件加载流程"><a class="link" href="#_持久化文件加载流程">11.3. 持久化文件加载流程</a></h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>appendonly开启时优先加载aof文件, aof不存在时加载rdb文件</p>
+</li>
+<li>
+<p>appendonly未开启时加载rdb文件</p>
+</li>
+<li>
+<p>加载aof/rdb文件成功后, redis启动成功.</p>
+</li>
+<li>
+<p>aof/rdb文件存在错误时, redis启动失败并打印错误信息. (可以使用redis-check-aof --fix命令修复)</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_主从复制"><a class="link" href="#_主从复制">12. 主从复制</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_从节点开启方式"><a class="link" href="#_从节点开启方式">12.1. 从节点开启方式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>redis-server replicaof &lt;host&gt; &lt;port&gt;</code> .</p>
+</li>
+<li>
+<p>配置文件添加 <code>replicaof &lt;host&gt; &lt;port&gt;</code> .</p>
+</li>
+<li>
+<p>直接运行命令 <code>replicaof &lt;host&gt; &lt;port&gt;</code> .</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_从节点断开"><a class="link" href="#_从节点断开">12.2. 从节点断开</a></h3>
+<div class="paragraph">
+<p><code>replicaof no one</code> .</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_数据同步方式"><a class="link" href="#_数据同步方式">12.3. 数据同步方式</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>全量复制: 用于初次复制场景.
+把主节点全部数据一次性地发送给从节点.</p>
+</li>
+<li>
+<p>部分复制: 补发丢失数据给从节点.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sentinel"><a class="link" href="#_sentinel">13. Sentinel</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Redis Sentinel 负责监控redis主从节点, 主节点故障时自动切换从节点为主节点.</p>
+</div>
+<div class="sect2">
+<h3 id="_安装_2"><a class="link" href="#_安装_2">13.1. 安装</a></h3>
+<div class="listingblock">
+<div class="title">docker-compose.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="yml" class="language-yml hljs">version: '3.7'
+services:
+    redis-master:
+        image: redis:alpine
+        container_name: redis-master
+        volumes:
+            - ./master.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6379:6379
+    redis-replica1:
+        image: redis:alpine
+        container_name: redis-replica1
+        volumes:
+            - ./replica1.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6380:6379
+        depends_on:
+            - redis-master
+    redis-replica2:
+        image: redis:alpine
+        container_name: redis-replica2
+        volumes:
+            - ./replica2.conf:/usr/local/etc/redis/redis.conf
+        command: redis-server /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 6381:6379
+        depends_on:
+            - redis-master
+    redis-sentinel1:
+        image: redis:alpine
+        container_name: redis-sentinel1
+        volumes:
+            - ./sentinel1.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16379:6379
+        depends_on:
+            - redis-master
+    redis-sentinel2:
+        image: redis:alpine
+        container_name: redis-sentinel2
+        volumes:
+            - ./sentinel2.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16380:6379
+        depends_on:
+            - redis-master
+    redis-sentinel3:
+        image: redis:alpine
+        container_name: redis-sentinel3
+        volumes:
+            - ./sentinel3.conf:/usr/local/etc/redis/redis.conf
+        command: redis-sentinel /usr/local/etc/redis/redis.conf
+        networks:
+            - redis
+        ports:
+            - 16381:6379
+        depends_on:
+            - redis-master
+
+networks:
+    redis:</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">master.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="conf" class="language-conf hljs">appendonly yes
+logfile "master.log"
+dbfilename "dump-master.rdb"</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">replica1.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="conf" class="language-conf hljs">appendonly yes
+logfile "replica1.log"
+dbfilename "dump-replica1.rdb"
+replicaof redis-master 6379</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">replica2.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="conf" class="language-conf hljs">appendonly yes
+logfile "replica2.log"
+dbfilename "dump-replica2.rdb"
+replicaof redis-master 6379</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">sentinel1.conf, sentinel2.conf, sentinel3.conf</div>
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="conf" class="language-conf hljs">logfile "sentinel.log"
+sentinel monitor master redis-master 6379 2
+sentinel down-after-milliseconds master 15000
+sentinel parallel-syncs master 1</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2020-10-12 20:06:11 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

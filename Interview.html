@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>Interview</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Interview</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_java基础">1. Java基础</a></li>
+<li><a href="#_java集合">2. Java集合</a></li>
+<li><a href="#_juc">3. JUC</a></li>
+<li><a href="#_jvm">4. JVM</a></li>
+<li><a href="#_maven">5. Maven</a></li>
+<li><a href="#_mybatis">6. Mybatis</a></li>
+<li><a href="#_spring">7. Spring</a></li>
+<li><a href="#_redis">8. Redis</a></li>
+<li><a href="#_database">9. Database</a>
+<ul class="sectlevel2">
+<li><a href="#_mysql">9.1. MySQL</a></li>
+<li><a href="#_postgresql">9.2. PostgreSQL</a></li>
+</ul>
+</li>
+<li><a href="#_rabbitmq">10. RabbitMQ</a></li>
+<li><a href="#_docker">11. Docker</a></li>
+<li><a href="#_cap">12. CAP</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_java基础"><a class="link" href="#_java基础">1. Java基础</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Java基本数据类型有哪些? 各占多少字节?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>byte <code>1</code></p>
+</li>
+<li>
+<p>short <code>2</code></p>
+</li>
+<li>
+<p>int <code>4</code></p>
+</li>
+<li>
+<p>long <code>8</code></p>
+</li>
+<li>
+<p>boolean <code>1</code></p>
+</li>
+<li>
+<p>char <code>2</code></p>
+</li>
+<li>
+<p>float <code>4</code></p>
+</li>
+<li>
+<p>double <code>8</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em><code>|</code> 和 <code>||</code> 的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>||</code> 是逻辑运算符, 短路操作, 如果左边是true, 则右边不会执行.</p>
+</li>
+<li>
+<p><code>|</code> 是位运算符, 左右两边都会执行.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em><code>&gt;&gt;</code> 和 <code>&gt;&gt;&gt;</code> 的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>&gt;&gt;</code> 带符号右移, 向右移动时使用首位的值来填充.</p>
+</li>
+<li>
+<p><code>&gt;&gt;&gt;</code> 无符号右移, 首位固定用零填充.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>访问权限修饰符有哪些?</em></p>
+<p>private &lt; default &lt; protected &lt; public</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>private</code> : 只能在类的内部访问.</p>
+</li>
+<li>
+<p><code>default</code> : 只能被同一个包中其他类访问, 但子包不能访问.</p>
+</li>
+<li>
+<p><code>protected</code> : 可以被子类或同一个包中其他类访问.</p>
+</li>
+<li>
+<p><code>public</code> : 可以被任意类访问.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>重载和重写的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>重载:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>方法名称相同.</p>
+</li>
+<li>
+<p>方法参数列表不同.</p>
+</li>
+<li>
+<p>方法抛出的异常, 返回值类型和访问修饰符都可以不同.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>重写发生在子类中:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>方法名称相同.</p>
+</li>
+<li>
+<p>参数列表相同.</p>
+</li>
+<li>
+<p>子类方法的返回值类型可以是父类返回值类型或其子类.</p>
+</li>
+<li>
+<p>子类抛出的Checked异常类型可以是父类方法抛出的Checked异常类型或其子类, 或者不抛.</p>
+</li>
+<li>
+<p>子类方法的访问修饰符必须大于等于父类.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>String, StringBuilder, StringBuffer的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>String</code> 是不可变类, 每次修改字符串都会生成一个新的String对象.</p>
+</li>
+<li>
+<p><code>StringBuilder</code> 和 <code>StringBuffer</code> 都是可变对象, 可以修改其内部存储的字符串.</p>
+</li>
+<li>
+<p><code>StringBuffer</code> 是线程安全的, <code>StringBuilder</code> 不是线程安全的.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>创建字符串的方式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>字面量创建. <code>String s = "abc";</code></p>
+</li>
+<li>
+<p>创建String对象. <code>String s = new String("abc");</code></p>
+</li>
+<li>
+<p>两个字面量相加. <code>String s = "a" + "bc";</code></p>
+</li>
+<li>
+<p>两个String对象相加. <code>String s = new String("a") + new String("bc");</code></p>
+</li>
+<li>
+<p>字面量与String对象相加. <code>String s = new String("a") + "bc";</code></p>
+</li>
+<li>
+<p>字面量与一个字符串变量相加. <code>String a = "a"; String s = a + "bc";</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Checked和UnChecked异常的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Checked异常为继承了 <code>Exception</code> 类但不是 <code>RuntimeException</code> 的子类的异常, 需要程序手动处理.</p>
+</li>
+<li>
+<p>UnChecked异常为继承了 <code>RuntimeException</code> 或 <code>Error</code> 的异常, 对于UnChecked异常程序可以手动捕获, 也可以不处理.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>谈谈对多态的理解?</em></p>
+<p>多态是指父类引用指向子类对象, 即在程序运行时才能动态获取到引用对象的实际类型.</p>
+</li>
+<li>
+<p><em>抽象类和接口的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>抽象类可以有构造方法, 接口不行.</p>
+</li>
+<li>
+<p>接口类中的变量只能是 <code>public static final</code> 常量类型.</p>
+</li>
+<li>
+<p>一个类只能继承一个抽象类, 但是可以实现多个接口.</p>
+</li>
+<li>
+<p>类继承表达的是 <code>is-a</code> 的关系, 表示子类和父类是同一类的类型. 接口实现表达的是 <code>like-a</code> 的关系, 表示子类具备父类接口定义的行为.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>静态内部类和成员内部类的区别?</em></p>
+<p>.成员内部类</p>
+<div class="ulist">
+<ul>
+<li>
+<p>成员内部类的变量和方法不能声明为静态的.</p>
+</li>
+<li>
+<p>内部类可以引用外部类的非静态属性及方法.<br>
+.静态内部类</p>
+</li>
+<li>
+<p>静态内部类的属性和方法可以声明为静态和非静态的.</p>
+</li>
+<li>
+<p>静态内部类只能引用外部类的静态变量或方法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>equals和hashCode方法重写规则?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>hashCode()相等, equals()不一定返回true.</p>
+</li>
+<li>
+<p>equals()返回true, hashCode()一定相等.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>new String("abc")创建了几个对象?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>如果常量池已经存在abc这个常量, 则只在堆中创建一个String对象.</p>
+</li>
+<li>
+<p>如果常量池不存在abc这个常量, 则会先把abc放入常量池, 然后在堆中创建一个String对象.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>String为什么要设计成不可变的?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>字符串常量池</strong>: 相同的字符串字面量会指向字符串常量池同一个对象, 如果String对象内部可以改变, 则改动了一个字符串值, 会影响系统中指向该字符串常量的字面量.</p>
+</li>
+<li>
+<p><strong>线程安全</strong>: 字符串对象不可变, 则可以被多个线程安全共享.</p>
+</li>
+<li>
+<p><strong>缓存hashcode</strong>: 因为字符串不可变, 所以可以缓存计算过的对象hashcode值.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>泛型中extends和super的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>extends为上界通配符.</p>
+</li>
+<li>
+<p>super为下界通配符.</p>
+</li>
+<li>
+<p>上界&lt;? extends T&gt;不能往里存，只能往外取</p>
+</li>
+<li>
+<p>下界&lt;? super T&gt;不影响往里存，但往外取只能放在Object对象里</p>
+</li>
+<li>
+<p><strong>PECS(Producer Extends Consumer Super)原则</strong>: 频繁往外读取内容的, 适合用上界Extends; 经常往里插入的, 适合用下界Super.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>获取泛型类型的方法?</em></p>
+<p><code>ParameterizedType) getClass().getGenericSuperclass(.getActualTypeArguments()[0];</code></p>
+</li>
+<li>
+<p><em>创建对象有哪些方式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>new</p>
+</li>
+<li>
+<p>Object.clone()</p>
+</li>
+<li>
+<p>Class::newInstance()</p>
+</li>
+<li>
+<p>Constructor::newInstance()</p>
+</li>
+<li>
+<p>反序列化</p>
+</li>
+<li>
+<p>Unsafe.allocateInstance</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>getMethods()和getDeclaredMethods()的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>getMethods()</code> 返回本类以及从父类继承过来的public方法.</p>
+</li>
+<li>
+<p><code>getDeclaredMethods()</code> 只返回本类的方法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Class.forName()和ClassLoader::loadClass的区别?</em></p>
+<p><code>Class.forName()</code> 会执行类的静态代码块, <code>ClassLoader::loadClass</code> 不会.</p>
+</li>
+<li>
+<p><em><code>Class::getResourceAsStream</code> 和 <code>ClassLoader::getResourceAsStream</code> 的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Class::getResourceAsStream</code> 为使用加载该类的类加载器加载文件: 不以 <code>/</code> 开头时为在该类所在路径下加载文件, 以 <code>/</code> 开头时为在 <code>classpath</code> 下加载文件.</p>
+</li>
+<li>
+<p><code>ClassLoader::getResourceAsStream</code> : 为用指定类加载器加载文件.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em><code>ClassNotFoundException</code> 和 <code>NoClassDefFoundError</code> 有什么区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ClassNotFoundException</code> 是Exception类型, <code>NoClassDefFoundError</code> 是Error类型.</p>
+</li>
+<li>
+<p>使用 <code>Class.forName()</code> / <code>ClassLoader.loadClass()</code> / <code>ClassLoader.findSystemClass()</code> 动态加载类时找不到类就会抛出 <code>ClassNotFoundException</code> ,当编译成功但运行时(调用该类的一个方法或者new一个实例时)找不到类或者初始化static成员时有异常则会抛出 <code>NoClassDefFoundError</code> 异常.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Java中Connection为什么要close?</em></p>
+<p>及时释放数据库链接, 减少资源消耗. (如果没有显式close, 也会被gc)</p>
+</li>
+<li>
+<p><em>BIO/NIO/AIO区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>BIO</p>
+<div class="ulist">
+<ul>
+<li>
+<p>一个线程对应一个读写请求.</p>
+</li>
+<li>
+<p>BIO用流处理数据.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>NIO</p>
+<div class="ulist">
+<ul>
+<li>
+<p>所有的读写请求交给一个线程轮询状态, 然后根据状态交给线程池中的线程处理.</p>
+</li>
+<li>
+<p>NIO用块处理数据.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>AIO</p>
+<div class="ulist">
+<ul>
+<li>
+<p>通过内核回调机制通知请求读写完毕, 然后执行回调.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_java集合"><a class="link" href="#_java集合">2. Java集合</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Java容器有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>列表/链表</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Vector</p>
+</li>
+<li>
+<p>ArrayList</p>
+</li>
+<li>
+<p>LinkedList</p>
+</li>
+<li>
+<p>CopyOnWriteArrayList</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>队列</p>
+<div class="ulist">
+<ul>
+<li>
+<p>ArrayQueue</p>
+</li>
+<li>
+<p>ArrayDeque</p>
+</li>
+<li>
+<p>ArrayBlockingQueue</p>
+</li>
+<li>
+<p>LinkedBlockingQueue</p>
+</li>
+<li>
+<p>DelayQueue</p>
+</li>
+<li>
+<p>SynchronousQueue</p>
+</li>
+<li>
+<p>PriorityBlockingQueue</p>
+</li>
+<li>
+<p>LinkedTransferQueue</p>
+</li>
+<li>
+<p>ConcurrentLinkedQueue</p>
+</li>
+<li>
+<p>ConcurrentLinkedDeque</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>堆</p>
+<div class="ulist">
+<ul>
+<li>
+<p>PriorityQueue</p>
+</li>
+<li>
+<p>PriorityBlockingQueue</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>集合</p>
+<div class="ulist">
+<ul>
+<li>
+<p>HashSet</p>
+</li>
+<li>
+<p>LinkedHashSet</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>散列表</p>
+<div class="ulist">
+<ul>
+<li>
+<p>HashTable</p>
+</li>
+<li>
+<p>HashMap</p>
+</li>
+<li>
+<p>LinkedHashMap</p>
+</li>
+<li>
+<p>ConcurrentHashMap</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>树</p>
+<div class="ulist">
+<ul>
+<li>
+<p>TreeMap</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>ArrayList和LinkedList的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ArrayList</code> 底层使用数组存储元素, <code>LinkedList</code> 使用双向链表.</p>
+</li>
+<li>
+<p>都不是线程安全的.</p>
+</li>
+<li>
+<p><code>ArrayList</code> 插入和删除时间复杂度为\$O(n)\$, 查找为\$O(1)\$. <code>LinkedList</code> 查找和删除时间复杂度为\$O(n)\$, 插入为\$O(1)\$.</p>
+</li>
+<li>
+<p><code>ArrayList</code> 适合从中间插或者尾插, <code>LinkedList</code> 更适合头插.</p>
+</li>
+<li>
+<p><code>LinkedList</code> 每个元素需要维护前后元素的引用, 所以内存占用比 <code>ArrayList</code> 大.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>有哪些Map实现类?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>HashMap <code>查找键值对</code></p>
+</li>
+<li>
+<p>LinkedHashMap <code>保证key按照插入的顺序输出</code></p>
+</li>
+<li>
+<p>ConcurrentHashMap <code>线程安全</code></p>
+</li>
+<li>
+<p>WeakHashMap <code>存取弱引用对象的哈希表</code></p>
+</li>
+<li>
+<p>TreeMap <code>红黑树, 按照自定义顺序遍历key</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>HashMap和HashTable的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>HashTable线程安全, HashMap线程不安全.</p>
+</li>
+<li>
+<p>HashTable默认初始长度为11, HashMap默认初始长度为16, 且总为2的幂.</p>
+</li>
+<li>
+<p>HashTable扩容后为\$2n+1\$,HashMap扩容后为\$2n\$.</p>
+</li>
+<li>
+<p>HashMap的kv可以为null, 放在数据索引为0的位置.HashTable的kv均不能为null.</p>
+</li>
+<li>
+<p>HashMap因hash冲突产生的链表长度大于8后会转成红黑树, HashTable不会.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>JDK中有哪些保持key有序的Map?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>LinkedHashMap: 按照插入顺序或者读取顺序排列key.</p>
+</li>
+<li>
+<p>TreeMap: 按照key的大小排好序.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>有哪些散列函数?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>求和</strong> : 将每一位的ascii值相加得到哈希值.</p>
+</li>
+<li>
+<p><strong>多项式求和</strong> : 以一个素数(31)为底, 多项式求和: \$sum_(i=0)^(n-1)"key"[n-i-1]xx31^i\$ , 如 \$h=k_0+k_1xx37+k_2xx37^2+...+k_(n-1)xx37^(n-1)\$</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>散列表解决hash冲突的方法?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>拉链法</strong> : 如果hash值落在相同的槽位上, 则将该槽位元素转成链表, 将冲突的元素放在已有元素的后面. <code>HashMap</code></p>
+</li>
+<li>
+<p><strong>开放地址法</strong> : 如果hash所在的槽位已有元素, 则将元素存放到下一个为空的槽位上. <code>ThreadLocal.ThreadLocalMap</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>为什么HashMap的长度始终是2的幂?</em></p>
+<p>\$x%2^n=x&amp;(2^n-1)\$ 用与运算代替模运算, 效率更高.</p>
+</li>
+<li>
+<p><em>HashMap的实现原理?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>计算key的hash值: <code>(h = key.hashCode()) ^ (h &gt;&gt;&gt; 16)</code> hashCode的前16位和后16位异或.</p>
+</li>
+<li>
+<p>根据hash值计算出存放该key的槽位(<code>hash &amp; (length - 1)</code>)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>如果table为空, 则初始化table, 直接插入.</p>
+</li>
+<li>
+<p>如果索引处为空, 直接插入.</p>
+</li>
+<li>
+<p>如果索引处不为空, 则根据hash和key比较找到已有的key.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>如果key找到了则直接更新value.</p>
+</li>
+<li>
+<p>如果key没有找到, 则判断当前node是否为红黑树的node还是链表node, 插入.</p>
+</li>
+<li>
+<p>如果当前node属于链表且长度大于8且table长度大于等于64, 则转成红黑树.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>插入后如果table长度超过了阈值(capacity*loadFactor), 则长度扩容两倍, 然后重新计算每个元素的槽位. 因为 \$x&amp;(2n-1)=(x&amp;(n-1) or 2xxx&amp;(n-1))\$, 所以扩容后原来的索引\$i\$只会移动到新的数组索引\$i或2i\$处, 通过 \$i&amp;n\$就可以计算出新索引为\$i or 2i\$.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>HashSet的实现原理?</em></p>
+<p>内部维护了一个HashMap, 每次添加元素的时候, key为待添加的元素, value为一个单例的Object对象.</p>
+</li>
+<li>
+<p><em>LinkedHashMap的实现原理?</em></p>
+<p>内部维护了一个key的双向链表节点, 可以设置按照插入顺序还是访问顺序对key排序.<br>
+每次添加/访问/删除key的时候, 会维护这个链表, 输出时按照这个链表的key的顺序输出有序的key.</p>
+</li>
+<li>
+<p><em>如何使用LinkedHashMap实现LRU缓存?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>继承 <code>LinkedHashMap</code> , 设置 <code>accessOrder</code> 属性为true.</p>
+</li>
+<li>
+<p>如果需要限制缓存容量, 重写 <code>removeEldestEntry</code> 方法即可.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>fail-fast和fail-safe分别代表什么?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>fail-fast</code> 输赢迭代器遍历一个集合对象的时候, 如果遍历这个集合的过程中对集合做了修改会抛出 <code>ConcurrentModifiedException</code> .</p>
+</li>
+<li>
+<p><code>fail-safe</code> 在遍历时先复制原有集合, 然后在拷贝的集合上进行遍历.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_juc"><a class="link" href="#_juc">3. JUC</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>synchronized关键字的使用?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>修饰实例方法</p>
+</li>
+<li>
+<p>修饰静态方法</p>
+</li>
+<li>
+<p>修饰代码块</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>sleep和wait的区别?</em></p>
+<p><em>synchronized和volatile的区别?</em></p>
+<p><em>线程的状态流转?</em></p>
+<p><em>Thread类run()和start()区别?</em></p>
+<p><em>Thread.join()有什么作用?</em></p>
+<p>等待线程执行完</p>
+</li>
+<li>
+<p><em>同步和非同步、阻塞和非阻塞的概念?</em></p>
+<p><em>终止一个线程的方法有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>使用一个volatile修饰的标志位while循环判断是否终止.</p>
+</li>
+<li>
+<p>调用Thread#interrupt()方法</p>
+<div class="ulist">
+<ul>
+<li>
+<p>如果线程处于运行状态, Thread#isInterrupted()方法返回true, 线程内部判断这个标志位跳出方法.</p>
+</li>
+<li>
+<p>如果线程处于阻塞状态, 则会抛出InterruptedException.线程内部可以捕获该异常终止方法.<br>
+Thread#isInterrupted()方法返回false.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>调用Thread#stop()方法.<br>
+此方法会释放所有子线程的锁, 可能会导致线程安全问题.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>请描述 <code>synchronized</code> 和 <code>ReentrantLock</code> 的底层实现及重入的底层原理?</em></p>
+<p><em>请描述锁的四种状态和升级过程?</em></p>
+<p><em>CAS是什么?</em></p>
+<p><em>CAS的ABA问题如何解决?</em></p>
+<p><em>请谈一下AQS,为什么AQS的底层是CAS+volatile?</em></p>
+<p><em>请谈一下你对 volatile的理解?</em></p>
+<p><em>volatile的可见性和禁止指令重排序是如何实现的?</em></p>
+<p><em>请描述一下对象的创建过程?</em></p>
+<p><em>对象在内存中的内存布局?</em></p>
+<p><em>DCL单例为什么要加volatile?</em></p>
+<p><em>Object o = new Object()在内存中占了多少字节?</em></p>
+<p><em>请描述 synchronized和 Reentrant Lock的异同?</em></p>
+<p><em>聊聊你对as-if- serial和 happens- before语义的理解?</em></p>
+<p><em>你了解 ThreadLocal吗?你知道 ThreadLoca中如何解决内存泄漏问题吗?</em></p>
+<p><em>请描述一下锁的分类以及JDK中的应用?</em></p>
+<p><em>线程池中阻塞队列的作用?</em></p>
+<p><em>线程池的工作原理?</em></p>
+<p><em>线程池初始化参数的解释?</em></p>
+<p><em>多线程断点续传的实现原理?</em></p>
+<p><em>守护线程和本地线程区别?</em></p>
+<p><em>线程与进程的区别?</em></p>
+<p><em>什么是多线程中的上下文切换?</em></p>
+<p><em>死锁与活锁的区别?</em></p>
+<p><em>死锁与饥饿的区别?</em></p>
+<p><em>Java中用到的线程调度算法是什么?</em></p>
+<p><em>什么是线程组, 为什么在Java中不推荐使用?</em></p>
+<p><em>Lock接口是什么? 对比synchronized它有什么优势?</em></p>
+<p><em>什么是阻塞队列? 阻塞队列的实现原理是什么? 如何使用阻塞队列来实现生产者-消费者模型?</em></p>
+<p><em>什么是Callable和Future?</em></p>
+<p><em>什么是FutureTask?</em></p>
+<p><em>什么是并发容器的实现?</em></p>
+<p><em>多线程同步和互斥有几种实现方法?</em></p>
+<p><em>什么是竞争条件? 你怎样发现和解决竞争?</em></p>
+<p><em>Java中你怎样唤醒一个阻塞的线程?</em></p>
+<p><em>CyclicBarrier和CountdownLatch有什么区别?</em></p>
+<p><em>什么是不可变对象, 它对写并发应用有什么帮助?</em></p>
+<p><em>什么是多线程中的上下文切换?</em></p>
+<p><em>Java中用到的线程调度算法是什么?</em></p>
+<p><em>什么是线程组，为什么在Java中不推荐使用?</em></p>
+<p><em>为什么使用Executor框架比使用应用创建和管理线程好?</em></p>
+<p><em>java中有几种方法可以实现一个线程?</em></p>
+<p><em>如何停止一个正在运行的线程?</em></p>
+<p><em>什么是Daemon线程? 它有什么意义?</em></p>
+<p><em>java如何实现多线程之间的通讯和协作?</em></p>
+<p><em>什么是可重入锁?</em></p>
+<p><em>当一个线程进入某个对象的一个synchronized的实例方法后，其它线程是否可进入此对象的其它方法?</em></p>
+<p><em>乐观锁和悲观锁的理解及如何实现?</em></p>
+<p><em>SynchronizedMap和ConcurrentHashMap有什么区别?</em></p>
+<p><em>CopyOnWriteArrayList可以用于什么应用场景?</em></p>
+<p><em>什么叫线程安全? servlet是线程安全吗?</em></p>
+<p><em>volatile有什么用? 能否用一句话说明下volatile的应用场景?</em></p>
+<p><em>为什么代码会重排序?</em></p>
+<p><em>在java中wait和sleep方法的不同?</em></p>
+<p><em>一个线程运行时发生异常会怎样?</em></p>
+<p><em>如何在两个线程间共享数据?</em></p>
+<p><em>Java中notify和notifyAll有什么区别?</em></p>
+<p><em>为什么wait, notify 和 notifyAll这些方法不在thread类里面?</em></p>
+<p><em>什么是ThreadLocal变量?</em></p>
+<p><em>Java中interrupted和isInterrupted方法的区别?</em></p>
+<p><em>为什么wait和notify方法要在同步块中调用?</em></p>
+<p><em>为什么你应该在循环中检查等待条件?</em></p>
+<p><em>Java中的同步集合与并发集合有什么区别?</em></p>
+<p><em>什么是线程池? 为什么要使用它?</em></p>
+<p><em>怎么检测一个线程是否拥有锁?</em></p>
+<p><em>JVM中哪个参数是用来控制线程的栈堆栈小的?</em></p>
+<p><em>Thread类中的yield方法有什么作用?</em></p>
+<p><em>Java中ConcurrentHashMap的并发度是什么?</em></p>
+<p><em>Java中Semaphore是什么?</em></p>
+<p><em>Java线程池中submit()和execute()方法有什么区别?</em></p>
+<p><em>什么是阻塞式方法?</em></p>
+<p><em>Java中的ReadWriteLock是什么?</em></p>
+<p><em>volatile 变量和 atomic 变量有什么不同?</em></p>
+<p><em>可以直接调用Thread类的run()方法么?</em></p>
+<p><em>如何让正在运行的线程暂停一段时间?</em></p>
+<p><em>你对线程优先级的理解是什么?</em></p>
+<p><em>什么是线程调度器和时间分片?</em></p>
+<p><em>你如何确保main()方法所在的线程是Java程序最后结束的线程?</em></p>
+<p><em>线程之间是如何通信的?</em></p>
+<p><em>为什么线程通信的方法wait()、notify()和notifyAll()被定义在Object类里?</em></p>
+<p><em>为什么wait()、notify()和notifyAll()必须在同步方法或者同步块中被调用?</em></p>
+<p><em>为什么Thread类的sleep()和yield()方法是静态的?</em></p>
+<p><em>如何确保线程安全?</em></p>
+<p><em>同步方法和同步块, 哪个是更好的选择?</em></p>
+<p><em>如何创建守护线程?</em></p>
+<p><em>Timer类的缺点?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>一个任务执行时间长将会影响后面的任务.</p>
+</li>
+<li>
+<p>前面的任务抛出异常, 后面的任务会执行不了.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>线程池的拒绝策略?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>AbortPolicy(默认): 丢弃任务并抛出 <code>RejectExecutionException</code> 异常.</p>
+</li>
+<li>
+<p>DiscardPolicy: 丢弃任务, 但是不抛出异常.</p>
+</li>
+<li>
+<p>DiscardOldestPolicy: 丢弃队列最前面的任务, 然后重新提交被拒绝的任务.</p>
+</li>
+<li>
+<p>CallerRunsPolicy: 由调用线程处理该任务.<br>
+&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_jvm"><a class="link" href="#_jvm">4. JVM</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>JVM内存区域的划分?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>线程私有:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>程序计数器: 存储当前线程执行的字节码的指令地址.</p>
+</li>
+<li>
+<p>虚拟机栈: 存放当前线程的栈帧.每个栈帧对应一个被调用的方法, 栈帧中包括局部变量表, 操作数栈, 方法返回地址等信息.当线程执行一个方法时, 就会创建一个栈帧压栈, 当方法执行完毕, 便会将栈帧出栈.</p>
+</li>
+<li>
+<p>本地方法栈: 存储当前线程调用的本地方法的栈帧.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>线程共享:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>堆: 存储对象数据.</p>
+</li>
+<li>
+<p>方法区: 存储类的信息, 静态变量, 常量, 编译后的代码等.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>强/软/弱/虚引用的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>强引用</strong> : 强引用的对象不会被垃圾回收.</p>
+</li>
+<li>
+<p><strong>软引用(SoftReference)</strong> : 满足以下 <code>ReferencePolicy</code> 的回收条件时, 会将软引用关联的对象列入垃圾回收范围回收 (详见 <code>ReferenceProcessor::process_soft_ref_reconsider_work</code> 方法).</p>
+<div class="ulist">
+<ul>
+<li>
+<p>NeverClearPolicy: 从不回收软引用对象.</p>
+</li>
+<li>
+<p>AlwaysClearPolicy: 一直回收软引用对象.</p>
+</li>
+<li>
+<p>LRUMaxHeapPolicy(开启c2/jvmci编译器下默认策略): 如果clock-timestamp&gt;(最大堆容量-上次gc后堆使用的空间大小)/1MB*SoftRefLRUPolicyMSPerMB(默认1000), 会回收软引用, 否则不会回收.</p>
+</li>
+<li>
+<p>LRUCurrentHeapPolicy(禁用c2&amp;jvmci编译器下默认策略): 如果clock-timestamp&gt;上次gc后堆可用空间大小/1MB*SoftRefLRUPolicyMSPerMB(默认1000), 会回收软引用, 否则不会回收.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>弱引用(WeakReference)</strong> : 垃圾回收时会回收弱引用对象.</p>
+</li>
+<li>
+<p><strong>虚引用(PhantomReference)</strong> : 无法通过虚引用来获取被引用的对象, 该对象在被回收的同时会将该对象放入ReferenceQueue, 外部可以通过从Queue中poll出元素来接收到对象被回收的事件, 如果该对象是 <code>Cleaner</code> 类型, 则会执行clean方法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>对象创建的过程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>new指令的参数是否能在常量池中定位到一个类的符号引用, 如果这个符号引用代表的类没有被加载过, 则执行相应的类加载过程.</p>
+</li>
+<li>
+<p>为对象分配内存.</p>
+</li>
+<li>
+<p>初始化字段值.</p>
+</li>
+<li>
+<p>设置对象头.</p>
+</li>
+<li>
+<p>执行构造函数.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>为对象分配内存的方式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>指针碰撞(标记-整理): 堆中内存是规整的, 所有空闲的内存放在一边, 被使用的内存放在另一边, 中间有一个指针作为分界点, 分配内存仅需将指针向空闲方向挪动一段与对象大小相等的距离.</p>
+</li>
+<li>
+<p>空闲列表(标记-清除): 堆中已使用和空闲的内存交错在一起, 虚拟机维护一个列表, 记录哪些块是可用的, 分配对象的时候从空闲列表划分一块足够大的空间给对象实例, 并更新列表上的记录.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>JVM对象的结构?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>对象头.(MarkWord+ClassPointer)</p>
+</li>
+<li>
+<p>对象实例数据.</p>
+</li>
+<li>
+<p>对齐填充.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>对象头的内容?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>MarkWord</p>
+</li>
+<li>
+<p>类型指针: 指向类型元数据的指针.</p>
+</li>
+<li>
+<p>如果是数组, 还需要记录数组长度.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>对象的访问方式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>直接指针访问(HotSpot): reference中储存的是对象的实例地址. 可以通过reference中的地址直接访问到对象.(对象实例数据中存储了对象类型数据的指针)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>好处: 节省一次指针定位的开销, 速度快.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>句柄访问: 堆中划分一块内存作为句柄池, 句柄池中存储了对象的实例数据地址和对象类型数据地址. reference中存储的是句柄地址.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>好处: 在对象被移动的时候只会修改句柄中的对象实例数据地址, 而不会修改reference.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>OOM有哪些类型?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>堆内存溢出. <code>Java heap space</code></p>
+</li>
+<li>
+<p>内存不足导致线程无法创建. <code>unable to create new native thread</code></p>
+</li>
+<li>
+<p>无限创建动态代理对象导致方法区内存溢出. <code>Metaspace</code></p>
+</li>
+<li>
+<p>花费超过98%的时间GC而只得到不到2%的内存.<code>GC overhead limit exceed</code></p>
+</li>
+<li>
+<p>分配直接内存失败. <code>Direct buffer memory</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>GC的分类?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Minor GC/Young GC: 新生代的收集.</p>
+</li>
+<li>
+<p>Major GC/Old GC: 老年代的收集(CMS).</p>
+</li>
+<li>
+<p>Mixed GC: 收集整个新生代和部分老年代(G1).</p>
+</li>
+<li>
+<p>Full GC: 整个Java堆和方法区的收集.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Young GC发生的场景有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Eden区满.</p>
+</li>
+<li>
+<p>触发Full GC前会先执行一次 <code>Young GC</code> .</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Full GC发生的场景有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>老年代满了或者达到设定的阈值.</p>
+</li>
+<li>
+<p>CMS回收失败, 发生 <code>promotion failed/concurrent mode failure</code> .</p>
+</li>
+<li>
+<p>从新生代要放入老年代的对象平均大小超过了老年代剩余空间.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何标记对象可以被回收?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>引用计数法: 在对象中添加一个引用计数器, 每有一个地方引用它时, 计数器值加一, 引用失效时, 计数器值减一. 当计数器值为0时, 该对象就是可以被回收的.</p>
+</li>
+<li>
+<p>可达性分析: 定义一些类型的对象为根对象, 根对象本身和根对象持有的其他对象的引用(包括该对象持有的其他对象的引用)都是不可回收的, 其他对象就是可以被回收的.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>哪些对象属于GC Root?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>栈中的变量引用的对象, 包括局部变量, 方法参数.</p>
+</li>
+<li>
+<p>静态变量引用的对象.</p>
+</li>
+<li>
+<p>运行中的线程对象.</p>
+</li>
+<li>
+<p>被同步锁(synchronized)持有的对象.</p>
+</li>
+<li>
+<p><code>System ClassLoader</code> 加载的Class对象, SystemClassLoader, 一些基础异常类等.</p>
+</li>
+<li>
+<p>JNI(native方法)引用的对象.</p>
+</li>
+<li>
+<p>JMXBean.</p>
+</li>
+<li>
+<p>JVMTI中注册的回调.</p>
+</li>
+<li>
+<p>本地代码缓存.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>有哪些垃圾回收算法?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>标记清除: 首先标记需要回收的对象, 然后统一把被标记的对象依次清除, 一般用于老年代.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>缺点① 如果堆中大部分对象需要被回收, 则标记和清除执行时间会较长.</p>
+</li>
+<li>
+<p>缺点② 内存中会出现大量不连续的碎片, 分配大对象时如无法找到足够的连续内存, 则会触发一次FULL GC.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>标记复制: 将内存区域分为两部分, 每次只使用其中的一块, 回收时把存活的对象移动到另一块内存, 然后直接清空原先的块, 一般用于新生代.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>优点① 没有内存碎片.</p>
+</li>
+<li>
+<p>缺点① 浪费了一半的内存可用空间.</p>
+</li>
+<li>
+<p>缺点② 如何对象存活率高, 那么拷贝对象的成本也高.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>标记整理: 将存活的对象统一移动到一端, 然后直接清理掉边界之外的内存.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>优点① 没有内存碎片.</p>
+</li>
+<li>
+<p>缺点① 移动对象会发生STW, 会暂停用户线程.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>分代收集: 根据不同的内存区域, 使用不同的回收算法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>有哪些垃圾回收器?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Young区:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Serial</p>
+</li>
+<li>
+<p>ParNew</p>
+</li>
+<li>
+<p>Parallel Scavenge</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Old区:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Serial Old</p>
+</li>
+<li>
+<p>Parallel Old</p>
+</li>
+<li>
+<p>CMS</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>混合回收:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>G1</p>
+</li>
+<li>
+<p>ZGC(不支持分代回收)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>不回收:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Epsilon</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>新生代分为哪几个区?</em></p>
+<p>1个Eden, 两个Survivor.</p>
+</li>
+<li>
+<p><em>新生代Eden区和Survivor区的默认比例? 如何修改?</em></p>
+<p>默认 \$8:1:1\$, 通过 <code>-XX:SurvivorRatio</code> 参数修改Eden区与Survivor区大小的比例, 默认为8.</p>
+</li>
+<li>
+<p><em>堆内存新生代和老年代的默认比例? 如何修改?</em></p>
+<p>默认 \$1:2\$, 通过 <code>-Xmn</code> 设置新生代的大小, 或者 <code>-XX:NewRatio</code> 设置Old区与Young区大小的比例, <code>-Xmn</code> 优先级更高.</p>
+</li>
+<li>
+<p><em>并发扫描时如何解决存活对象错误标记为死亡?</em></p>
+<p>灰色对象切断一个白色对象引用, 同时一个黑色对象新增这个白色的引用.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>增量更新: 当一个黑色对象插入一个白色对象的引用时, 将这个黑色对象变为灰色对象. <code>CMS</code></p>
+</li>
+<li>
+<p>原始快照: 当一个灰色对象删除一个白色对象的引用时, 将引用关联的对象变为灰色对象. <code>G1</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>对象何时进入老年代?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>survivor区中的对象年龄超过了 <code>-XX:PretenureSizeThreshold</code> 设置的值. (默认为6)</p>
+</li>
+<li>
+<p>Young GC时Eden区的对象放不进survivor区, 会直接进入老年代.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>CMS采用哪种回收算法?</em></p>
+<p>CMS使用标记-清除算法回收老年代.</p>
+</li>
+<li>
+<p><em>CMS怎么解决内存碎片问题?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>CMS提供 <code>-XX:+UseCMSCompactAtFullCollection</code> 开关参数, 用于CMS在Full GC时开启内存碎片的合并整理过程.</p>
+</li>
+<li>
+<p>CMS提供 <code>-XX:CMSFullGCsBeforeCompaction</code> 参数, 用于设置在执行指定次数不整理空间的Full FC后, 在下一次Full GC前整理内存碎片.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>CMS回收的步骤?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>初始标记</p>
+</li>
+<li>
+<p>并发标记</p>
+</li>
+<li>
+<p>重新标记</p>
+</li>
+<li>
+<p>并发清除</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>G1回收的步骤?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>初始标记</p>
+</li>
+<li>
+<p>并发标记</p>
+</li>
+<li>
+<p>最终标记</p>
+</li>
+<li>
+<p>筛选回收</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>Minor GC频繁原因?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>新生代内存空间设置过小.</p>
+</li>
+<li>
+<p>大量生成生命周期短的对象.</p>
+</li>
+<li>
+<p><code>PretenureSizeThreshold</code> 设置过高导致对象不会进入老年代.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Minor GC慢的原因?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>新生代内存空间设置过大, 回收需要消耗很多时间.</p>
+</li>
+<li>
+<p>对象引用链比较长, 扫描时间长.</p>
+</li>
+<li>
+<p>新生代survivor设置的比较小, 回收后存活的对象只能移动到老年代, 造成移动对象开销.</p>
+</li>
+<li>
+<p>内存分配担保失败, MinorGC升级为Full GC.</p>
+</li>
+<li>
+<p>采用serial收集器回收新生代, 串行执行, 效率较低.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>频繁GC问题如何定位?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>jstat -gc &lt;pid&gt; [interval(ms)]</code></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>S0C</code> 第一个survivor区大小.</p>
+</li>
+<li>
+<p><code>S1C</code> 第二个survivor区大小.</p>
+</li>
+<li>
+<p><code>S0U</code> 第一个survivor区已使用大小.</p>
+</li>
+<li>
+<p><code>S1U</code> 第二个survivor区已使用大小.</p>
+</li>
+<li>
+<p><code>EC</code> Eden区大小</p>
+</li>
+<li>
+<p><code>EU</code> Eden区已使用大小.</p>
+</li>
+<li>
+<p><code>OC</code> Old区大小.</p>
+</li>
+<li>
+<p><code>OU</code> Old区已使用大小.</p>
+</li>
+<li>
+<p><code>MC</code> Metaspace区大小.</p>
+</li>
+<li>
+<p><code>MU</code> Metaspace区已使用大小.</p>
+</li>
+<li>
+<p><code>CCSC</code> 压缩类空间大小.</p>
+</li>
+<li>
+<p><code>CCSU</code> 压缩类空间已使用大小.</p>
+</li>
+<li>
+<p><code>YGC</code> YoungGC次数.</p>
+</li>
+<li>
+<p><code>YGCT</code> YoungGC总消耗时间.</p>
+</li>
+<li>
+<p><code>FGC</code> FullGC次数.</p>
+</li>
+<li>
+<p><code>FGCT</code> FullGC总消耗时间.</p>
+</li>
+<li>
+<p><code>GCT</code> GC总消耗时间.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>jcmd</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>jcmd &lt;pid&gt; Thread.print</code> 打印线程栈.</p>
+</li>
+<li>
+<p><code>jcmd &lt;pid&gt; GC.class_histogram | head -20</code> 查看各个类的所有实例对象大小.<br>
+执行时会触发Full GC.</p>
+</li>
+<li>
+<p><code>jcmd &lt;pid&gt; GC.run</code> 执行一次 <code>System.gc()</code> .</p>
+</li>
+<li>
+<p><code>jcmd &lt;pid&gt; VM.heap_info</code> 打印堆和方法区占用大小.</p>
+</li>
+<li>
+<p><code>jcmd &lt;pid&gt; VM.flags</code> 查看JVM启动参数.</p>
+</li>
+<li>
+<p><code>jcmd &lt;pid&gt; GC.heap_dump &lt;file&gt;</code> dump JVM进程.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>jmap</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>jmap -histo:live &lt;pid&gt; | head -20</code> 查看各个类的所有实例对象大小.<br>
+执行时会触发Full GC.</p>
+</li>
+<li>
+<p><code>jmap -dump:live,format=b,file=&lt;file&gt; &lt;pid&gt;</code> dump JVM进程.</p>
+</li>
+<li>
+<p><code>jmap -heap &lt;pid&gt;</code> 打印堆各个区占用大小.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>core dump分析</p>
+</li>
+<li>
+<p>gc日志上传到 <a href="https://gceasy.io" class="bare">https://gceasy.io</a> 分析, 根据报告调整各个区内存大小.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>内存溢出和内存泄漏的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>内存泄漏: 内存一直占用但不释放.</p>
+</li>
+<li>
+<p>内存溢出: 申请内存时, 没有足够的内存使用.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>哪些情况会出现内存泄露?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>静态集合中一直填入大量数据且不删除.</p>
+</li>
+<li>
+<p>未关闭的IO流.</p>
+</li>
+<li>
+<p>哈希表使用可变对象作为key. 修改变量属性后hash值发生改变, 此时如果从hash表中删除该key会找不到而删除失败.</p>
+</li>
+<li>
+<p>一个生命周期短的对象被生命周期长的对象所持有, 则会导致该对象无法被回收.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何找到JVM CPU占用高的原因?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>jps</code> 查看JVM进程 <code>PID</code>.</p>
+</li>
+<li>
+<p><code>top -Hp PID</code> 查看该JVM进程内线程资源占用情况.找到CPU占用资源高的线程 <code>TID</code>.</p>
+</li>
+<li>
+<p><code>printf '%x\n' TID</code> 将线程id转成16进制数.</p>
+</li>
+<li>
+<p><code>jstack PID | grep TID -A 10</code> 查看该线程所在堆栈, 检查堆栈所在代码上的错误.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>JVM的类加载器?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Bootstrap ClassLoader: 加载jre/classes下的类以及rt.jar.</p>
+</li>
+<li>
+<p>Ext ClassLoader: 加载jre/lib/ext下的类以及 <code>java.ext.dirs</code> 系统变量指定的路径下的类.</p>
+</li>
+<li>
+<p>App ClassLoader: 加载classpath下的类.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>JVM的双亲委派机制?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>如果之前已经加载过, 则直接返回原来已经加载好的类.</p>
+</li>
+<li>
+<p>委托给父加载器去加载, 如果父类加载不到则自己去加载.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>如何实现双亲委派机制?</em></p>
+<p>继承 <code>ClassLoader</code> , 重写 <code>findClass</code> 方法.</p>
+</li>
+<li>
+<p><em>如何破坏双亲委派机制?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>继承ClassLoader, 重写LoadClass方法, 在LoadClass方法里不尝试去用父类加载器加载类. <code>Tomcat</code></p>
+</li>
+<li>
+<p>Java的SPI机制: <code>DriverManager</code> 在JDK里, 使用 <code>BootstrapClassLoader</code> 加载不到驱动类, 所以使用 <code>Thread.currentThread().getContextClassLoader()</code> 获取到 <code>AppClassLoader</code> 来加载类. <code>JDBC</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>类加载的过程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>加载: 将字节码加载到方法区, 生成Class对象.</p>
+</li>
+<li>
+<p>链接</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>验证: 确保该类的字节码文件所包含的信息是否符合当前虚拟机的要求.</p>
+</li>
+<li>
+<p>准备: 为静态变量分配内存, 设置该类型的初始值. static final变量设置默认值.</p>
+</li>
+<li>
+<p>解析: 将常量池中的符号引用替换为直接引用.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>初始化: 初始化静态变量, 执行静态代码块.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>JMM?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>原子性</p>
+</li>
+<li>
+<p>可见性</p>
+</li>
+<li>
+<p>有序性</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_maven"><a class="link" href="#_maven">5. Maven</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Maven的生命周期?</em></p>
+<p>Clean &#8594; Default &#8594; Site</p>
+</li>
+<li>
+<p><em>Maven的坐标?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>group-id: 组织名称</p>
+</li>
+<li>
+<p>artifact-id: 项目名称</p>
+</li>
+<li>
+<p>version: 项目版本</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Maven依赖的范围?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>compile: 默认范围.<br>
+编译测试运行时都有效.</p>
+</li>
+<li>
+<p>provided: 编译和测试时都有效.</p>
+</li>
+<li>
+<p>runtime: 测试和运行时都有效.</p>
+</li>
+<li>
+<p>test: 测试时有效.</p>
+</li>
+<li>
+<p>system: 编译测试时都有效, jar包从本地读取.</p>
+</li>
+<li>
+<p>import: 当前项目里的依赖会被导入的pom替代.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Maven依赖传递?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>compile范围的依赖才可被传递.</p>
+</li>
+<li>
+<p>路径最短者优先.</p>
+</li>
+<li>
+<p>路径相同时先声明者优先.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mybatis"><a class="link" href="#_mybatis">6. Mybatis</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>#{}和${}的区别是什么?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>#{}</code> 是预编译处理, Mybatis会将sql中的 <code>#{}</code> 替换为 <code>?</code> 号，调用PreparedStatement的set方法来赋值, 参数内的引号编译后会加上转义符来防止Sql注入.</p>
+</li>
+<li>
+<p><code>${}</code> 是纯粹的字符串替换.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>当实体类中的属性名和表中的字段名不一样, 怎么办?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sql中使用别名, 与属性名保持一致.</p>
+</li>
+<li>
+<p>使用 <code>resultMap</code> 来设置实体属性名和列名的映射关系.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>模糊查询like语句该怎么写?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>属性值用 <code>%</code> 包裹.</p>
+</li>
+<li>
+<p>sql中写成 <code>%#{param}%</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Mapper接口里的方法可以被重载吗?</em></p>
+<p>不能, Mapper中每一个方法是用namespace加方法名作为唯一标识的.</p>
+</li>
+<li>
+<p><em>Mybatis分页插件原理?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>拦截Executor query方法.</p>
+</li>
+<li>
+<p>根据参数中的分页参数对象, 在boundSql的sql后拼接分页查询语句.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>MyBatis支持插件拦截的类?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>ParameterHandler</p>
+</li>
+<li>
+<p>ResultSetHandler</p>
+</li>
+<li>
+<p>StatementHandler</p>
+</li>
+<li>
+<p>Executor</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何获取自增id?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>保存的对象中会设置自增id的值.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>mapper中如何传递多个参数?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>sql中直接用 <code>#{arg0},#{arg1}&#8230;&#8203;</code> 或者 <code>#{param1},#{param2}&#8230;&#8203;</code> 标识第几个参数.</p>
+</li>
+<li>
+<p>方法中使用 <code>@Param</code> 注解设置参数名称, sql中使用 <code>#{参数名称}</code> 获取参数值.</p>
+</li>
+<li>
+<p>参数使用对象或者map, sql中引用对象或者map的key.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Mybatis如何执行批处理?</em></p>
+<p>使用 <code>BatchExecutor</code> 执行批处理.</p>
+</li>
+<li>
+<p><em>Mybatis有哪些Executor? 区别是什么?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>SimpleExecutor: 具体实现了对数据库的操作</p>
+</li>
+<li>
+<p>ReuseExecutor: 缓存了sql的StatementHandler以重用</p>
+</li>
+<li>
+<p>BatchExecutor:</p>
+</li>
+<li>
+<p>CachingExecutor: 添加了对MappedStatement的二级缓存的读取.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Mybatis的缓存实现原理?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>一级缓存: <code>Executor</code> 中的 <code>localCache</code> 成员变量, 只在同一个 <code>sqlSession</code> 生命周期中有效.</p>
+</li>
+<li>
+<p>二级缓存: <code>MappedStatement</code> 的 <code>cache</code> 成员变量, 全局共享.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Mybatis的延迟加载实现原理?</em></p>
+<p>Mybatis仅支持 <code>association</code> 关联对象和 <code>collection</code> 关联集合对象的延迟加载.<br>
+使用 <code>CGLIB</code> 创建目标对象的代理对象, 获取该对象发现是空对象, 则单独发送查询关联对象的sql, 设置该对象的值.</p>
+</li>
+<li>
+<p><em>Mybatis用到哪些设计模式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>单例模式: <code>KeyGenerator</code> &#8230;&#8203;</p>
+</li>
+<li>
+<p>建造者模式:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>CacheBuilder</code> 创建Cache对象.</p>
+</li>
+<li>
+<p><code>ResultMapping.Builder</code> 创建ResultMapping对象.</p>
+</li>
+<li>
+<p><code>ResultMap.Builder</code> 创建ResultMap对象.</p>
+</li>
+<li>
+<p><code>MappedStatement.Builder</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>包装模式:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cache实现类, 如 <code>ScheduledCache, LoggingCache</code> , 每个装饰类都在原有Cache基础上增强了功能.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>组合模式:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>MixedSqlNode</code> : 内部可以包含多个SqlNode.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>代理模式: <code>SqlSessionManager</code></p>
+</li>
+<li>
+<p>责任链模式: <code>InterceptorChain</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>MyBatis的Mapper方法执行过程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>SqlSessionTemplate</code> 使用静态代理持有 <code>SqlSession</code> 动态代理对象.</p>
+</li>
+<li>
+<p>根据Mapper接口创建 <code>MapperProxy</code> 对象. <code>JDK动态代理</code></p>
+</li>
+<li>
+<p>为调用的方法创建 <code>MapperMethod</code> 对象, 并缓存到 <code>MapperProxy</code> 对象里, 执行 <code>MapperMethod::execute</code> 方法.</p>
+</li>
+<li>
+<p>创建 <code>Executor</code> 对象(默认 <code>CachingExecutor</code> ), 从而创建 <code>SqlSession</code> , 根据方法执行 <code>SqlSession</code> 的CRUD方法.</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>根据Mapper类名和方法名找到初始化时解析好的 <code>MappedStatement</code> .</p>
+</li>
+<li>
+<p>执行 <code>Executor</code> 的CRUD方法.</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>判断Mapper方法是否开启二级缓存, 如果开启则从 <code>MappedStatement</code> 里面查找缓存, 查找不到则执行 <code>BaseExecutor</code> CRUD操作然后将结果存到 <code>MappedStatement</code> 里面.</p>
+</li>
+<li>
+<p>查找 <code>BaseExecutor</code> 的 <code>localCache</code> 一级缓存, 如果存在则直接返回, 不存在则执行sql.</p>
+</li>
+<li>
+<p>创建 <code>StatementHandler</code> 对象预编译sql, 设置参数, 得到 <code>Statement</code> 对象.</p>
+</li>
+<li>
+<p>使用 <code>ResultSetHandler</code> 解析sql执行的结果.</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring"><a class="link" href="#_spring">7. Spring</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>IoC?</em></p>
+<p>对象自身生命周期的控制以及与其他对象的依赖关系交由Spring容器管理.</p>
+</li>
+<li>
+<p><em>依赖注入的方式?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>构造函数注入</p>
+</li>
+<li>
+<p>setter方法注入</p>
+</li>
+<li>
+<p>接口注入</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>ApplicationContext与BeanFactory的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>BeanFactory在spring-beans包中, ApplicationContext在spring-context包中.</p>
+</li>
+<li>
+<p>ApplicationContext扩展了BeanFactory的功能:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>MessageSource: 实现国际化功能.</p>
+</li>
+<li>
+<p>EventPublisher: 实现事件订阅发布功能.</p>
+</li>
+<li>
+<p>LifeCycle: 管理生命周期.</p>
+</li>
+<li>
+<p>集成AOP.</p>
+</li>
+<li>
+<p>新增一些应用层context, 如 <code>WebApplicationContext</code> .</p>
+</li>
+<li>
+<p>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何手动注册bean?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>BeanFactory.registerBeanDefinition: 通过BeanFactory注册</p>
+</li>
+<li>
+<p>ApplicationContext.register: 通过ApplicationContext注册</p>
+</li>
+<li>
+<p>ApplicationContext.scan: 扫描包下所有的bean</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何实例化bean?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>构造函数</p>
+</li>
+<li>
+<p>static factory method</p>
+</li>
+<li>
+<p>instance factory method</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>单例bean中如何注入prototype型bean?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>@Lookup</code> 一个抽象方法</p>
+</li>
+<li>
+<p><code>ObjectFactory/Provider</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>bean的生命周期?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>@PostConstruct</p>
+</li>
+<li>
+<p>DisposableBean.afterPropertiesSet</p>
+</li>
+<li>
+<p>initMethod</p>
+</li>
+<li>
+<p>BeanPostProcessor.postProcessBeforeInitialization</p>
+</li>
+<li>
+<p>BeanPostProcessor.postProcessAfterInitialization</p>
+</li>
+<li>
+<p>LifeCycle.start</p>
+</li>
+<li>
+<p>LifeCycle.stop</p>
+</li>
+<li>
+<p>@PreDestroy</p>
+</li>
+<li>
+<p>DisposableBean.destroy</p>
+</li>
+<li>
+<p>destroyMethod</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?</em></p>
+<p>Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.</p>
+</li>
+<li>
+<p><em>什么情况下会发生Bean循环引用?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>两个bean互相使用构造函数中注入.</p>
+</li>
+<li>
+<p>两个prototype类型的bean互相注入, getBean的时候会报异常.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Spring如何检测Bean循环引用?</em></p>
+<p>参见 <code>DefaultSingletonBeanRegistry.beforeSingletonCreation</code> 方法. 每个bean在创建前 <code>beanName</code> 会放到 <code>singletonsCurrentlyInCreation</code> 这个set中, bean创建完会从这个set中移出.<br>
+解析构造函数上 <code>@Autowired</code> 注解时会看需要注入的bean在不在这个set中, 如果在, 则抛出循环引用异常.</p>
+</li>
+<li>
+<p><em>Bean循环引用如何解决?</em></p>
+<p><code>@Autowired</code> 时添加 <code>@Lazy</code> 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.<br>
+<strong>原理</strong> : 如果注入时有 <code>@Lazy</code> 注解, 则会注入一个代理, 只有当使用这个字段时才会从 <code>BeanFactory</code> 中获取真正的bean.</p>
+</li>
+<li>
+<p><em>为什么JDK动态代理调用同类中方法时不走切面?</em></p>
+<p>JDK动态代理会生成一个子类, 调用这个子类的方法时会直接调用 <code>InvocationHandler</code> 中的invoke方法, 并且传递对象的是原被代理的对象.<br>
+所以在被代理的对象中直接调用同类的方法不会调用切面的代码.</p>
+</li>
+<li>
+<p><em>使用CGLIB代理有什么要求?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>被代理的类不能是 <code>final</code> 类.</p>
+</li>
+<li>
+<p>被代理的方法不能是私有方法.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Spring配置的placeholder占位符是如何替换的, 有什么办法可以自定义替换方式?</em></p>
+<p>依靠 <code>Environment</code> 对象的 <code>propertyResolver</code> 解析:<br>
+替换掉 <code>${}</code> 占位符, 再从 <code>Environment</code> 的 <code>propertySources</code> 中获取该属性名对应的值.</p>
+</li>
+<li>
+<p><em>Configuration类中@Bean方法定义成static有什么作用?</em></p>
+<p>static方法不会被代理, 所以每次调用这个方法返回的都是不同的普通对象.<br>
+&#8230;&#8203;</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_redis"><a class="link" href="#_redis">8. Redis</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Redis的特点有哪些?</em></p>
+<p><em>Redis支持的数据类型?</em></p>
+<p><em>Redis常用数据结构以及底层数据结构实现?</em></p>
+<p><em>一个字符串类型的值能存储最大容量是多少?</em></p>
+<p><em>Redis的链表数据结构的特征有哪些?</em></p>
+<p><em>请介绍一下Redis的String类型底层实现?</em></p>
+<p><em>Redis的String类型使用SSD方式实现的好处?</em></p>
+<p><em>Redis适用场景有哪些?</em></p>
+<p><em>Redis为什么设计成单线程的?</em></p>
+<p><em>为什么Redis需要把所有数据放到内存中?</em></p>
+<p><em>Redis持久化机制有哪些? 区别是什么?</em></p>
+<p><em>请介绍一下RDB, AOF两种持久化机制的优缺点?</em></p>
+<p><em>如何解决Redis的并发竞争Key的问题?</em></p>
+<p><em>如何保证缓存与数据库双写时的数据一致性?</em></p>
+<p><em>Redis各个数据类型最大存储量分别是多少?</em></p>
+<p><em>什么是缓存穿透? 怎么解决?</em></p>
+<p><em>什么是缓存雪崩? 怎么解决?</em></p>
+<p><em>缓存的更新策略有几种? 分别有什么注意事项?</em></p>
+<p><em>什么是分布式锁? 有什么作用?</em></p>
+<p><em>分布式锁可以通过什么来实现?</em></p>
+<p><em>介绍一下分布式锁实现需要注意的事项?</em></p>
+<p><em>Redis怎么实现分布式锁?</em></p>
+<p><em>常见的淘汰算法有哪些?</em></p>
+<p><em>Redis淘汰策略有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>volatile-lru：从已经设置过期时间的数据集中，挑选最近最少使用的数据淘汰。</p>
+</li>
+<li>
+<p>volatile-ttl：从已经设置过期时间的数据集中，挑选即将要过期的数据淘汰。</p>
+</li>
+<li>
+<p>volatile-random：从已经设置过期时间的数据集中，随机挑选数据淘汰。</p>
+</li>
+<li>
+<p>allkeys-lru：从所有的数据集中，挑选最近最少使用的数据淘汰。</p>
+</li>
+<li>
+<p>allkeys-random：从所有的数据集中，随机挑选数据淘汰。</p>
+</li>
+<li>
+<p>no-enviction：禁止淘汰数据。</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>redis过期键的删除策略？</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>定时删除：在设置键的过期时间的同时，创建一个timer，让定时器在键的过期时间到达时，立即执行对键的删除操作。（主动删除）</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>对内存友好，但是对cpu时间不友好，有较多过期键的而情况下，删除过期键会占用相当一部分cpu时间。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>惰性删除：放任过期键不管，但是每次从键空间中获取键时，都检查取到的键是否过去，如果过期就删除，如果没过期就返回该键。（被动删除）</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>对cpu时间友好，程序只会在取出键的时候才会对键进行过期检查，这不会在删除其他无关过期键上花费任何cpu时间，但是如果一个键已经过期，而这个键又保留在数据库中，那么只要这个过期键不被删除，他所占用的内存就不会释放，对内存不友好。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>定期删除：每隔一段时间就对数据库进行一次检查，删除里面的过期键。（主动删除）</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>采用对内存和cpu时间折中的方法，每个一段时间执行一次删除过期键操作，并通过限制操作执行的时长和频率来减少对cpu时间的影响。难点在于，选择一个好的策略来设置删除操作的时长和执行频率。</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Redis缓存失效策略有哪些?</dt>
+<dt class="hdlist1">Redis的持久化机制有几种方式?</dt>
+<dt class="hdlist1">Redis通讯协议是什么? 有什么特点?</dt>
+<dt class="hdlist1">请介绍一下Redis的数据类型 SortedSet(zset) 以及底层实现机制?</dt>
+<dt class="hdlist1">请介绍一下Redis集群实现方案?</dt>
+<dt class="hdlist1">Redis集群最大节点个数是多少?</dt>
+<dt class="hdlist1">Redis集群的主从复制模型是怎样的?</dt>
+<dt class="hdlist1">redis的哨兵的监控机制是怎样的?</dt>
+<dd>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>每个Sentinel以每秒钟一次的频率向它所知的Master，Slave以及其他 Sentinel 实例发送一个 PING 命令</p>
+</li>
+<li>
+<p>如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel 标记为主观下线。</p>
+</li>
+<li>
+<p>如果一个Master被标记为主观下线，则正在监视这个Master的所有 Sentinel 要以每秒一次的频率确认Master的确进入了主观下线状态。</p>
+</li>
+<li>
+<p>当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认Master的确进入了主观下线状态， 则Master会被标记为客观下线</p>
+</li>
+<li>
+<p>在一般情况下， 每个 Sentinel 会以每 10 秒一次的频率向它已知的所有Master，Slave发送 INFO 命令</p>
+</li>
+<li>
+<p>当Master被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次</p>
+</li>
+<li>
+<p>若没有足够数量的 Sentinel 同意 Master 已经下线， Master 的客观下线状态就会被移除。 若 Master 重新向 Sentinel 的 PING 命令返回有效回复， Master 的主观下线状态就会被移除。</p>
+</li>
+</ol>
+</div>
+</dd>
+<dt class="hdlist1">Redis如何做内存优化?</dt>
+<dt class="hdlist1">Redis事务相关命令有哪些? 什么是Redis事务? 原理是什么?</dt>
+<dt class="hdlist1">Redis事务的注意点有哪些?</dt>
+<dt class="hdlist1">Redis为什么不支持回滚?</dt>
+<dt class="hdlist1">请介绍一下Redis常见的业务使用场景?</dt>
+<dt class="hdlist1">Redis集群会有写操作丢失吗? 为什么?</dt>
+<dt class="hdlist1">请介绍一下Redis的Pipeline以及使用场景?</dt>
+<dt class="hdlist1">请说明一下Redis的批量命令与Pipeline有什么不同?</dt>
+<dt class="hdlist1">Redis慢查询是什么? 通过什么配置?</dt>
+<dt class="hdlist1">Redis的慢查询修复经验有哪些? 怎么修复的?</dt>
+<dt class="hdlist1">请介绍一下Redis的发布订阅功能?</dt>
+<dt class="hdlist1">请介绍几个可能导致Redis阻塞的原因?</dt>
+<dt class="hdlist1">怎么去发现Redis阻塞异常情况?</dt>
+<dt class="hdlist1">Redis的内存消耗分类有哪些? 内存统计使用什么命令?</dt>
+<dt class="hdlist1">简单介绍一下Redis的内存管理方式有哪些?</dt>
+<dt class="hdlist1">如何设置Redis的内存上限? 有什么作用?</dt>
+<dt class="hdlist1">什么是 bigkey? 有什么影响? 怎么发现bigkey?</dt>
+<dt class="hdlist1">冷热数据表示什么意思?</dt>
+<dt class="hdlist1">缓存命中率表示什么? 怎么提高缓存命中率?</dt>
+<dt class="hdlist1">如何优化Redis服务的性能?</dt>
+<dt class="hdlist1">如何实现本地缓存? 请描述一下你知道的方式?</dt>
+<dt class="hdlist1">请介绍一下Spring注解缓存?</dt>
+<dt class="hdlist1">如果AOF文件的数据出现异常, Redis服务怎么处理?</dt>
+<dt class="hdlist1">Redis的主从复制模式有什么优缺点?</dt>
+<dt class="hdlist1">Redis sentinel (哨兵) 模式优缺点有哪些?</dt>
+<dt class="hdlist1">Redis集群架构模式有哪几种?</dt>
+<dt class="hdlist1">如何设置Redis的最大连接数? 查看Redis的最大连接数? 查看Redis的当前连接数?</dt>
+<dt class="hdlist1">设计一下在交易网站首页展示当天最热门售卖商品的前五十名商品列表?</dt>
+<dd>
+<p>&#8230;&#8203;</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_database"><a class="link" href="#_database">9. Database</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>索引的底层存储结构?</em></p>
+<p>B+树</p>
+</li>
+<li>
+<p><em>B树和B+树的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>B+树的非叶子节点不存储数据, 只存储索引.<br>
+这样每一层可以存放更多的索引.</p>
+</li>
+<li>
+<p>B+树的叶子节点包含所有的索引及索引所在行的数据.</p>
+</li>
+<li>
+<p>B+树的叶子节点有指针指向左右两边的叶子节点.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_mysql"><a class="link" href="#_mysql">9.1. MySQL</a></h3>
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Innodb和MyIsam的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>MyIsam的索引和数据分别存在各个文件里, Innodb存储在同一个文件里.</p>
+</li>
+<li>
+<p>MyIsam的索引B+树叶子节点存储索引所在行数据的磁盘地址, Innodb直接存放存储索引数据行的数据/主键.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_postgresql"><a class="link" href="#_postgresql">9.2. PostgreSQL</a></h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rabbitmq"><a class="link" href="#_rabbitmq">10. RabbitMQ</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>AMQP协议的流程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>消息先从生产者Producer出发到达交换器Exchange.</p>
+</li>
+<li>
+<p>交换器Exchange根据路由规则将消息转发对应的队列Queue之上.</p>
+</li>
+<li>
+<p>消息在队列Queue上进行存储.</p>
+</li>
+<li>
+<p>消费者Consumer订阅队列Queue并进行消费.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>如何保证消息投递成功?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>定时检查消息投递状态:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>消息生产者发送消息时保存业务数据和消息到db中, 状态为 <strong>已发送</strong> .</p>
+</li>
+<li>
+<p>消息接收者处理完消息后更改消息状态为 <strong>已接收</strong> .</p>
+</li>
+<li>
+<p>定时任务轮询 <strong>已发送</strong> 的消息重新发送.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>延时二次确认:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>消息生产者发送消息时再向 <em>callback server</em> 发送一条延时消息.</p>
+</li>
+<li>
+<p>消息接收者处理完消息后向 <em>callback server</em> 立即发送一条确认消息.</p>
+</li>
+<li>
+<p><em>callback server</em> 收到确认消息后记录到DB.</p>
+</li>
+<li>
+<p><em>callback server</em> 来自生产者的延时消息后查询DB是否存在该条消息.<br>
+如果不存在则通知生产者消息没有收到.</p>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rabbitmq的使用场景有哪些?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>削峰: 让服务能够平滑的处理突发的超负荷请求.</p>
+</li>
+<li>
+<p>解耦: 消息生产者和消费者不需要知道对方的存在.</p>
+</li>
+<li>
+<p>存储: 消息系统可以保证该消息真正被消费完才会被丢弃.</p>
+</li>
+<li>
+<p>顺序保证: 消息队列可以保证消息接收的顺序性.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rabbitmq有哪些角色?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Queue: 存放消息的容器.</p>
+</li>
+<li>
+<p>Exchange: 接收来自生产者的消息, 然后将消息路由到不同的队列.</p>
+</li>
+<li>
+<p>Routing Key: 生产者将消息发送给Exchange的时候一般会指定一个Routing Key.</p>
+</li>
+<li>
+<p>Binding: RabbitMQ中通过绑定将Exchange和队列关联起来, 绑定的时候会指定一个Binding Key.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rabbitmq的消息是怎么发送的?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>生产者将消息发送给Exchange, 并指定一个Routing Key.</p>
+</li>
+<li>
+<p>RabbitMQ根据Exchange的类型和Binding Key去和Routing Key匹配找到相应的队列.</p>
+</li>
+<li>
+<p>RabbitMQ将消息路由到队列里.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>rabbitmq的Exchange类型?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>direct: 将消息路由到BindingKey和RoutingKey相同的队列.</p>
+</li>
+<li>
+<p>fanout: 将发送到该Exchange的消息路由到所有与之绑定的所有队列.</p>
+</li>
+<li>
+<p>topic: 根据RoutingKey匹配BindingKey路由到匹配的队列.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>.</code> 号用于匹配一个单词</p>
+</li>
+<li>
+<p><code>#</code> 号用于匹配0个或多个单词</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>headers: 根据headers匹配队列而不是RoutingKey和BindingKey.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rabbitmq 中 vhost 的作用是什么?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>实现租户隔离.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>rabbitmq 怎么保证消息的稳定性?</em></p>
+<p><em>rabbitmq 怎么避免消息丢失?</em></p>
+<p><em>要保证消息持久化成功的条件有哪些?</em></p>
+<p><em>rabbitmq 持久化有什么缺点?</em></p>
+<p><em>rabbitmq怎么实现延迟消息队列?</em></p>
+<p>发送ttl消息到一个队列, 然后监听这个队列的死信队列.</p>
+</li>
+<li>
+<p><em>rabbitmq消息的状态?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>alpha: 消息内容和消息索引都存放在内存中.</p>
+</li>
+<li>
+<p>beta: 消息索引存放在内存中, 消息内容存放在磁盘上.</p>
+</li>
+<li>
+<p>gamma: 消息索引在内存和磁盘上, 消息内容存放在磁盘上.</p>
+</li>
+<li>
+<p>delta: 消息索引和消息内容都在磁盘上.<br>
+alpha状态只需要在内存中读取消息, delta状态需要两次I/O操作, beta和gamma状态需要一次I/O.<br>
+&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_docker"><a class="link" href="#_docker">11. Docker</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>Docker的底层原理?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>namespace</strong> 隔离环境</p>
+</li>
+<li>
+<p><strong>cgroup</strong> 控制资源配额</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>如何限制容器内存和CPU最大用量?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>限制内存使用量: <code>-m=100m</code> 表示容器最多可使用100MB的内存.</p>
+</li>
+<li>
+<p>限制cpu使用率: <code>--cpus="1.5"</code> 表示容器可以达到 \$150%\$ 的CPU使用率(8核的话最大使用率为 \$800%\$).</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em><code>COPY</code> 和 <code>ADD</code> 指令的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ADD</code> 会自动解压压缩包, 然后复制到指定目录, <code>COPY</code> 不支持自动解压.</p>
+</li>
+<li>
+<p><code>ADD</code> 支持下载URL文件到指定目录, <code>COPY</code> 只支持本地文件或目录.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em><code>CMD</code> 和 <code>ENTRYPOINT</code> 指令的区别?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>CMD</code> 只能在容器启动时被覆盖, <code>ENTRYPOINT</code> 可以在容器启动时传递参数.</p>
+</li>
+<li>
+<p><code>CMD</code> 可以声明多个, 但是只有最后一个会生效, <code>ENTRYPOINT</code> 在 <em>EXEC</em> 模式下可以和 <code>CMD</code> 混用, <code>CMD</code> 作为 <code>ENTRYPOINT</code> 的参数传递过去.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cap"><a class="link" href="#_cap">12. CAP</a></h2>
+<div class="sectionbody">
+<div class="qlist qanda">
+<ol>
+<li>
+<p><em>CAP一致性?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>一致性(Consistency): 所有节点的数据状态保持一致.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>弱(最终)一致性: 数据一致性会有延迟, 但保证未来会有一个时刻保证数据一致性.</p>
+</li>
+<li>
+<p>强一致性</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>可用性(Availability): 节点不能不可用.</p>
+</li>
+<li>
+<p>分区容错性(Partition Tolerance): 一个分区出现故障需要保证一致性或可用性.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Basic Paxos角色?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Client(民众): 系统外部角色, 请求发起者.</p>
+</li>
+<li>
+<p>Proposer(议员): 接收Client请求, 向集群提出提议.</p>
+</li>
+<li>
+<p>Acceptor(国会): 提议投票和提议接收者, 只有多数派接受时, 提议才会被最终接受.</p>
+</li>
+<li>
+<p>Learner(记录员): 记录被通过的提议.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Basic Paxos流程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Proposer收到Client请求发送给Acceptor提案n.</p>
+</li>
+<li>
+<p>如果大多数Acceptor同意对提案n投票, 则通知Proposer.</p>
+</li>
+<li>
+<p>Proposer通知Acceptor提案n.</p>
+</li>
+<li>
+<p>Acceptor接受提案n, 通知Learner和Proposer.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>Multi Paxos角色?</em></p>
+<p>相对于Basic Paxos, 多了Leader这个角色.<br>
+Leader即唯一的Proposer, 所有的请求都需要经过此Leader.</p>
+</li>
+<li>
+<p><em>Multi Paxos流程?</em></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Proposer向Acceptor申请成为Leader节点, Acceptor同意并响应.</p>
+</li>
+<li>
+<p>Leader收到Client请求后直接向Acceptor发送提议, Acceptor通过提议, 通知Learner和Proposer.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><em>Raft角色?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Leader: 集群主节点, 统一接收请求并同步到Follower.</p>
+</li>
+<li>
+<p>Follower: 接受Leader请求同步日志.</p>
+</li>
+<li>
+<p>Candidate: Follower想变成Leader必须先变成Candidate, 然后让其他集群节点投票.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><em>Raft流程?</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Leader Election: 集群没有Leader时, 一个Follower节点变成Candidate节点, 然后如果其他大多数节点同意则该节点变成Leader节点.</p>
+</li>
+<li>
+<p>Log Replication: Leader接收到请求, 将请求日志同步给所有Follower, 大多数Follower响应后, Leader应用日志操作数据写入文件系统, 然后再次同步给Follower让各个节点同步数据写入.</p>
+</li>
+<li>
+<p>Safety:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Election失败了, 会随机等待一段时间再进行选举.</p>
+</li>
+<li>
+<p>网络分区导致出现两个Leader, 当网络恢复后, 老的Leader会变成Follower, 所处的分区会从新Leader上同步日志.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2021-03-09 15:33:42 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

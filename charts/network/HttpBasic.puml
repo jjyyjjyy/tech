@@ -1,0 +1,18 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+autonumber
+
+Client -> Server : GET /index.html HTTP/1.1
+Server -> Client :
+note right
+HTTP/1.1 401 Unauthorized
+WWW-Authenticated: Basic realm="Access to the staging site";
+end note
+Client -> Server
+note top
+GET /index.html HTTP/1.1
+Authorization: Basic base64(username:password);
+end note
+@enduml

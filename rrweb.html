@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<title>rrweb</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+  display: none;
+}
+
+.switch {
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  border-color: #666;
+  display: inline-block;
+}
+
+.switch--item {
+  text-align: center;
+  min-width: 40px;
+  padding: 5px;
+  background-color: #ffffff;
+  color: #666;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+  border-width: 0 0 0 1px;
+  border-style: solid;
+  border-color: #666;
+}
+
+.switch--item.selected {
+  background-color: #666;
+  color: #ffffff;
+}
+
+</style>
+<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+  $('.primary').each(function () {
+    primary = $(this);
+    createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+    primary.children('.title').remove();
+    primary.siblings('div[class*="secondary"]')
+      .each(function (idx, node) {
+        secondary = $(node);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        primary.append(switchItem.content);
+        secondary.remove();
+      });
+  });
+}
+
+function createBlockSwitch(primary) {
+  blockSwitch = $('<div class="switch"></div>');
+  primary.prepend(blockSwitch);
+  return blockSwitch;
+}
+
+function findPrimary(secondary) {
+  candidate = secondary.prev();
+  while (!candidate.is('.primary')) {
+    candidate = candidate.prev();
+  }
+  return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+  blockName = block.children('.title').text();
+  content = block.children('.content').first().append(block.next('.colist'));
+  item = $('<div class="switch--item">' + blockName + '</div>');
+  item.on('click', '', content, function (e) {
+    $(this).addClass('selected');
+    $(this).siblings().removeClass('selected');
+    e.data.siblings('.content').addClass('hidden');
+    e.data.removeClass('hidden');
+  });
+  blockSwitch.append(item);
+  return {'item': item, 'content': content};
+}
+
+function globalSwitch() {
+  $('.switch--item').each(function () {
+    $(this).off('click');
+    $(this).on('click', function () {
+      selectedText = $(this).text()
+      selectedIndex = $(this).index()
+      $(".switch--item").filter(function () {
+        return ($(this).text() === selectedText)
+      }).each(function () {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+        selectedContent.removeClass('hidden');
+        selectedContent.siblings().addClass('hidden');
+      });
+    });
+  });
+}
+
+$(addBlockSwitches);
+$(globalSwitch);
+
+</script>
+
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>rrweb</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">目录</div>
+<ul class="sectlevel1">
+<li><a href="#_页面加载">1. 页面加载</a>
+<ul class="sectlevel2">
+<li><a href="#_load回调">1.1. load回调</a></li>
+<li><a href="#_document_readystate">1.2. document.readyState</a></li>
+</ul>
+</li>
+<li><a href="#_node_属性">2. Node 属性</a>
+<ul class="sectlevel2">
+<li><a href="#_nodetype">2.1. nodeType</a></li>
+<li><a href="#_nodename">2.2. nodeName</a></li>
+<li><a href="#_nodevalue">2.3. nodeValue</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_页面加载"><a class="link" href="#_页面加载">1. 页面加载</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_load回调"><a class="link" href="#_load回调">1.1. load回调</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>document的 <code>DOMContentLoaded</code> 事件</p>
+</li>
+<li>
+<p>window的 <code>onload</code> 函数</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>浏览器下载完整HTML文档后, 开始从上到下解析.<br>
+解析完之后会生成DOM. 如果页面中有CSS, 则会根据CSS的内容形成CSSOM, 然后CSSOM和DOM会生成一颗渲染树.<br>
+最后浏览器将渲染树绘制在页面上.<br>
+JS脚本会阻塞HTML文档的解析, 而脚本需要等位于前面的CSS文件加载完才能执行.<br>
+当HTML/CSS/JS解析并执行完后, 会触发 document 的 <code>DOMContentLoaded</code> 事件.<br>
+页面上的视频/音频/图片等外部资源加载完之后, 会回调 window 的 <code>onload</code> 函数.<br>
+JQuery的 <code>ready</code> 函数监听的就是 document的 <code>DOMContentLoaded</code> 事件, <code>onload</code> 函数回调的就是 <code>window.onload</code> 函数.</p>
+</div>
+<div class="paragraph">
+<p>但现代浏览器尝试尽快在屏幕上渲染页面内容, 如果将JS放在前面, 则会延迟浏览器的 <em>first_paint</em> , 所以应该尽量将 <code>script</code> 标签放在body最后.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_document_readystate"><a class="link" href="#_document_readystate">1.2. document.readyState</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>loading</code> : document正在被加载并解析, 此时CSS等外部资源还未被处理.</p>
+</li>
+<li>
+<p><code>interactive</code> : document已经被加载并解析结束, CSS等资源正在被解析. document 的 <code>DOMContentLoaded</code> 事件被触发.</p>
+</li>
+<li>
+<p><code>complete</code> : 所有资源加载并解析完毕, <code>window.onload</code> 函数被触发.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_node_属性"><a class="link" href="#_node_属性">2. Node 属性</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_nodetype"><a class="link" href="#_nodetype">2.1. nodeType</a></h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">常量名</th>
+<th class="tableblock halign-left valign-top">常量值</th>
+<th class="tableblock halign-left valign-top">节点类型</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.ELEMENT_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Element</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表元素</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.TEXT_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Text</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表元素或属性中的文本内容</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.CDATA_SECTION_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CDATASection</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表文档中的 CDATA 部（不会由解析器解析的文本）</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.PROCESSING_INSTRUCTION_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ProcessingInstruction</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表处理指令</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.COMMENT_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comment</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表注释</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.DOCUMENT_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Document</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表整个文档（DOM 树的根节点）</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.DOCUMENT_TYPE_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DocumentType</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">向为文档定义的实体提供接口</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.DOCUMENT_FRAGMENT_NODE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DocumentFragment</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">代表轻量级的 Document 对象（文档的某个部分）</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_nodename"><a class="link" href="#_nodename">2.2. nodeName</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>元素节点的 nodeName 是标签名称（大写）</p>
+</li>
+<li>
+<p>属性节点的 nodeName 是属性名称</p>
+</li>
+<li>
+<p>文本节点的 nodeName 永远是 <code>#text</code></p>
+</li>
+<li>
+<p>文档节点的 nodeName 永远是 <code>#document</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_nodevalue"><a class="link" href="#_nodevalue">2.3. nodeValue</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>对于文本节点，nodeValue 属性包含文本</p>
+</li>
+<li>
+<p>对于属性节点，nodeValue 属性包含属性值</p>
+</li>
+<li>
+<p>文档节点和元素节点，nodeValue 属性的值始终为 null</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2019-11-29 19:05:20 +0800
+</div>
+</div>
+<link rel="stylesheet" href="js/highlight/styles/idea.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  messageStyle: "none",
+  tex2jax: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["\\[", "\\]"]],
+    ignoreClass: "nostem|nolatexmath"
+  },
+  asciimath2jax: {
+    delimiters: [["\\$", "\\$"]],
+    ignoreClass: "nostem|noasciimath"
+  },
+  TeX: { equationNumbers: { autoNumber: "none" } }
+})
+MathJax.Hub.Register.StartupHook("AsciiMath Jax Ready", function () {
+  MathJax.InputJax.AsciiMath.postfilterHooks.Add(function (data, node) {
+    if ((node = data.script.parentNode) && (node = node.parentNode) && node.classList.contains('stemblock')) {
+      data.math.root.display = "block"
+    }
+    return data
+  })
+})
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
+<style>
+
+    .hljs-comment, .quoteblock blockquote, .quoteblock blockquote p {
+        font-style: normal;
+    }
+
+    .listingblock:hover .clipboard {
+        display: block;
+    }
+
+    .clipboard {
+        display: none;
+        border: 0;
+        font-size: .7em;
+        text-transform: uppercase;
+        font-weight: 400;
+        padding: 6px;
+        color: #999;
+        position: absolute;
+        cursor: pointer;
+        top: .425rem;
+        right: .1rem;
+        background: transparent;
+    }
+
+    code + .clipboard {
+        top: 2rem !important;
+    }
+
+    .clipboard:hover, .clipboard:focus, .clipboard:active {
+        outline: 0;
+        background-color: #eee9e6;
+    }
+</style>
+
+<script src="js/tocbot/tocbot.min.js" type="text/javascript"></script>
+<script src="js/toc.js" type="text/javascript"></script>
+<script src="https://cdn.bootcss.com/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script src="js/clipboardInit.js" type="text/javascript"></script>
+</body>
+</html>

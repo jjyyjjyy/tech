@@ -1,0 +1,16 @@
+@startuml
+
+!include ../global/stylesheet.iuml
+
+[*] -> 预处理器cpp : hello.c(文本)
+预处理器cpp -> 编译器ccl : hello.i(被修改过的文本)
+编译器ccl -> 汇编器as : hello.s(汇编程序文本)
+汇编器as -> 链接器ld : hello.o(可重定位目标程序)
+链接器ld -> [*] : hello(可执行目标程序)
+
+note top of 预处理器cpp: 根据c文件以 #include 开头的命令,\n修改原始的C文件,\n将 stdio.h 插入到源文件中.
+note top of 编译器ccl: 将C程序翻译成汇编语言程序.
+note top of 汇编器as: 将汇编语言程序翻译成机器语言指令,\n打包成可重定位目标程序的格式.
+note top of 链接器ld: 合并标准库中的可重定位目标程序,\n形成可执行目标程序.
+
+@enduml

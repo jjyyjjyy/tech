@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: kubia-ingress
+  namespace: jy-test
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              serviceName: kubia-svc
+              servicePort: 80
+            path: /foo
+      host: kubia.com
