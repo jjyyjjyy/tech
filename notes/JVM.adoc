@@ -309,7 +309,7 @@ TIP: 查看所有可选标志: `java -XX:+PrintFlagsFinal -version`
 * `-XX:+PrintTenuringDistribution` 查看GC后剩余对象的年龄分布信息.
 * `-Xloggc:<FILENAME> -XX:+UseGCLogfileRotation -XX:NumberOfGCLogfiles=N -XX:GCLogfileSize=N` gc日志写入指定文件并切割.
 
-.Java9及以下GC日志输出类 `-Xlog[:[selector][:[output][:[decorators][:output-options]]]]`
+.Java9及以上GC日志输出类 `-Xlog[:[selector][:[output][:[decorators][:output-options]]]]`
 * `-Xlog:gc` 输出GC简要日志.
 * `-Xlog:gc*` 输出GC详细日志.
 * `-Xlog:gc+heap=debug` 输出GC前后堆和方法区容量大小.

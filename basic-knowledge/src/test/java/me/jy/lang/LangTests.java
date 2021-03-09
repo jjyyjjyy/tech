@@ -128,6 +128,24 @@ class LangTests {
     }
 
     @Test
+    void testComputation() {
+        int a = 0;
+        for (int i = 0; i < 100_000_000; i++) {
+            a += i % 8;
+        }
+        System.out.println(a); // 130ms
+    }
+
+    @Test
+    void testComputation2() {
+        int a = 0;
+        for (int i = 0; i < 100_000_000; i++) {
+            a += i & 7;
+        }
+        System.out.println(a); // 75ms
+    }
+
+    @Test
     void testStrReverse() {
         System.out.println(reverseStr("abcdefg"));
     }
