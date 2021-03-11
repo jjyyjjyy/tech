@@ -1,12 +1,15 @@
 package com.example;
 
+import me.jy.bean.DifferentPackageBean;
 import org.springframework.beans.factory.config.ObjectFactoryCreatingFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author jy
  */
+@Import(DifferentPackageBean.class)
 @Configuration
 public class IocConfiguration {
 

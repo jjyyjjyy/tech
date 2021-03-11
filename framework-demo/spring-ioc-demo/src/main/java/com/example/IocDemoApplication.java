@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.Arrays;
+
 /**
  * @author jy
  */
@@ -11,6 +13,7 @@ public class IocDemoApplication {
 
     public static void main(String[] args) throws Exception {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(IocConfiguration.class);
+        System.out.println(Arrays.toString(applicationContext.getBeanDefinitionNames()));
 
         // by name
         System.out.println(applicationContext.getBean("demoBean", DemoBean.class));

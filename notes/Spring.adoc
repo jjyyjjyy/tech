@@ -170,7 +170,22 @@ https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 
 == getBean过程
 
-== Spring AOP
+== Spring IoC
+
+=== 从外部导入Bean的方式
+
+* `@Import` 直接导入Bean类.
+* `@Import` 导入 `@Configuration` 类.
+* `@Import` 导入 `ImportSelector` 接口的实现类.
+* `@Import` 导入 `ImportBeanDefinitionRegistrar` 接口的实现类.
+
+[source,java]
+.BeanImportDemo.java
+----
+include::../framework-demo/spring-ioc-demo/src/main/java/me/jy/bean/BeanImportDemo.java[]
+----
+
+== Spring AoP
 
 === 术语
 

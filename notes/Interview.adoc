@@ -219,14 +219,18 @@ Thread.join()有什么作用?::
 * 调用Thread#interrupt()方法
 ** 如果线程处于运行状态, Thread#isInterrupted()方法返回true, 线程内部判断这个标志位跳出方法.
 ** 如果线程处于阻塞状态, 则会抛出InterruptedException.线程内部可以捕获该异常终止方法.
-Thread#isInterrupted()方法返回false.
-* 调用Thread#stop()方法.
-此方法会释放所有子线程的锁, 可能会导致线程安全问题.
+* 调用Thread#stop()方法, 此方法会释放所有子线程的锁, 可能会导致线程安全问题.
+守护线程和本地线程的区别?::
+当JVM内部只剩守护线程时, JVM就会自动退出.
 请描述 `synchronized` 和 `ReentrantLock` 的底层实现及重入的底层原理?::
 请描述锁的四种状态和升级过程?::
 CAS是什么?::
 CAS的ABA问题如何解决?::
-请谈一下AQS,为什么AQS的底层是CAS+volatile?::
+基于AQS实现的锁有哪些?::
+* ReentrantLock
+* ReentrantReadWriteLock
+* Semaphore
+* CountDownLatch
 请谈一下你对 volatile的理解?::
 volatile的可见性和禁止指令重排序是如何实现的?::
 请描述一下对象的创建过程?::
@@ -546,7 +550,7 @@ Maven依赖传递?::
 * 路径最短者优先.
 * 路径相同时先声明者优先.
 
-== Mybatis
+== MyBatis
 
 [qanda]
 #{}和${}的区别是什么?::
@@ -630,6 +634,12 @@ ApplicationContext与BeanFactory的区别?::
 ** 集成AOP.
 ** 新增一些应用层context, 如 `WebApplicationContext` .
 ** ...
+Spring自动注册Bean的方式?::
+* `@Component` 注解放到类上面, 注册该类的对象到Bean容器中.
+* `@Configuration` 配置类:
+** `@Bean` 注解在方法上, 用来注册某一个类型的Bean.
+** `@ComponentScan` 注解在配置类上, 用来扫描并注册本包以及所有子包下的带有 `@Bean/@Configuration` 的Bean.
+* `@Import` 导入外部声明的 `@Configuration/@Component` 或者 `ImportSelector/ImportBeanDefinitionRegistrar` 接口的实现类来动态注册Bean.
 如何手动注册bean?::
 * BeanFactory.registerBeanDefinition: 通过BeanFactory注册
 * ApplicationContext.register: 通过ApplicationContext注册
@@ -675,6 +685,13 @@ Spring配置的placeholder占位符是如何替换的, 有什么办法可以自�
 Configuration类中@Bean方法定义成static有什么作用?::
 static方法不会被代理, 所以每次调用这个方法返回的都是不同的普通对象.
 ...
+
+== Spring Boot
+
+[qanda]
+为什么带有 `@SpringBootApplication` 注解的启动类要放到所有包的最外层?::
+`@SpringBootApplication` 注解是 `@SpringBootConfiguration` , `@EnableAutoConfiguration` 和 `@ComponentScan` 三个注解的组合.
+其中 `@ComponentScan` 注解默认扫描本包以及子包下的所有Bean, 所以默认配置下需要放到最外层的包里, 防止扫描不到其他包里的Bean.
 
 == Redis
 
