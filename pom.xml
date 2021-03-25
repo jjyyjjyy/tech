@@ -32,7 +32,7 @@
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
         <guava.version>29.0-jre</guava.version>
         <algs4.version>1.0.4</algs4.version>
-        <jmh.version>1.28</jmh.version>
+        <jmh.version>1.29</jmh.version>
         <junit.version>5.7.1</junit.version>
         <disruptor.version>3.4.2</disruptor.version>
         <nimbus-jose-jwt.version>9.7</nimbus-jose-jwt.version>
