@@ -1,4 +1,4 @@
-package me.jy.bean;
+package me.jy.bean.external;
 
 import lombok.Data;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;

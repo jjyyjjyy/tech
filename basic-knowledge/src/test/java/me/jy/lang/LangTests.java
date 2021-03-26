@@ -30,6 +30,11 @@ class LangTests {
     }
 
     @Test
+    void testOverflow() {
+        assertTrue(Double.isNaN(1.0 % 0));
+    }
+
+    @Test
     void testClassLoader() {
         ClassLoader classLoader = getClass().getClassLoader();
         do {

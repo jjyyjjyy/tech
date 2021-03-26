@@ -166,9 +166,11 @@ https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 . 调用 `ApplicationRunner和CommandLineRunner` .
 . 发布 *ApplicationReadyEvent* .
 
-== ConfigurationClass解析过程
+== Spring Boot WebMvc 自动装配流程
 
-== getBean过程
+. `ServletWebServerFactoryAutoConfiguration` : 根据项目的依赖创建 `ServletWebServerFactory` , 用来在Spring的 `ApplicationContext` refresh的时候创建一个WebServer, 并注册一些 `BeanPostProcessor` 用来定制化WebServer.
+. `DispatcherServletAutoConfiguration` : 注册 `DispatcherServlet`.
+. `WebMvcAutoConfiguration` : 注册一些 SpringMVC 的组件, 如 `ViewResolver` , `ViewResolver` , `RequestMappingHandler` , `RequestMappingHandlerMapping` , `Validator`, `ExceptionHandlerExceptionResolver` 等.
 
 == Spring IoC
 
@@ -182,7 +184,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/html[window="_blank"]
 [source,java]
 .BeanImportDemo.java
 ----
-include::../framework-demo/spring-ioc-demo/src/main/java/me/jy/bean/BeanImportDemo.java[]
+include::../framework-demo/spring-ioc-demo/src/main/java/me/jy/bean/external/BeanImportDemo.java[]
 ----
 
 == Spring AoP
@@ -227,7 +229,7 @@ RetentionPolicy为runtime
 ** args
 
 .示例:
-[source,java]
+[source]
 ----
 execution(public * *(..)) // 匹配所有公共方法
 execution(* set*(..)) // 匹配所有以set开头的方法
@@ -280,8 +282,8 @@ args(java.io.Serializable) // 匹配参数只有一个并且类型为Serializabl
 |===
 | Propagation类型 | 行为
 
-| PROPAGATION_REQUIRED
-| 如果当前存在一个事务, 则加入到该事务. 如果第二个事务回滚, 则第一个事务也跟着回滚.
+| PROPAGATION_REQUIRED(默认)
+| 如果当前存在一个事务, 则加入到该事务, 如果事务回滚, 则一起回滚.
 
 | PROPAGATION_SUPPORTS
 | 如果当前存在一个事务, 则加入到该事务, 否则以非事务的方式运行.
@@ -290,7 +292,7 @@ args(java.io.Serializable) // 匹配参数只有一个并且类型为Serializabl
 | 如果当前存在一个事务, 则加入到该事务, 如果当前没有事务运行, 则抛出异常.
 
 | PROPAGATION_NESTED
-| 如果当前存在一个事务, 则加入到该事务, 并标记当前为savepoint. 如果第二个事务回滚, 则只会回滚到savepoint.
+| 如果当前存在一个事务, 标记当前为savepoint, 如果事务回滚, 则只会回滚到savepoint.
 
 | PROPAGATION_REQUIRES_NEW
 | 如果当前存在一个事务, 则当前事务挂起, 然后新开一个事务.

@@ -652,20 +652,29 @@ Spring自动注册Bean的方式?::
 * `@Lookup` 一个抽象方法
 * `ObjectFactory/Provider`
 bean的生命周期?::
-. @PostConstruct
-. DisposableBean.afterPropertiesSet
-. initMethod
-. BeanPostProcessor.postProcessBeforeInitialization
-. BeanPostProcessor.postProcessAfterInitialization
-. LifeCycle.start
-. LifeCycle.stop
+. 创建对象:
+.. InstantiationAwareBeanPostProcessor::postProcessBeforeInstantiation 尝试调用一次, 如果返回不为null, 则走完 `BeanPostProcessor::postProcessBeforeInitialization` 回调就结束,详见 `AbstractAutowireCapableBeanFactory::resolveBeforeInstantiation` .
+.. Constructor 执行构造方法创建Bean对象, 详见 `AbstractAutowireCapableBeanFactory::createBeanInstance` .
+. 注入属性和依赖:
+.. MergedBeanDefinitionPostProcessor:: 解析bean内注解信息, 详见 `AbstractAutowireCapableBeanFactory::applyMergedBeanDefinitionPostProcessors` .
+.. InstantiationAwareBeanPostProcessor::postProcessProperties 应用@Value注解字段对应的值, 详见 `AbstractAutowireCapableBeanFactory::populateBean` .
+. 执行回调, 详见 `AbstractAutowireCapableBeanFactory::initializeBean` :
+.. Aware接口回调
+.. @PostConstruct
+.. InitializingBean::afterPropertiesSet
+.. initMethod
+.. BeanPostProcessor::postProcessAfterInitialization
+.. SmartInitializingSingleton::afterSingletonsInstantiated
+. LifeCycle::start
+. LifeCycle::stop
 . @PreDestroy
-. DisposableBean.destroy
+. DisposableBean::destroy
 . destroyMethod
 Configuration类实例方法中直接调用beanMethod为什么可以直接得到bean?::
 Spring会为每个Configuration类生成CGLIB代理类, 代理类会拦截所有的beanMethod, 返回值为从BeanFactory中get到的bean.
 什么情况下会发生Bean循环引用?::
-* 两个bean互相使用构造函数中注入.
+* 两个bean互相使用构造函数中注入, 且没有使用 `@Lazy` 懒加载.
+* 两个bean互相使用构造函数中注入, 使用 `@Lazy` 懒加载, 但在构造函数中调用了该Bean的方法触发了其初始化流程.
 * 两个prototype类型的bean互相注入, getBean的时候会报异常.
 Spring如何检测Bean循环引用?::
 参见 `DefaultSingletonBeanRegistry.beforeSingletonCreation` 方法. 每个bean在创建前 `beanName` 会放到 `singletonsCurrentlyInCreation` 这个set中, bean创建完会从这个set中移出.
@@ -673,23 +682,33 @@ Spring如何检测Bean循环引用?::
 Bean循环引用如何解决?::
 `@Autowired` 时添加 `@Lazy` 注解, 并且构造函数中不要去获取注入对象的属性/调用方法.
 *原理* : 如果注入时有 `@Lazy` 注解, 则会注入一个代理, 只有当使用这个字段时才会从 `BeanFactory` 中获取真正的bean.
-为什么JDK动态代理调用同类中方法时不走切面?::
-JDK动态代理会生成一个子类, 调用这个子类的方法时会直接调用 `InvocationHandler` 中的invoke方法, 并且传递对象的是原被代理的对象.
-所以在被代理的对象中直接调用同类的方法不会调用切面的代码.
+为什么动态代理调用同类中方法时不走切面?::
+同类方法直接调用使用的是this调用, 即被代理的原始对象, 所以在被代理的对象中直接调用同类的方法不会调用切面的代码.
+如何让动态代理调用同类中方法时走切面?::
+* `AopContext.currentProxy()` 显示获取当前被代理的对象, 然后调用这个对象上的方法.
+* 当前Bean注入一个自己的代理对象, 这样就获取到了被代理的对象.
 使用CGLIB代理有什么要求?::
 * 被代理的类不能是 `final` 类.
 * 被代理的方法不能是私有方法.
-Spring配置的placeholder占位符是如何替换的, 有什么办法可以自定义替换方式?::
-依靠 `Environment` 对象的 `propertyResolver` 解析:
-替换掉 `${}` 占位符, 再从 `Environment` 的 `propertySources` 中获取该属性名对应的值.
+* 被代理的方法不能是 `static` 方法.
+* 被代理的方法不能是 `final` 方法.
+Spring配置的placeholder占位符是如何替换的?::
+依靠 `Environment` 对象的 `propertyResolver` 解析, 替换掉 `${}` 占位符, 再从 `Environment` 的 `propertySources` 中获取该属性名对应的值.
 Configuration类中@Bean方法定义成static有什么作用?::
 static方法不会被代理, 所以每次调用这个方法返回的都是不同的普通对象.
-...
-
-== Spring Boot
-
-[qanda]
-为什么带有 `@SpringBootApplication` 注解的启动类要放到所有包的最外层?::
+谈谈Spring的三级缓存?::
+* `singletonObjects` : 存放已经创建好的单例对象.
+* `earlySingletonObjects` : 暂存创建好但属性没有初始化好的单例对象.
+* `singletonFactories` : 暂存单例对象的工厂.
+AOP的Advice类型?::
+* Before
+* After
+* AfterReturning
+* AfterThrowing
+* Around
+@Transaction默认情况下抛出什么异常类型后会回滚事务?::
+unchecked exception, 即 `RuntimeException` 或者 `Error` 异常.
+Spring Boot应用中为什么带有 `@SpringBootApplication` 注解的启动类要放到所有包的最外层?::
 `@SpringBootApplication` 注解是 `@SpringBootConfiguration` , `@EnableAutoConfiguration` 和 `@ComponentScan` 三个注解的组合.
 其中 `@ComponentScan` 注解默认扫描本包以及子包下的所有Bean, 所以默认配置下需要放到最外层的包里, 防止扫描不到其他包里的Bean.
 
@@ -725,20 +744,14 @@ Redis淘汰策略有哪些?::
 * volatile-random：从已经设置过期时间的数据集中，随机挑选数据淘汰。
 * allkeys-lru：从所有的数据集中，挑选最近最少使用的数据淘汰。
 * allkeys-random：从所有的数据集中，随机挑选数据淘汰。
-* no-enviction：禁止淘汰数据。
+* no-eviction：禁止淘汰数据。
 redis过期键的删除策略？::
 * 定时删除：在设置键的过期时间的同时，创建一个timer，让定时器在键的过期时间到达时，立即执行对键的删除操作。（主动删除）
-
 对内存友好，但是对cpu时间不友好，有较多过期键的而情况下，删除过期键会占用相当一部分cpu时间。
-
 * 惰性删除：放任过期键不管，但是每次从键空间中获取键时，都检查取到的键是否过去，如果过期就删除，如果没过期就返回该键。（被动删除）
-
 对cpu时间友好，程序只会在取出键的时候才会对键进行过期检查，这不会在删除其他无关过期键上花费任何cpu时间，但是如果一个键已经过期，而这个键又保留在数据库中，那么只要这个过期键不被删除，他所占用的内存就不会释放，对内存不友好。
-
 * 定期删除：每隔一段时间就对数据库进行一次检查，删除里面的过期键。（主动删除）
-
 采用对内存和cpu时间折中的方法，每个一段时间执行一次删除过期键操作，并通过限制操作执行的时长和频率来减少对cpu时间的影响。难点在于，选择一个好的策略来设置删除操作的时长和执行频率。
-
 Redis缓存失效策略有哪些?::
 Redis的持久化机制有几种方式?::
 Redis通讯协议是什么? 有什么特点?::
@@ -821,13 +834,11 @@ AMQP协议的流程?::
 . 消息生产者发送消息时再向 _callback server_ 发送一条延时消息.
 . 消息接收者处理完消息后向 _callback server_ 立即发送一条确认消息.
 . _callback server_ 收到确认消息后记录到DB.
-. _callback server_ 来自生产者的延时消息后查询DB是否存在该条消息.
-如果不存在则通知生产者消息没有收到.
+. _callback server_ 来自生产者的延时消息后查询DB是否存在该条消息, 如果不存在则通知生产者消息没有收到.
 rabbitmq的使用场景有哪些?::
 * 削峰: 让服务能够平滑的处理突发的超负荷请求.
 * 解耦: 消息生产者和消费者不需要知道对方的存在.
 * 存储: 消息系统可以保证该消息真正被消费完才会被丢弃.
-* 顺序保证: 消息队列可以保证消息接收的顺序性.
 rabbitmq有哪些角色?::
 * Queue: 存放消息的容器.
 * Exchange: 接收来自生产者的消息, 然后将消息路由到不同的队列.
