@@ -17,7 +17,7 @@
 
         <!-- plugins -->
         <asciidoctor.version>2.1.0</asciidoctor.version>
-        <asciidoctorj-diagram>2.1.0</asciidoctorj-diagram>
+        <asciidoctorj-diagram>2.1.1</asciidoctorj-diagram>
     </properties>
 
     <dependencies>
