@@ -39,7 +39,7 @@
         <netty.version>4.1.60.Final</netty.version>
         <jol.version>0.14</jol.version>
         <jcstress.version>0.8</jcstress.version>
-        <fastjson.version>1.2.75</fastjson.version>
+        <fastjson.version>1.2.76</fastjson.version>
         <cglib.versin>3.3.0</cglib.versin>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <testcontainer.version>1.15.2</testcontainer.version>
