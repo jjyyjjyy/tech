@@ -20,7 +20,7 @@ public class ArrayListTests {
     @Test
     void testToArray() {
         Object[] objects = Arrays.asList(1, 2, 3).toArray();
-        assertEquals("Integer[]", objects.getClass().getSimpleName());
+        assertEquals("Object[]", objects.getClass().getSimpleName());
 
 //        objects[0] = "a";//ArrayStoreException
 

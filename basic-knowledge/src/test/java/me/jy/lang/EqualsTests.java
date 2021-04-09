@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -34,7 +33,7 @@ public class EqualsTests {
         String s1 = "Programming";
         String s2 = "Programming";
         String s3 = "Program" + "ming";
-        assertFalse(s1 == s2);
+        assertTrue(s1 == s2);
         assertTrue(s1 == s3);
         assertTrue(s1 == s1.intern());
     }
