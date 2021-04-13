@@ -27,7 +27,7 @@
         <spring-boot.version>2.4.4</spring-boot.version>
         <spring-cloud.version>Hoxton.SR10</spring-cloud.version>
         <spring-cloud-alibaba.version>2.2.5.RELEASE</spring-cloud-alibaba.version>
-        <project-reactor.version>Dysprosium-SR18</project-reactor.version>
+        <project-reactor.version>Dysprosium-SR19</project-reactor.version>
         <lombok.version>1.18.20</lombok.version>
         <mybatis.version>3.5.6</mybatis.version>
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
