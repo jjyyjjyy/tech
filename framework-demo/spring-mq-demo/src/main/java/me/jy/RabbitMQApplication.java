@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
  */
 @Slf4j
 @SpringBootApplication
-public class SpringMQApplication {
+public class RabbitMQApplication {
 
     private static final String ERROR_EXCHANGE = "demo.error.exchange";
     private static final String ERROR_QUEUE = "error.ad-trace.processor.queue";
@@ -41,7 +41,7 @@ public class SpringMQApplication {
     private static final String SYNC_QUEUE = "ad-trace.sync.queue";
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringMQApplication.class, args);
+        SpringApplication.run(RabbitMQApplication.class, args);
     }
 
     @Bean
