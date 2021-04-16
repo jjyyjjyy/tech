@@ -46,7 +46,7 @@
         <spring-doc-resources.version>0.2.5</spring-doc-resources.version>
         <asciidoctor.version>2.1.0</asciidoctor.version>
         <asciidoctorj-diagram>2.1.2</asciidoctorj-diagram>
-        <testcontainer.version>1.15.2</testcontainer.version>
+        <testcontainer.version>1.15.3</testcontainer.version>
         <javafx.version>16</javafx.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
