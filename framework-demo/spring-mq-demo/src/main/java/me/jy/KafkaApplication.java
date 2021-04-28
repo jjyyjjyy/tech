@@ -1,8 +1,10 @@
 package me.jy;
 
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.time.Instant;
@@ -28,14 +30,16 @@ public class KafkaApplication {
 
     /**
      * 发消息有三种模式:
-     * 1. fire-and-forget
-     * 2. sync
-     * 3. async
+     * 1. fire-and-forget: send(ProducerRecord)
+     * 2. sync: send(ProducerRecord).get()
+     * 3. async: send(ProducerRecord, Callback), onCompletion方法里可以获取到消息发送成功之后的RecordMetadata, 或者是失败之后的Exception.
      */
+    @SneakyThrows
     public static void send() {
         KafkaProducer<String, String> producer = new KafkaProducer<>(getProductProperties());
         ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, "Hello, Kafka! " + Instant.now().getEpochSecond());
-        producer.send(record);
+        RecordMetadata recordMetadata = producer.send(record).get();
+        System.out.println(recordMetadata);
     }
 
     public static void main(String[] args) {

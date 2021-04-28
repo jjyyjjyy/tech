@@ -22,6 +22,7 @@
         <module>spring-cloud-stream-demo</module>
         <module>spring-ioc-demo</module>
         <module>spring-boot-web-demo</module>
+        <module>spring-proxy-demo</module>
     </modules>
 
     <artifactId>framework-demo</artifactId>
