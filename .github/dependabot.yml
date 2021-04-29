@@ -1,0 +1,64 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.lmax:disruptor
+    versions:
+    - 3.4.3
+  - dependency-name: io.projectreactor:reactor-bom
+    versions:
+    - Dysprosium-SR17
+    - Dysprosium-SR18
+    - Dysprosium-SR19
+  - dependency-name: com.nimbusds:nimbus-jose-jwt
+    versions:
+    - "9.6"
+    - "9.7"
+    - "9.8"
+    - 9.8.1
+  - dependency-name: com.alibaba:fastjson
+    versions:
+    - 1.2.76
+  - dependency-name: org.asciidoctor:asciidoctorj-diagram
+    versions:
+    - 2.1.1
+    - 2.1.2
+  - dependency-name: org.openjdk.jol:jol-core
+    versions:
+    - "0.15"
+  - dependency-name: io.netty:netty-all
+    versions:
+    - 4.1.59.Final
+    - 4.1.60.Final
+    - 4.1.62.Final
+    - 4.1.63.Final
+  - dependency-name: org.openjdk.jcstress:jcstress-core
+    versions:
+    - "0.8"
+  - dependency-name: org.openjdk.jmh:jmh-generator-annprocess
+    versions:
+    - "1.28"
+    - "1.29"
+  - dependency-name: org.springframework.boot:spring-boot-dependencies
+    versions:
+    - 2.4.3
+    - 2.4.4
+  - dependency-name: org.openjfx:javafx-controls
+    versions:
+    - "16"
+  - dependency-name: org.springframework.cloud:spring-cloud-dependencies
+    versions:
+    - Hoxton.SR10
+  - dependency-name: org.testcontainers:testcontainers-bom
+    versions:
+    - 1.15.2
+  - dependency-name: org.junit:junit-bom
+    versions:
+    - 5.7.1
+  - dependency-name: com.alibaba.cloud:spring-cloud-alibaba-dependencies
+    versions:
+    - 2.2.4.RELEASE
