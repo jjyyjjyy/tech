@@ -35,7 +35,7 @@
         <algs4.version>1.0.4</algs4.version>
         <jmh.version>1.29</jmh.version>
         <junit.version>5.7.1</junit.version>
-        <disruptor.version>3.4.3</disruptor.version>
+        <disruptor.version>3.4.4</disruptor.version>
         <nimbus-jose-jwt.version>9.9</nimbus-jose-jwt.version>
         <netty.version>4.1.63.Final</netty.version>
         <jol.version>0.15</jol.version>
