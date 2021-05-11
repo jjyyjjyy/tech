@@ -1,0 +1,111 @@
+= Design Pattern
+:icons: font
+:source-highlighter: highlightjs
+:highlightjs-theme: idea
+:sectlinks:
+:sectnums:
+:stem:
+:toc: left
+:toclevels: 3
+:toc-title: 目录
+:tabsize: 4
+:docinfo: shared
+
+== 简介
+
+`Arthas` 是Alibaba开源的Java诊断工具, 支持以下功能:
+
+* 实时查看JVM进程信息, 包括CPU利用率, 内存使用分布, GC情况等.
+* 实时查看当前加载的类信息, 支持class文件反编译.
+* 跟踪方法调用, 包括调用栈, 方法参数, 返回值详情等等.
+* 收集方法统计耗时.
+* 支持远程连接.
+* ...
+
+== 安装
+
+=== 物理机
+
+在物理机上下载Arthas的jar包, 直接启动, 连接本机的Java进程.
+
+[source,bash]
+----
+curl -O https://arthas.aliyun.com/arthas-boot.jar
+java -jar arthas-boot.jar
+----
+
+=== Dockerfile集成
+
+将Arthas的jar包直接安装到镜像中, 可以直接在容器中启动Arthas.
+
+[source,dockerfile]
+.Dockerfile
+----
+FROM openjdk:8-alpine
+COPY --from=hengyunabc/arthas:latest /opt/arthas /opt/arthas
+----
+
+=== C/S式集成
+
+将 `Arthas Tunnel Client` 集成到项目中, 通过统一的 `Arthas Tunnel Server` 来访问各个Java进程.
+
+==== 启动tunnel server
+
+[source,bash]
+----
+wget https://github.com/alibaba/arthas/releases/download/arthas-all-3.5.0/arthas-tunnel-server-3.5.0-fatjar.jar
+java -jar arthas-tunnel-server-3.5.0-fatjar.jar --server.port=8000 --arthas.server.port=7777
+----
+
+==== 项目集成tunnel client
+
+[source,xml]
+.pom.xml
+----
+        <dependency>
+            <groupId>com.taobao.arthas</groupId>
+            <artifactId>arthas-spring-boot-starter</artifactId>
+            <version>${arthas.version}</version>
+        </dependency>
+----
+
+==== 项目配置client信息
+
+[source,yaml]
+.application.yml
+----
+spring:
+  application:
+    name: web-demo
+arthas:
+  tunnel-server: ws://127.0.0.1:7777/ws
+  agent-id: ${spring.application.name}#${random.value}
+  telnet-port: -1
+  http-port: -1
+----
+
+==== 访问server
+
+http://localhost:8000[,role="external",window="_blank"]
+
+填入AgentId, 即可连接到不同的Java进程.
+
+== 使用
+
+=== dashboard
+
+=== thread
+
+=== watch
+
+=== trace
+
+=== jad
+
+=== redefine
+
+=== vmoption
+
+== 原理
+
+java agent
