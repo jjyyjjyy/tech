@@ -48,7 +48,7 @@
         <asciidoctorj-diagram>2.1.2</asciidoctorj-diagram>
         <testcontainer.version>1.15.3</testcontainer.version>
         <javafx.version>16</javafx.version>
-        <arthas.version>3.5.0</arthas.version>
+        <arthas.version>3.5.1</arthas.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
