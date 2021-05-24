@@ -108,4 +108,40 @@ http://localhost:8000[,role="external",window="_blank"]
 
 == 原理
 
-java agent
+通过Java Agent机制将Arthas连接到指定的JVM进程, 使用Instrument的API读写该JVM加载的类的字节码.
+
+=== Java agent
+
+文档: https://docs.oracle.com/en/java/javase/16/docs/api/java.instrument/java/lang/instrument/package-summary.html[,role="external",window="_blank"]
+
+==== 两种加载Agent的方式
+
+* 在JVM启动的时候通过启动参数加载: `java -javaagent:<jarpath>[=<options>]` . 加载完agent后会执行 `public static void premain(String agentArgs, Instrumentation inst)` 方法.
+* 在JVM启动后, 通过Attach API连接到该进程, 然后加载agent jar包, 加载完agent后会执行 `public static void agentmain(String agentArgs, Instrumentation inst)` 方法.
+
+=== Java instrument
+
+[source,java]
+.Instrumentation.java
+----
+
+public interface Instrumentation {
+
+    /**
+     * 注册一个类文件转换器，可以读写类文件字节码
+     */
+    void addTransformer(ClassFileTransformer transformer, boolean canRetransform);
+
+    /**
+     * 重新加载JVM已经加载过的类
+     */
+    void retransformClasses(Class<?>... classes) throws UnmodifiableClassException;
+
+    /**
+     * 获取当前JVM加载的所有类
+     */
+    Class[] getAllLoadedClasses();
+
+}
+----
+
