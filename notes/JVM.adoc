@@ -188,6 +188,20 @@ include::../jvm/src/test/java/oom/OOMDemo.java[tag=StackOOM]
 
 === 堆
 
+==== OOM异常类型
+
+* Java heap space
+* GC overhead limit exceeded
+* PermGen space
+* Metaspace
+* Unable to create new native thread
+* Out of swap space
+* Requested array size exceeds VM limit
+* Kill process or sacrifice child
+* reason stack_trace_with_native_method
+* Direct Buffer Memory
+* Map failed
+
 == JDK常用工具
 
 === jcmd

@@ -24,6 +24,7 @@
         <module>spring-boot-web-demo</module>
         <module>spring-proxy-demo</module>
         <module>java-agent-demo</module>
+        <module>spring-cloud-sleuth-demo</module>
     </modules>
 
     <artifactId>framework-demo</artifactId>

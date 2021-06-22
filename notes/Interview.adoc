@@ -478,19 +478,23 @@ Minor GC慢的原因?::
 ** `GCT` GC总消耗时间.
 * jcmd
 ** `jcmd <pid> Thread.print` 打印线程栈.
-** `jcmd <pid> GC.class_histogram | head -20` 查看各个类的所有实例对象大小.
-执行时会触发Full GC.
+** `jcmd <pid> GC.class_histogram | head -20` 查看各个类的所有实例对象大小, 执行时会触发Full GC.
 ** `jcmd <pid> GC.run` 执行一次 `System.gc()` .
 ** `jcmd <pid> VM.heap_info` 打印堆和方法区占用大小.
 ** `jcmd <pid> VM.flags` 查看JVM启动参数.
 ** `jcmd <pid> GC.heap_dump <file>` dump JVM进程.
 * jmap
-** `jmap -histo:live <pid> | head -20` 查看各个类的所有实例对象大小.
-执行时会触发Full GC.
+** `jmap -histo:live <pid> | head -20` 查看各个类的所有实例对象大小, 执行时会触发Full GC.
 ** `jmap -dump:live,format=b,file=<file> <pid>` dump JVM进程.
 ** `jmap -heap <pid>` 打印堆各个区占用大小.
 * core dump分析
 * gc日志上传到 https://gceasy.io 分析, 根据报告调整各个区内存大小.
+如何进行堆内存dump?::
+* jmap: `jmap -F -dump:live,file=jmap.hprof <pid>`
+* jcmd: `jcmd <pid> GC.heap_dump jmap.hprof`
+* 自动dump: `-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=<path/to/dump>`
+* JMX客户端工具
+* 编程式调用: `HotSpotDiagnosticMXBean`
 内存溢出和内存泄漏的区别?::
 * 内存泄漏: 内存一直占用但不释放.
 * 内存溢出: 申请内存时, 没有足够的内存使用.
