@@ -4,3 +4,10 @@ spring:
       remote-fields: x-correlation-id
   application:
     name: spring-cloud-sleuth-demo
+loki:
+  host: http://192.168.124.4:3100
+  labels:
+    app: ${spring.application.name}
+logstash:
+  host: 192.168.124.4
+  port: 4561

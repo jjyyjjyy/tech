@@ -49,6 +49,7 @@
         <javafx.version>16</javafx.version>
         <arthas.version>3.5.1</arthas.version>
         <javassist.version>3.28.0-GA</javassist.version>
+        <logstash-logback.version>6.6</logstash-logback.version>
 
         <maven-complier-plugin.version>3.8.1</maven-complier-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
@@ -167,6 +168,11 @@
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>${javassist.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -22,4 +22,9 @@ public class IndexController {
         demoService.saying();
         return "Spring Cloud Sleuth Demo Application";
     }
+
+    @GetMapping("/api/v1/error")
+    public void demoError() {
+        throw new RuntimeException("Demo Ex");
+    }
 }
